@@ -34,5 +34,7 @@ int main()
         DC_CORE_ERROR("Result != Expected. Got 0x{0:x} instead", test_result);
     }
 
+    processor.execute(memoryManager);
+
     return 0;
 }

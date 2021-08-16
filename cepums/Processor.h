@@ -13,6 +13,19 @@ namespace Cepums {
 
         void execute(MemoryManager& memoryManager);
 
+        // Large pile of instructions
+        void ins$HLT();
+        void ins$CLC();
+        void ins$CMC();
+        void ins$STC();
+        void ins$CLD();
+        void ins$STD();
+        void ins$CLI();
+        void ins$STI();
+        void ins$WAIT();
+        void ins$LOCK();
+        void ins$SEGMENT(); // ??
+
         uint16_t DS() { return m_dataSegment; }
         uint16_t CS() { return m_codeSegment; }
         uint16_t SS() { return m_stackSegment; }
@@ -39,8 +52,6 @@ namespace Cepums {
         uint16_t BP() { return m_basePointer; }
         uint16_t SI() { return m_sourceIndex; }
         uint16_t DI() { return m_destinationIndex; }
-
-
     private:
         int m_cyclesToWait = 0;
 

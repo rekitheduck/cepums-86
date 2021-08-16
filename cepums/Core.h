@@ -15,6 +15,10 @@
 #define TODO() { DC_CORE_CRITICAL("TODO hit in {0}:{1}", __FILE__, __LINE__); abort(); }
 #endif
 
+
+#define ILLEGAL_INSTRUCTION() { DC_CORE_CRITICAL("ILLEGAL INSTRUCTION REACHED in {0}:{1}", __FILE__, __LINE__); __debugbreak(); }
+#define UNKNOWN_INSTRUCTION() { DC_CORE_CRITICAL("Unknown instruction parsed in {0}:{1}", __FILE__, __LINE__); __debugbreak(); }
+
 #define BIT(x) (1 << x)
 
 namespace Cepums {
