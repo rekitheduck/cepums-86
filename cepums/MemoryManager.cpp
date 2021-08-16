@@ -11,7 +11,7 @@ namespace Cepums {
     {
     }
 
-    uint16_t MemoryManager::readByte(uint16_t segment, uint16_t offset)
+    uint8_t MemoryManager::readByte(uint16_t segment, uint16_t offset)
     {
         auto physical = addresstoPhysical(segment, offset);
 
@@ -23,13 +23,23 @@ namespace Cepums {
         }
 
         TODO();
+        return uint8_t();
+    }
+
+    void MemoryManager::writeByte(uint16_t segment, uint16_t offset, uint8_t value)
+    {
+        TODO();
+    }
+
+    uint16_t MemoryManager::readWord(uint16_t segment, uint16_t offset)
+    {
+        TODO();
         return uint16_t();
     }
 
-    uint16_t MemoryManager::writeByte(uint16_t segment, uint16_t offset, uint8_t value)
+    void MemoryManager::writeWord(uint16_t segment, uint16_t offset, uint16_t value)
     {
-        TODO()
-        return uint16_t();
+        TODO();
     }
 
     uint32_t MemoryManager::addresstoPhysical(const uint16_t& segment, const uint16_t& offset)
