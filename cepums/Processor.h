@@ -1,5 +1,7 @@
 #pragma once
 
+#include "MemoryManager.h"
+
 namespace Cepums {
 
     class Processor
@@ -7,7 +9,9 @@ namespace Cepums {
     public:
         Processor();
 
-        void init();
+        void reset();
+
+        void execute(MemoryManager& memoryManager);
 
         uint16_t DS() { return m_dataSegment; }
         uint16_t CS() { return m_codeSegment; }
@@ -38,7 +42,9 @@ namespace Cepums {
 
 
     private:
-        bool m_hasInitialized = false;
+        int m_cyclesToWait = 0;
+
+        // TODO: 6-byte instruction queue
 
         // Flags Register
         uint16_t m_flags = 0;
@@ -47,7 +53,7 @@ namespace Cepums {
 
         // Segment Registers
         uint16_t m_dataSegment = 0;
-        uint16_t m_codeSegment = 0;
+        uint16_t m_codeSegment = 0xFFFF;
         uint16_t m_stackSegment = 0;
         uint16_t m_extraSegment = 0;
 
