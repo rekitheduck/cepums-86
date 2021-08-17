@@ -106,15 +106,37 @@ namespace Cepums {
 
             // Are we in register mode?
             if (modBits == 0b11)
+            {
+                m_instructionPointer++;
                 return ins$ADDregisterToRegisterByte(rmBits, regBits);
+            }
+
+            uint8_t displacementLowByte = 0;
+            uint8_t displacementHighByte = 0;
+
+            // Do we have 8- or 16-bit displacement
+            if (modBits == 0b01)
+            {
+                displacementLowByte = memoryManager.readByte(m_codeSegment, m_instructionPointer);
+                m_instructionPointer++;
+            }
+            else if (modBits == 0b10)
+            {
+                displacementLowByte = memoryManager.readByte(m_codeSegment, m_instructionPointer);
+                m_instructionPointer++;
+                displacementHighByte = memoryManager.readByte(m_codeSegment, m_instructionPointer);
+                m_instructionPointer++;
+            }
 
             uint8_t reg = getRegisterValueFromREG8(regBits);
-            uint16_t effectiveAddress = getEffectiveAddressFromBits(rmBits, regBits, modBits, 0, 0, 0);
+            uint16_t effectiveAddress = getEffectiveAddressFromBits(rmBits, regBits, modBits, 0, displacementLowByte, displacementHighByte);
 
             return ins$ADDregisterToMemory(memoryManager, effectiveAddress, reg);
         }
 
-        case 0x1:
+        case 0x1: // ADD: 16-bit from register to register/memory
+        {
+        }
         case 0x2:
 
             // HLT: Halt
@@ -367,21 +389,35 @@ namespace Cepums {
             {
             case 0b000:
                 return m_BX + m_sourceIndex;
+
             case 0b001:
                 return m_BX + m_destinationIndex;
+
             case 0b010:
                 return m_basePointer + m_sourceIndex;
+
             case 0b011:
                 return m_basePointer + m_destinationIndex;
+
             case 0b100:
                 return m_sourceIndex;
+
             case 0b101:
                 return m_destinationIndex;
+
             case 0b110:
-                TODO();
-                return 0;
+            {
+                DC_CORE_TRACE("Getting EA from DIRECT ADDRESS");
+
+                // TODO: Make sure these do the correct job
+                uint16_t directAddress;
+                SET8BITREGISTERLOW(directAddress, displacementLow);
+                SET8BITREGISTERHIGH(directAddress, displacementHigh);
+                return directAddress;
+            }
             case 0b111:
                 return m_BX;
+
             default:
                 ILLEGAL_INSTRUCTION();
                 return 0;
@@ -392,21 +428,29 @@ namespace Cepums {
             {
             case 0b000:
                 return m_BX + m_sourceIndex;
+
             case 0b001:
                 return m_BX + m_destinationIndex;
+
             case 0b010:
                 return m_basePointer + m_sourceIndex;
+
             case 0b011:
                 return m_basePointer + m_destinationIndex;
+
             case 0b100:
                 return m_sourceIndex;
+
             case 0b101:
                 return m_destinationIndex;
+
             case 0b110:
                 TODO();
                 return 0;
+
             case 0b111:
                 return m_BX;
+
             default:
                 ILLEGAL_INSTRUCTION();
                 return 0;
@@ -418,20 +462,28 @@ namespace Cepums {
             {
             case 0b000:
                 return m_BX + m_sourceIndex + displacementLow;
+
             case 0b001:
                 return m_BX + m_destinationIndex + displacementLow;
+
             case 0b010:
                 return m_basePointer + m_sourceIndex + displacementLow;
+
             case 0b011:
                 return m_basePointer + m_destinationIndex + displacementLow;
+
             case 0b100:
                 return m_sourceIndex + displacementLow;
+
             case 0b101:
                 return m_destinationIndex + displacementLow;
+
             case 0b110:
                 return m_basePointer + displacementLow;
+
             case 0b111:
                 return m_BX + displacementLow;
+
             default:
                 ILLEGAL_INSTRUCTION();
                 return 0;
@@ -451,20 +503,28 @@ namespace Cepums {
             {
             case 0b000:
                 return m_BX + m_sourceIndex + fullDisplacement;
+
             case 0b001:
                 return m_BX + m_destinationIndex + fullDisplacement;
+
             case 0b010:
                 return m_basePointer + m_sourceIndex + fullDisplacement;
+
             case 0b011:
                 return m_basePointer + m_destinationIndex + fullDisplacement;
+
             case 0b100:
                 return m_sourceIndex + fullDisplacement;
+
             case 0b101:
                 return m_destinationIndex + fullDisplacement;
+
             case 0b110:
                 return m_basePointer + fullDisplacement;
+
             case 0b111:
                 return m_BX + fullDisplacement;
+
             default:
                 ILLEGAL_INSTRUCTION();
                 return 0;
