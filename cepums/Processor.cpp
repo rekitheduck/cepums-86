@@ -29,6 +29,28 @@ namespace Cepums {
         auto hopefully_an_instruction = memoryManager.readByte(m_codeSegment, m_instructionPointer);
         m_instructionPointer++;
 
+        m_AX = 0x1234;
+        DC_CORE_WARN("Test02: Testing AH updating ...");
+        DC_CORE_TRACE("AX: 0x{0:x}  AH: 0x{1:x},  AL 0x{2:x}", m_AX, AH(), AL());
+        AH(0xEF);
+        DC_CORE_TRACE("AX: 0x{0:x}  AH: 0x{1:x},  AL 0x{2:x}", m_AX, AH(), AL());
+        if (m_AX == 0xEF34)
+            DC_CORE_INFO("Test passed :)");
+        else
+            DC_CORE_ERROR("Test failed");
+
+        DC_CORE_WARN("Test03: Testing AL updating ...");
+        DC_CORE_TRACE("AX: 0x{0:x}  AH: 0x{1:x},  AL 0x{2:x}", m_AX, AH(), AL());
+        AL(0x42);
+        DC_CORE_TRACE("AX: 0x{0:x}  AH: 0x{1:x},  AL 0x{2:x}", m_AX, AH(), AL());
+        if (m_AX == 0xEF42)
+            DC_CORE_INFO("Test passed :)");
+        else
+            DC_CORE_ERROR("Test failed");
+
+        // Don't forget to clean up after ourselves
+        m_AX = 0;
+
         DC_CORE_INFO("CPU will now execute 0x{0:x}", hopefully_an_instruction);
 
         // Let's do some MOV instructions before the switch
