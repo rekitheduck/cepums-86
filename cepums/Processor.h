@@ -38,6 +38,10 @@ namespace Cepums {
         void ins$LOCK();
         void ins$SEGMENT(); // ??
 
+        void ins$ADDregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
+        void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t sourceByte);
+        void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t sourceWord);
+
         void ins$MOVimmediateToRegisterWord(uint16_t& reg, uint16_t value);
         void ins$MOVimmediateToRegisterByte(uint8_t& reg, uint8_t value);
 

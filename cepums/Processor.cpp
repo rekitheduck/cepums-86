@@ -90,6 +90,33 @@ namespace Cepums {
 
         switch (hopefully_an_instruction)
         {
+        case 0x0: // ADD: 8-bit from register to register/memory
+        {
+            auto byte = memoryManager.readByte(m_codeSegment, m_instructionPointer);
+            m_instructionPointer++;
+
+            uint8_t regBits = byte;
+            REG(3, regBits);
+
+            uint8_t modBits = byte;
+            MOD(6, modBits);
+
+            uint8_t rmBits = byte;
+            MOD(0, rmBits);
+
+            // Are we in register mode?
+            if (modBits == 0b11)
+                return ins$ADDregisterToRegisterByte(rmBits, regBits);
+
+            uint8_t reg = getRegisterValueFromREG8(regBits);
+            uint16_t effectiveAddress = getEffectiveAddressFromBits(rmBits, regBits, modBits, 0, 0, 0);
+
+            return ins$ADDregisterToMemory(memoryManager, effectiveAddress, reg);
+        }
+
+        case 0x1:
+        case 0x2:
+
             // HLT: Halt
         case 0xF4:
             return ins$HLT();
@@ -197,6 +224,23 @@ namespace Cepums {
     void Processor::ins$SEGMENT()
     {
         TODO();
+    }
+
+    void Processor::ins$ADDregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
+    {
+        auto operand = getRegisterValueFromREG8(sourceREG);
+        auto operand2 = getRegisterValueFromREG8(destREG);
+        updateRegisterFromREG8(destREG, operand + operand2);
+    }
+
+    void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t sourceByte)
+    {
+        memoryManager.writeByte(m_dataSegment, effectiveAddress, sourceByte);
+    }
+
+    void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t sourceWord)
+    {
+        memoryManager.writeWord(m_dataSegment, effectiveAddress, sourceWord);
     }
 
     void Processor::ins$MOVimmediateToRegisterWord(uint16_t& reg, uint16_t value)
