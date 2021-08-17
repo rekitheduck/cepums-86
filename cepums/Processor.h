@@ -7,17 +7,17 @@
 #define HIGHER_HALFBYTE(byte) (byte & 0xF0) >> 4
 #define LOWER_HALFBYTE(byte) byte & 0xF
 
-#define REGBITS(pos, byte) byte >>= pos; byte &= 0x7;
-#define MODBITS(pos, byte) byte >>= pos; byte &= 0x3;
-#define RMBITS(pos, byte) byte >>= pos; byte &= 0x7;
+#define REGBITS(pos, byte) byte >>= pos; byte &= 0x7
+#define MODBITS(pos, byte) byte >>= pos; byte &= 0x3
+#define RMBITS(pos, byte) byte >>= pos; byte &= 0x7
 
 #define SET8BITREGISTERHIGH(reg, data) reg &= 0x00FF; uint16_t temp = data << 8; reg |= temp & 0xFF00
-#define SET8BITREGISTERLOW(reg, data) reg &= 0xFF00; reg |= data & 0x00FF;
+#define SET8BITREGISTERLOW(reg, data) reg &= 0xFF00; reg |= data & 0x00FF
 
 #define LOAD_NEXT_INSTRUCTION_BYTE(byte) uint8_t byte = memoryManager.readByte(m_codeSegment, m_instructionPointer); m_instructionPointer++
 #define PARSE_REG_MOD_RM_BITS(byte, rm, mod, reg) uint8_t rmBits = byte; MODBITS(0, rmBits); uint8_t regBits = byte; REGBITS(3, regBits); uint8_t modBits = byte; MODBITS(6, modBits)
 #define LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(mm, modBits, displLow, displHigh) uint8_t displacementLowByte = 0; uint8_t displacementHighByte = 0; loadDisplacementsFromInstructionStream(mm, modBits, displLow, displHigh)
-#define CALCULATE_EFFECTIVE_ADDRESS(ea, rmBits, regBits, modBits, isWord, displLow, displHigh) uint16_t ea = getEffectiveAddressFromBits(rmBits, regBits, modBits, isWord, displLow, displHigh);
+#define CALCULATE_EFFECTIVE_ADDRESS(ea, rmBits, regBits, modBits, isWord, displLow, displHigh) uint16_t ea = getEffectiveAddressFromBits(rmBits, regBits, modBits, isWord, displLow, displHigh)
 
 #define IS_IN_REGISTER_MODE(byte) byte == 0b11
 
@@ -46,6 +46,7 @@ namespace Cepums {
         void ins$SEGMENT(); // ??
 
         void ins$ADDregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
+        void ins$ADDregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
         void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t sourceByte);
         void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t sourceWord);
 
