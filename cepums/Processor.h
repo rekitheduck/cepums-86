@@ -14,7 +14,8 @@
 #define SET8BITREGISTERHIGH(reg, data) reg &= 0x00FF; uint16_t temp = data << 8; reg |= temp & 0xFF00
 #define SET8BITREGISTERLOW(reg, data) reg &= 0xFF00; reg |= data & 0x00FF
 
-#define LOAD_NEXT_INSTRUCTION_BYTE(byte) uint8_t byte = memoryManager.readByte(m_codeSegment, m_instructionPointer); m_instructionPointer++
+#define LOAD_NEXT_INSTRUCTION_BYTE(mm, byte) uint8_t byte = mm.readByte(m_codeSegment, m_instructionPointer); m_instructionPointer++
+#define LOAD_NEXT_INSTRUCTION_WORD(mm, word) uint16_t word = mm.readWord(m_codeSegment, m_instructionPointer); m_instructionPointer +=2;
 #define PARSE_REG_MOD_RM_BITS(byte, rm, mod, reg) uint8_t rmBits = byte; MODBITS(0, rmBits); uint8_t regBits = byte; REGBITS(3, regBits); uint8_t modBits = byte; MODBITS(6, modBits)
 #define LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(mm, modBits, displLow, displHigh) uint8_t displacementLowByte = 0; uint8_t displacementHighByte = 0; loadDisplacementsFromInstructionStream(mm, modBits, displLow, displHigh)
 #define CALCULATE_EFFECTIVE_ADDRESS(ea, rmBits, regBits, modBits, isWord, displLow, displHigh) uint16_t ea = getEffectiveAddressFromBits(rmBits, regBits, modBits, isWord, displLow, displHigh)

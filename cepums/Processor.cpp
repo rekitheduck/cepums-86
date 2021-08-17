@@ -90,9 +90,9 @@ namespace Cepums {
 
         switch (hopefully_an_instruction)
         {
-        case 0x0: // ADD: 8-bit from register to register/memory
+        case 0x00: // ADD: 8-bit from register to register/memory
         {
-            LOAD_NEXT_INSTRUCTION_BYTE(byte);
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
             PARSE_REG_MOD_RM_BITS(byte, rmBits, regBits, modBits);
 
             if (IS_IN_REGISTER_MODE(modBits))
@@ -103,9 +103,9 @@ namespace Cepums {
 
             return ins$ADDregisterToMemory(memoryManager, effectiveAddress, getRegisterValueFromREG8(regBits));
         }
-        case 0x1: // ADD: 16-bit from register to register/memory
+        case 0x01: // ADD: 16-bit from register to register/memory
         {
-            LOAD_NEXT_INSTRUCTION_BYTE(byte);
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
             PARSE_REG_MOD_RM_BITS(byte, rmBits, regBits, modBits);
 
             if (IS_IN_REGISTER_MODE(modBits))
@@ -116,8 +116,32 @@ namespace Cepums {
 
             return ins$ADDregisterToMemory(memoryManager, effectiveAddress, getRegisterFromREG16(regBits));
         }
-        case 0x2:
+        case 0x02: // Add: 8-bit from register/memory to register
+        {
+            TODO();
 
+            return;
+        }
+        case 0x03: // ADD: 16-bit from register/memory to register
+        {
+            TODO();
+
+            return;
+        }
+        case 0x04: // ADD: 8-bit immediate to AL
+        {
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            AL(byte + AL());
+
+            return;
+        }
+        case 0x05: // ADD: 16-bit immediate to AX
+        {
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, word);
+            AX() += word;
+
+            return;
+        }
             // HLT: Halt
         case 0xF4:
             return ins$HLT();
