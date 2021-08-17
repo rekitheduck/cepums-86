@@ -116,16 +116,14 @@ namespace Cepums {
 
             return ins$ADDregisterToMemory(memoryManager, effectiveAddress, getRegisterFromREG16(regBits));
         }
-        case 0x02: // Add: 8-bit from register/memory to register
+        case 0x02: // ADD: 8-bit from register/memory to register
         {
             TODO();
-
             return;
         }
         case 0x03: // ADD: 16-bit from register/memory to register
         {
             TODO();
-
             return;
         }
         case 0x04: // ADD: 8-bit immediate to AL
@@ -142,45 +140,1137 @@ namespace Cepums {
 
             return;
         }
-            // HLT: Halt
-        case 0xF4:
-            return ins$HLT();
-
-            // CLC: Clear carry bit
-        case 0xF8:
-            return ins$CLC();
-
-            // CMC: Complement carry
-        case 0xF5:
-            return ins$CMC();
-
-            // STC: Set carry
-        case 0xF9:
-            return ins$STC();
-
-            // CLD: Clear direction
-        case 0xFC:
-            return ins$CLD();
-
-            // STD: Set direction
-        case 0xFD:
-            return ins$STD();
-
-            // CLI: Clear interrupt
-        case 0xFA:
-            return ins$CLI();
-
-            // STI: Set interrupt
-        case 0xFB:
-            return ins$STI();
-
-            // WAIT: Wait
-        case 0x9B:
+        case 0x06: // PUSH: Push ES to stack
+        {
+            TODO();
+            return;
+        }
+        case 0x07: // POP: Pop ES from stack
+        {
+            TODO();
+            return;
+        }
+        case 0x08: // OR: 8-bit register with register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x09: // OR: 16-bit register with register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x0A: // OR: 8-bit register/memory with register
+        {
+            TODO();
+            return;
+        }
+        case 0x0B: // OR: 16-bit register/memory with register
+        {
+            TODO();
+            return;
+        }
+        case 0x0C: // OR: 8-bit immediate with AL
+        {
+            TODO();
+            return;
+        }
+        case 0x0D: // OR: 16-bit immediate with AX
+        {
+            TODO();
+            return;
+        }
+        case 0x0E: // PUSH: Push CS to stack
+        {
+            TODO();
+            return;
+        }
+        case 0x10: // ADC: 8-bit from register to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x11: // ADC: 16-bit from register to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x12: // ADC: 8-bit from register/memory to register
+        {
+            TODO();
+            return;
+        }
+        case 0x13: // ADC: 16-bit from register/memory to register
+        {
+            TODO();
+            return;
+        }
+        case 0x14: // ADC: 8-bit immediate to AL
+        {
+            TODO();
+            return;
+        }
+        case 0x15: // ADC: 16-bit immediate to AX
+        {
+            TODO();
+            return;
+        }
+        case 0x16: // PUSH: Push SS to stack
+        {
+            TODO();
+            return;
+        }
+        case 0x017: // POP: Pop SS from stack
+        {
+            TODO();
+            return;
+        }
+        case 0x18: // SBB: 8-bit subtract with borrow from register to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x19: // SBB: 16-bit subtract with borrow from register to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x1A: // SBB: 8-bit subtract with borrow from register/memory to register
+        {
+            TODO();
+            return;
+        }
+        case 0x1B: // SBB: 16-bit subtract with borrow from register/memory to register
+        {
+            TODO();
+            return;
+        }
+        case 0x1C: // SBB: 8-bit subtract with borrow from immediate to AL
+        {
+            TODO();
+            return;
+        }
+        case 0x1D: // SBB: 16-bit subtract with borrow from immediate to AX
+        {
+            TODO();
+            return;
+        }
+        case 0x1E: // PUSH: Push DS to stack
+        {
+            TODO();
+            return;
+        }
+        case 0x1F: // POP: Pop DS from stack
+        {
+            TODO();
+            return;
+        }
+        case 0x20: // AND: 8-bit from register to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x21: // AND: 16-bit from register to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x22: // AND: 8-bit from register/memory to register
+        {
+            TODO();
+            return;
+        }
+        case 0x23: // AND: 16-bit from register/memory to register
+        {
+            TODO();
+            return;
+        }
+        case 0x24: // AND: 8-bit immediate with AL
+        {
+            TODO();
+            return;
+        }
+        case 0x25: // AND: 16-bit immediate with AX
+        {
+            TODO();
+            return;
+        }
+        case 0x26: // ES: Segment override prefix
+        {
+            // ???????????
+            TODO();
+            return;
+        }
+        case 0x27: // DAA: Decimal adjust for addition
+        {
+            TODO();
+            return;
+        }
+        case 0x28: // SUB: 8-bit from register to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x29: // SUB: 16-bit from register to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x2A: // SUB: 8-bit from register/memory to register
+        {
+            TODO();
+            return;
+        }
+        case 0x2B: // SUB: 16-bit from register/memory to register
+        {
+            TODO();
+            return;
+        }
+        case 0x2C: // SUB: 8-bit immediate with AL
+        {
+            TODO();
+            return;
+        }
+        case 0x2D: // SUB: 16-bit immediate with AX
+        {
+            TODO();
+            return;
+        }
+        case 0x2E: // CS: Segment override prefix
+        {
+            // ???????????
+            TODO();
+            return;
+        }
+        case 0x2F: // DAS: Decimal adjust for subtraction
+        {
+            TODO();
+            return;
+        }
+        case 0x30: // XOR: 8-bit from register to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x31: // XOR: 16-bit from register to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x32: // XOR: 8-bit from register/memory to register
+        {
+            TODO();
+            return;
+        }
+        case 0x33: // XOR: 16-bit from register/memory to register
+        {
+            TODO();
+            return;
+        }
+        case 0x34: // XOR: 8-bit immediate with AL
+        {
+            TODO();
+            return;
+        }
+        case 0x35: // XOR: 16-bit immediate with AX
+        {
+            TODO();
+            return;
+        }
+        case 0x36: // SS: Segment override prefix
+        {
+            // ???????????
+            TODO();
+            return;
+        }
+        case 0x37: // AAA: ASCII adjust for addition
+        {
+            TODO();
+            return;
+        }
+        case 0x38: // CMP: 8-bit from register to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x39: // CMP: 16-bit from register to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x3A: // CMP: 8-bit from register/memory to register
+        {
+            TODO();
+            return;
+        }
+        case 0x3B: // CMP: 16-bit from register/memory to register
+        {
+            TODO();
+            return;
+        }
+        case 0x3C: // CMP: 8-bit immediate with AL
+        {
+            TODO();
+            return;
+        }
+        case 0x3D: // CMP: 16-bit immediate with AX
+        {
+            TODO();
+            return;
+        }
+        case 0x3E: // DS: Segment override prefix
+        {
+            // ???????????
+            TODO();
+            return;
+        }
+        case 0x3F: // AAS: ASCII adjust for subtraction
+        {
+            TODO();
+            return;
+        }
+        case 0x40: // INC: AX
+        {
+            TODO();
+            return;
+        }
+        case 0x41: // INC: CX
+        {
+            TODO();
+            return;
+        }
+        case 0x42: // INC: DX
+        {
+            TODO();
+            return;
+        }
+        case 0x43: // INC: BX
+        {
+            TODO();
+            return;
+        }
+        case 0x44: // INC: SP
+        {
+            TODO();
+            return;
+        }
+        case 0x45: // INC: BP
+        {
+            TODO();
+            return;
+        }
+        case 0x46: // INC: SI
+        {
+            TODO();
+            return;
+        }
+        case 0x47: // INC: DI
+        {
+            TODO();
+            return;
+        }
+        case 0x48: // DEC: AX
+        {
+            TODO();
+            return;
+        }
+        case 0x49: // DEC: CX
+        {
+            TODO();
+            return;
+        }
+        case 0x4A: // DEC: DX
+        {
+            TODO();
+            return;
+        }
+        case 0x4B: // DEC: BX
+        {
+            TODO();
+            return;
+        }
+        case 0x4C: // DEC: SP
+        {
+            TODO();
+            return;
+        }
+        case 0x4D: // DEC: BP
+        {
+            TODO();
+            return;
+        }
+        case 0x4E: // DEC: SI
+        {
+            TODO();
+            return;
+        }
+        case 0x4F: // DEC: DI
+        {
+            TODO();
+            return;
+        }
+        case 0x50: // PUSH: AX
+        {
+            TODO();
+            return;
+        }
+        case 0x51: // PUSH: CX
+        {
+            TODO();
+            return;
+        }
+        case 0x52: // PUSH: DX
+        {
+            TODO();
+            return;
+        }
+        case 0x53: // PUSH: BX
+        {
+            TODO();
+            return;
+        }
+        case 0x54: // PUSH: SP
+        {
+            TODO();
+            return;
+        }
+        case 0x55: // PUSH: BP
+        {
+            TODO();
+            return;
+        }
+        case 0x56: // PUSH: SI
+        {
+            TODO();
+            return;
+        }
+        case 0x57: // PUSH: DI
+        {
+            TODO();
+            return;
+        }
+        case 0x58: // POP: AX
+        {
+            TODO();
+            return;
+        }
+        case 0x59: // POP: CX
+        {
+            TODO();
+            return;
+        }
+        case 0x5A: // POP: DX
+        {
+            TODO();
+            return;
+        }
+        case 0x5B: // POP: BX
+        {
+            TODO();
+            return;
+        }
+        case 0x5C: // POP: SP
+        {
+            TODO();
+            return;
+        }
+        case 0x5D: // POP: BP
+        {
+            TODO();
+            return;
+        }
+        case 0x5E: // POP: SI
+        {
+            TODO();
+            return;
+        }
+        case 0x5F: // POP: DI
+        {
+            TODO();
+            return;
+        }
+        case 0x70: // JO: Jump if overflow
+        {
+            TODO();
+            return;
+        }
+        case 0x71: // JNO: Jump if no overflow
+        {
+            TODO();
+            return;
+        }
+        case 0x72: // JB/JNAE/JC: Jump if below / Jump if not above nor equal / Jump if carry
+        {
+            TODO();
+            return;
+        }
+        case 0x73: // JNB/JAE/JNC: Jump if not below / Jump if above or equal / Jump if not carry
+        {
+            TODO();
+            return;
+        }
+        case 0x74: // JE/JZ: Jump if equal / Jump if zero
+        {
+            TODO();
+            return;
+        }
+        case 0x75: // JNE/JNZ: Jump if not equal / Jump if not zero
+        {
+            TODO();
+            return;
+        }
+        case 0x76: // JBE/JNA: Jump if below or equal / Jump if not above
+        {
+            TODO();
+            return;
+        }
+        case 0x77: // JNBE/JA: Jump if not below nor equal / Jump if above
+        {
+            TODO();
+            return;
+        }
+        case 0x78: // JS: Jump if sign
+        {
+            TODO();
+            return;
+        }
+        case 0x79: // JNS: Jump if not sign
+        {
+            TODO();
+            return;
+        }
+        case 0x7A: // JP/JPE: Jump if parity / Jump if parity even
+        {
+            TODO();
+            return;
+        }
+        case 0x7B: // JNP/NPO: Jump if not parity / Jump if parity odd
+        {
+            TODO();
+            return;
+        }
+        case 0x7C: // JL/JNGE: Jump if less / Jump if not greater nor equal
+        {
+            TODO();
+            return;
+        }
+        case 0x7D: // JNL/JGE: Jump if greater or equal / Jump if not less
+        {
+            TODO();
+            return;
+        }
+        case 0x7E: // JLE/JNG: Jump if less or equal / Jump if not greater
+        {
+            TODO();
+            return;
+        }
+        case 0x7F: // JNLE/JG: Jump if not less nor equal / Jump if greater
+        {
+            TODO();
+            return;
+        }
+        case 0x80: // ADD/OR/ADC/SBB/AND/SUB/XOR/CMP: 8-bit immediate to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x81: // ADD/OR/ADC/SBB/AND/SUB/XOR/CMP: 16-bit immediate to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x82: // ADD/unused/ADC/SBB/unused/SUB/unused/CMP: 8-bit immediate to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x83: // ADD/unused/ADC/SBB/unused/SUB/unused/CMP: 16-bit immediate to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x84: // TEST: 8-bit from register to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x85: // TEST: 16-bit from register to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x86: // XCHG: 8-bit exchange from register/memory to register
+        {
+            TODO();
+            return;
+        }
+        case 0x87: // XCHG: 16-bit exchange from register/memory to register
+        {
+            TODO();
+            return;
+        }
+        case 0x88: // MOV: 8-bit from register to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x89: // MOV: 16-bit from register to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x8A: // MOV: 8-bit from register/memory to register
+        {
+            TODO();
+            return;
+        }
+        case 0x8B: // MOV: 16-bit from register/memory to register
+        {
+            TODO();
+            return;
+        }
+        case 0x8C: // MOV/unused: 16-bit from segment register to register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0x8D: // LEA: Load effective address
+        {
+            TODO();
+            return;
+        }
+        case 0x8E: // MOV/unused: 16-bit from register/memory to segment register
+        {
+            TODO();
+            return;
+        }
+        case 0x8F: // POP/unused/unused/unused/unused/unused/unused/unused: Pop 16-bit register/memory from stack
+        {
+            TODO();
+            return;
+        }
+        case 0x90: // NOP
+        {
+            TODO();
+            return;
+        }
+        case 0x91: // XCHG: Exchange AX and CX
+        {
+            TODO();
+            return;
+        }
+        case 0x92: // XCHG: Exchange AX and DX
+        {
+            TODO();
+            return;
+        }
+        case 0x93: // XCHG: Exchange AX and BX
+        {
+            TODO();
+            return;
+        }
+        case 0x94: // XCHG: Exchange AX and SP
+        {
+            TODO();
+            return;
+        }
+        case 0x95: // XCHG: Exchange AX and BP
+        {
+            TODO();
+            return;
+        }
+        case 0x96: // XCHG: Exchange AX and SI
+        {
+            TODO();
+            return;
+        }
+        case 0x97: // XCHG: Exchange AX and DI
+        {
+            TODO();
+            return;
+        }
+        case 0x98: // CBW: Convert byte to word
+        {
+            TODO();
+            return;
+        }
+        case 0x99: // CWD: Convert word to doubleword
+        {
+            TODO();
+            return;
+        }
+        case 0x9A: // CALL: FAR_PROC
+        {
+            TODO();
+            return;
+        }
+        case 0x9B: // WAIT: Wait
+        {
             return ins$WAIT();
-
-        case 0xF0:
-            // LOCK: Bus lock prefix
+        }
+        case 0x9C: // PUSHF: Push flags to stack
+        {
+            TODO();
+            return;
+        }
+        case 0x9D: // POPF: Pop flags from stack
+        {
+            TODO();
+            return;
+        }
+        case 0x9E: // SAHF: Store AH into flags
+        {
+            TODO();
+            return;
+        }
+        case 0x9F: // LAHF: Load AH from flags
+        {
+            TODO();
+            return;
+        }
+        case 0xA0: // MOV: 8-bit from memory to AL
+        {
+            TODO();
+            return;
+        }
+        case 0xA1: // MOV: 16-bit from memory to AX
+        {
+            TODO();
+            return;
+        }
+        case 0xA2: // MOV: 8-bit from AL to memory
+        {
+            TODO();
+            return;
+        }
+        case 0xA3: // MOV: 16-bit from AX to memory
+        {
+            TODO();
+            return;
+        }
+        case 0xA4: // MOVS: 8-bit move string from SRC-STR8 to DEST-STR8
+        {
+            TODO();
+            return;
+        }
+        case 0xA5: // MOVS: 16-bit move string from SRC-STR16 to DEST-STR16
+        {
+            TODO();
+            return;
+        }
+        case 0xA6: // CMPS: 8-bit compare string from SRC-STR8 to DEST-STR8
+        {
+            TODO();
+            return;
+        }
+        case 0xA7: // 16-bit compare string from SRC-STR16 to DEST-STR16
+        {
+            TODO();
+            return;
+        }
+        case 0xA8: // TEST: 8-bit from immediate to AL
+        {
+            TODO();
+            return;
+        }
+        case 0xA9: // TEST: 16-bit from immediate to AX
+        {
+            TODO();
+            return;
+        }
+        case 0xAA: // STOS: 8-bit store byte or word string to DEST-STR8
+        {
+            TODO();
+            return;
+        }
+        case 0xAB: // STOS: 16-bit store byte or word string to DEST-STR8
+        {
+            TODO();
+            return;
+        }
+        case 0xAC: // LODS: 8-bit load string to SRC-STR8
+        {
+            TODO();
+            return;
+        }
+        case 0xAD: // LODS: 16-bit load string to SRC_STR16
+        {
+            TODO();
+            return;
+        }
+        case 0xAE: // SCAS: 8-bit scan string to DEST-STR8
+        {
+            TODO();
+            return;
+        }
+        case 0xAF: // SCAS: 16-bit scan string to DEST-STR16
+        {
+            TODO();
+            return;
+        }
+        case 0xB0: // MOV: 8-bit from immediate to AL
+        {
+            TODO();
+            return;
+        }
+        case 0xB1: // MOV: 8-bit from immediate to CL
+        {
+            TODO();
+            return;
+        }
+        case 0xB2: // MOV: 8-bit from immediate to DL
+        {
+            TODO();
+            return;
+        }
+        case 0xB3: // MOV: 8-bit from immediate to BL
+        {
+            TODO();
+            return;
+        }
+        case 0xB4: // MOV: 8-bit from immediate to AH
+        {
+            TODO();
+            return;
+        }
+        case 0xB5: // MOV: 8-bit from immediate to CH
+        {
+            TODO();
+            return;
+        }
+        case 0xB6: // MOV: 8-bit from immediate to DH
+        {
+            TODO();
+            return;
+        }
+        case 0xB7: // MOV: 8-bit from immediate to BH
+        {
+            TODO();
+            return;
+        }
+        case 0xB8: // MOV: 16-bit from immediate to AX
+        {
+            TODO();
+            return;
+        }
+        case 0xB9: // MOV: 16-bit from immediate to CX
+        {
+            TODO();
+            return;
+        }
+        case 0xBA: // MOV: 16-bit from immediate to DX
+        {
+            TODO();
+            return;
+        }
+        case 0xBB: // MOV: 16-bit from immediate to BX
+        {
+            TODO();
+            return;
+        }
+        case 0xBC: // MOV: 16-bit from immediate to SP
+        {
+            TODO();
+            return;
+        }
+        case 0xBD: // MOV: 16-bit from immediate to BP
+        {
+            TODO();
+            return;
+        }
+        case 0xBE: // MOV: 16-bit from immediate to SI
+        {
+            TODO();
+            return;
+        }
+        case 0xBF: // MOV: 16-bit from immediate to DI
+        {
+            TODO();
+            return;
+        }
+        case 0xC2: // RET: Return within segment adding immediate to SP
+        {
+            TODO();
+            return;
+        }
+        case 0xC3: // RET: Return within segment
+        {
+            TODO();
+            return;
+        }
+        case 0xC4: // LES: Load pointer using ES
+        {
+            TODO();
+            return;
+        }
+        case 0xC5: // LDS: Load pointer using DS
+        {
+            TODO();
+            return;
+        }
+        case 0xC6: // MOV/unused/unused/unused/unused/unused/unused/unused: 8-bit from immediate to memory
+        {
+            TODO();
+            return;
+        }
+        case 0xC7: // MOV/unused/unused/unused/unused/unused/unused/unused/unused/unused: 16-bit from immediate to memory
+        {
+            TODO();
+            return;
+        }
+        case 0xCA: // RET: Return intersegment adding immediate to SP
+        {
+            TODO();
+            return;
+        }
+        case 0xCB: // RET: Return intersegment
+        {
+            TODO();
+            return;
+        }
+        case 0xCC: // INT: Interrupt 3
+        {
+            TODO();
+            return;
+        }
+        case 0xCD: // INT: Interrupt based on 8-bit immediate
+        {
+            TODO();
+            return;
+        }
+        case 0xCE: // INTO: Interrupt if overflow
+        {
+            TODO();
+            return;
+        }
+        case 0xCF: // IRET: Interrupt return
+        {
+            TODO();
+            return;
+        }
+        case 0xD0: // ROL/ROR/RCL/RCR/(SAL/SHL)/SHR/unused/SAR: 8-bit shift-like register/memory by 1
+        {
+            TODO();
+            return;
+        }
+        case 0xD1: // ROL/ROR/RCL/RCR/(SAL/SHL)/SHR/unused/SAR: 16-bit shift-like register/memory by 1
+        {
+            TODO();
+            return;
+        }
+        case 0xD2: // ROL/ROR/RCL/RCR/(SAL/SHL)/SHR/unused/SAR: 8-bit shift-like register/memory by CL
+        {
+            TODO();
+            return;
+        }
+        case 0xD3: // ROL/ROR/RCL/RCR/(SAL/SHL)/SHR/unused/SAR: 16-bit shift-like register-memory by CL
+        {
+            TODO();
+            return;
+        }
+        case 0xD4: // AAM: ASCII adjust for multiply
+        {
+            TODO();
+            return;
+        }
+        case 0xD5: // AAD: ASCII adjust for division
+        {
+            TODO();
+            return;
+        }
+        case 0xD7: // XLAT: Translate SOURCE-TABLE
+        {
+            TODO();
+            return;
+        }
+        case 0xD8: // ESC: Escape to external device
+        case 0xD9: // and variants
+        case 0xDA:
+        case 0xDB:
+        case 0xDC:
+        case 0xDD:
+        case 0xDE:
+        case 0xDF:
+        {
+            TODO();
+            return;
+        }
+        case 0xE0: // LOOPNE/LOOPNZ: Loop if not equal / Loop if not zero
+        {
+            TODO();
+            return;
+        }
+        case 0xE1: // LOOPE/LOOPZ: Loop if equal / Loop if zero
+        {
+            TODO();
+            return;
+        }
+        case 0xE2: // LOOP: Loop
+        {
+            TODO();
+            return;
+        }
+        case 0xE3: // JCXZ: Jump if CX is zero
+        {
+            TODO();
+            return;
+        }
+        case 0xE4: // IN: 8-bit immediate and AL
+        {
+            TODO();
+            return;
+        }
+        case 0xE5: // IN: 8-bit immediate and AX ??
+        {
+            TODO();
+            return;
+        }
+        case 0xE6: // OUT: 8-bit immediate and AL
+        {
+            TODO();
+            return;
+        }
+        case 0xE7: // OUT: 8-bit immediate and AX ??
+        {
+            TODO();
+            return;
+        }
+        case 0xE8: // CALL: Call NEAR-PROC
+        {
+            TODO();
+            return;
+        }
+        case 0xE9: // JMP: Jump to NEAR-LABEL
+        {
+            TODO();
+            return;
+        }
+        case 0xEA: // JMP: Jump to FAR-LABEL
+        {
+            TODO();
+            return;
+        }
+        case 0xEB: // JMP: Jump to SHORT-LABEL
+        {
+            TODO();
+            return;
+        }
+        case 0xEC: // IN: AL and AX
+        {
+            TODO();
+            return;
+        }
+        case 0xED: // UN: AX and DX
+        {
+            TODO();
+            return;
+        }
+        case 0xEE: // OUT: AL and DX
+        {
+            TODO();
+            return;
+        }
+        case 0xEF: // OUT: AX and DX
+        {
+            TODO();
+            return;
+        }
+        case 0xF0: // LOCK: Lock bus
+        {
             return ins$LOCK();
+        }
+        case 0xF2: // REPNE/REPNZ: Repeat string operation while not equal/not zero
+        {
+            TODO();
+            return;
+        }
+        case 0xF3: // REP/REPE/REPZ: Repeat string operation/ Repeat string operation while equal / while zero
+        {
+            TODO();
+            return;
+        }
+        case 0xF4: // HLT: Halt the processor
+        {
+            return ins$HLT();
+        }
+        case 0xF5: // CMC: Complement carry flag
+        {
+            return ins$CMC();
+        }
+        case 0xF6: // TEST/unused/NOT/NEG/MUL/IMUL/DIV/IDIV: (8-bit from immediate to register/memory)/(8-bit register/memory)
+        {
+            TODO();
+            return;
+        }
+        case 0xF7: // TEST/unused/NOT/NEG/MUL/IMUL/DIV/IDIV: (16-bit from immediate to register/memory)/(16-bit register/memory)
+        {
+            TODO();
+            return;
+        }
+        case 0xF8: // CLC: Clear carry bit
+        {
+            return ins$CLC();
+        }
+        case 0xF9: // STC: Set carry bit
+        {
+            return ins$STC();
+        }
+        case 0xFA: // CLI: Clear interrupt flag
+        {
+            return ins$CLI();
+        }
+        case 0xFB: // STI: Set interrupt flag
+        {
+            return ins$STI();
+        }
+        case 0xFC: // CLD: Clear direction flag
+        {
+            return ins$CLD();
+        }
+        case 0xFD: // STD: Set direction flag
+        {
+            return ins$STD();
+        }
+        case 0xFE: // INC/DEC/unused/unused/unused/unused/unused/unused: 8-bit register/memory
+        {
+            TODO();
+            return;
+        }
+        case 0xFF: // INC/DEC/CALL/CALL/JMP/JMP/PUSH/unused: 16-bit (memory)/(intrasegment register/memory)/(intrasegment memory)/(intrasegment register/memory)/(intersegment memory)/(memory)
+        {
+            TODO();
+            return;
+        }
+
+        // Known unused:
+        case 0x0F:
+        case 0x60:
+        case 0x61:
+        case 0x62:
+        case 0x63:
+        case 0x64:
+        case 0x65:
+        case 0x66:
+        case 0x67:
+        case 0x68:
+        case 0x69:
+        case 0x6A:
+        case 0x6B:
+        case 0x6C:
+        case 0x6D:
+        case 0x6E:
+        case 0x6F:
+        case 0xC0:
+        case 0xC1:
+        case 0xC8:
+        case 0xC9:
+        case 0xD6:
+        case 0xF1:
+        {
+            DC_CORE_ERROR("Known unused instruction opcode hit :(");
+            UNKNOWN_INSTRUCTION();
+            return;
+        }
 
         default:
             UNKNOWN_INSTRUCTION();
