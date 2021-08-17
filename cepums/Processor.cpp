@@ -105,6 +105,16 @@ namespace Cepums {
         }
         case 0x1: // ADD: 16-bit from register to register/memory
         {
+            LOAD_NEXT_INSTRUCTION_BYTE(byte);
+            PARSE_REG_MOD_RM_BITS(byte, rmBits, regBits, modBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$ADDregisterToRegisterWord(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, regBits, modBits, 1, displacementLowByte, displacementHighByte);
+
+            return ins$ADDregisterToMemory(memoryManager, effectiveAddress, getRegisterFromREG16(regBits));
         }
         case 0x2:
 
@@ -222,6 +232,15 @@ namespace Cepums {
         auto operand = getRegisterValueFromREG8(sourceREG);
         auto operand2 = getRegisterValueFromREG8(destREG);
         updateRegisterFromREG8(destREG, operand + operand2);
+    }
+
+    void Processor::ins$ADDregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
+    {
+        auto operand = getRegisterFromREG16(sourceREG);
+        auto operand2 = getRegisterValueFromREG8(destREG);
+        getRegisterFromREG16(destREG) = operand + operand2;
+        // TODO: very this result please
+        TODO(); 
     }
 
     void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t sourceByte)
