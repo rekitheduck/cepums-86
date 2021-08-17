@@ -2,6 +2,11 @@
 
 #include "MemoryManager.h"
 
+#define HIGHER(word) (uint8_t)(word >> 8)
+#define LOWER(word) word & 0xFF
+#define HIGHER_HALFBYTE(byte) (byte & 0xF0) >> 4
+#define LOWER_HALFBYTE(byte) byte & 0xF
+
 namespace Cepums {
 
     class Processor
@@ -26,32 +31,38 @@ namespace Cepums {
         void ins$LOCK();
         void ins$SEGMENT(); // ??
 
+        void ins$MOVimmediateToRegisterWord(uint16_t& reg, uint16_t value);
+        void ins$MOVimmediateToRegisterByte(uint8_t& reg, uint8_t value);
+
         uint16_t DS() { return m_dataSegment; }
         uint16_t CS() { return m_codeSegment; }
         uint16_t SS() { return m_stackSegment; }
         uint16_t ES() { return m_extraSegment; }
 
         // 16-bit General Registers (data)
-        uint16_t AX() { return m_AX; };
-        uint16_t BX() { return m_BX; };
-        uint16_t CX() { return m_CX; };
-        uint16_t DX() { return m_DX; };
+        uint16_t& AX() { return m_AX; };
+        uint16_t& BX() { return m_BX; };
+        uint16_t& CX() { return m_CX; };
+        uint16_t& DX() { return m_DX; };
 
         // 8-bit General Register halves
-        uint8_t AH() { return (uint8_t)(m_AX >> 8); }
-        uint8_t AL() { return m_AX & 0xFF; }
-        uint8_t BH() { return (uint8_t)(m_BX >> 8); }
-        uint8_t BL() { return m_BX & 0xFF; }
-        uint8_t CH() { return (uint8_t)(m_CX >> 8); }
-        uint8_t CL() { return m_CX & 0xFF; }
-        uint8_t DH() { return (uint8_t)(m_DX >> 8); }
-        uint8_t DL() { return m_DX & 0xFF; }
+        uint8_t AH() { return HIGHER(m_AX); }
+        uint8_t AL() { return LOWER(m_AX); }
+        uint8_t BH() { return HIGHER(m_BX); }
+        uint8_t BL() { return LOWER(m_BX); }
+        uint8_t CH() { return HIGHER(m_CX); }
+        uint8_t CL() { return LOWER(m_CX); }
+        uint8_t DH() { return HIGHER(m_DX); }
+        uint8_t DL() { return LOWER(m_DX); }
 
         // Pointer and Index Registers
         uint16_t SP() { return m_stackPointer; }
         uint16_t BP() { return m_basePointer; }
         uint16_t SI() { return m_sourceIndex; }
         uint16_t DI() { return m_destinationIndex; }
+
+        //uint8_t& getRegisterFromREG8(uint8_t REG);
+        uint16_t& getRegisterFromREG16(uint8_t REG);
     private:
         int m_cyclesToWait = 0;
 
