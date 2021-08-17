@@ -244,6 +244,41 @@ namespace Cepums {
         }
     }
 
+    uint8_t Processor::getRegisterValueFromREG8(uint8_t REG)
+    {
+        switch (REG)
+        {
+        case 0x0:
+            return AL();
+
+        case 0x1:
+            return CL();
+
+        case 0x2:
+            return DL();
+
+        case 0x3:
+            return BL();
+
+        case 0x4:
+            return AH();
+
+        case 0x5:
+            return CH();
+
+        case 0x6:
+            return DH();
+
+        case 0x7:
+            return BH();
+
+        default:
+            DC_CORE_ERROR("Malformed REG bits : 0b{0:b}", REG);
+            TODO();
+            return AL();
+        }
+    }
+
     uint16_t& Processor::getRegisterFromREG16(uint8_t REG)
     {
         switch (REG)
@@ -276,6 +311,124 @@ namespace Cepums {
             DC_CORE_ERROR("Malformed REG bits : 0b{0:b}", REG);
             TODO();
             return m_AX;
+        }
+    }
+
+    uint16_t Processor::getEffectiveAddressFromBits(uint8_t rmBits, uint8_t regBits, uint8_t modBits, uint8_t isWord, uint8_t displacementLow, uint8_t displacementHigh)
+    {
+        switch (modBits)
+        {
+        case 0b11:
+            switch (rmBits)
+            {
+            case 0b000:
+                return m_BX + m_sourceIndex;
+            case 0b001:
+                return m_BX + m_destinationIndex;
+            case 0b010:
+                return m_basePointer + m_sourceIndex;
+            case 0b011:
+                return m_basePointer + m_destinationIndex;
+            case 0b100:
+                return m_sourceIndex;
+            case 0b101:
+                return m_destinationIndex;
+            case 0b110:
+                TODO();
+                return 0;
+            case 0b111:
+                return m_BX;
+            default:
+                ILLEGAL_INSTRUCTION();
+                return 0;
+            }
+
+        case 0b00:
+            switch (rmBits)
+            {
+            case 0b000:
+                return m_BX + m_sourceIndex;
+            case 0b001:
+                return m_BX + m_destinationIndex;
+            case 0b010:
+                return m_basePointer + m_sourceIndex;
+            case 0b011:
+                return m_basePointer + m_destinationIndex;
+            case 0b100:
+                return m_sourceIndex;
+            case 0b101:
+                return m_destinationIndex;
+            case 0b110:
+                TODO();
+                return 0;
+            case 0b111:
+                return m_BX;
+            default:
+                ILLEGAL_INSTRUCTION();
+                return 0;
+            }
+
+        case 0b01:
+            DC_CORE_TRACE("R/M field decoding has entered the 'sign extension' branch. Currently that isn't done. Might cause issues");
+            switch (rmBits)
+            {
+            case 0b000:
+                return m_BX + m_sourceIndex + displacementLow;
+            case 0b001:
+                return m_BX + m_destinationIndex + displacementLow;
+            case 0b010:
+                return m_basePointer + m_sourceIndex + displacementLow;
+            case 0b011:
+                return m_basePointer + m_destinationIndex + displacementLow;
+            case 0b100:
+                return m_sourceIndex + displacementLow;
+            case 0b101:
+                return m_destinationIndex + displacementLow;
+            case 0b110:
+                return m_basePointer + displacementLow;
+            case 0b111:
+                return m_BX + displacementLow;
+            default:
+                ILLEGAL_INSTRUCTION();
+                return 0;
+            }
+
+        case 0b10:
+        {
+            DC_CORE_TRACE("R/M field decoding has entered the 'displacement' branch. This might be implemented incorrectly");
+
+            uint16_t fullDisplacement;
+
+            // TODO: Make sure these do the correct job
+            SET8BITREGISTERLOW(fullDisplacement, displacementLow);
+            SET8BITREGISTERHIGH(fullDisplacement, displacementHigh);
+
+            switch (rmBits)
+            {
+            case 0b000:
+                return m_BX + m_sourceIndex + fullDisplacement;
+            case 0b001:
+                return m_BX + m_destinationIndex + fullDisplacement;
+            case 0b010:
+                return m_basePointer + m_sourceIndex + fullDisplacement;
+            case 0b011:
+                return m_basePointer + m_destinationIndex + fullDisplacement;
+            case 0b100:
+                return m_sourceIndex + fullDisplacement;
+            case 0b101:
+                return m_destinationIndex + fullDisplacement;
+            case 0b110:
+                return m_basePointer + fullDisplacement;
+            case 0b111:
+                return m_BX + fullDisplacement;
+            default:
+                ILLEGAL_INSTRUCTION();
+                return 0;
+            }
+        }
+        default:
+            ILLEGAL_INSTRUCTION();
+            return 0;
         }
     }
 }

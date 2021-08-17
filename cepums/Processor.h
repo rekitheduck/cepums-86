@@ -7,6 +7,10 @@
 #define HIGHER_HALFBYTE(byte) (byte & 0xF0) >> 4
 #define LOWER_HALFBYTE(byte) byte & 0xF
 
+#define REG(pos, byte) byte >>= pos; byte &= 0x7;
+#define MOD(pos, byte) byte >>= pos; byte &= 0x3;
+#define RM(pos, byte) byte >>= pos; byte &= 0x7;
+
 #define SET8BITREGISTERHIGH(reg, data) reg &= 0x00FF; uint16_t temp = data << 8; reg |= temp & 0xFF00
 #define SET8BITREGISTERLOW(reg, data) reg &= 0xFF00; reg |= data & 0x00FF;
 
@@ -75,7 +79,9 @@ namespace Cepums {
         uint16_t DI() { return m_destinationIndex; }
 
         void updateRegisterFromREG8(uint8_t REG, uint8_t data);
+        uint8_t getRegisterValueFromREG8(uint8_t REG);
         uint16_t& getRegisterFromREG16(uint8_t REG);
+        uint16_t getEffectiveAddressFromBits(uint8_t rmBits, uint8_t regBits, uint8_t modBits, uint8_t isWord, uint8_t displacementLow, uint8_t displacementHigh);
     private:
         int m_cyclesToWait = 0;
 
