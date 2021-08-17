@@ -7,6 +7,9 @@
 #define HIGHER_HALFBYTE(byte) (byte & 0xF0) >> 4
 #define LOWER_HALFBYTE(byte) byte & 0xF
 
+#define SET8BITREGISTERHIGH(reg, data) reg &= 0x00FF; uint16_t temp = data << 8; reg |= temp & 0xFF00
+#define SET8BITREGISTERLOW(reg, data) reg &= 0xFF00; reg |= data & 0x00FF;
+
 namespace Cepums {
 
     class Processor
@@ -55,13 +58,23 @@ namespace Cepums {
         uint8_t DH() { return HIGHER(m_DX); }
         uint8_t DL() { return LOWER(m_DX); }
 
+        // Setting 8-bit registers
+        void AH(uint8_t ah) { SET8BITREGISTERHIGH(m_AX, ah); }
+        void AL(uint8_t al) { SET8BITREGISTERLOW(m_AX, al); }
+        void BH(uint8_t bh) { SET8BITREGISTERHIGH(m_BX, bh); }
+        void BL(uint8_t bl) { SET8BITREGISTERLOW(m_BX, bl); }
+        void CH(uint8_t ch) { SET8BITREGISTERHIGH(m_CX, ch); }
+        void CL(uint8_t cl) { SET8BITREGISTERLOW(m_CX, cl); }
+        void DH(uint8_t dh) { SET8BITREGISTERHIGH(m_DX, dh); }
+        void DL(uint8_t dl) { SET8BITREGISTERLOW(m_DX, dl); }
+
         // Pointer and Index Registers
         uint16_t SP() { return m_stackPointer; }
         uint16_t BP() { return m_basePointer; }
         uint16_t SI() { return m_sourceIndex; }
         uint16_t DI() { return m_destinationIndex; }
 
-        //uint8_t& getRegisterFromREG8(uint8_t REG);
+        void updateRegisterFromREG8(uint8_t REG, uint8_t data);
         uint16_t& getRegisterFromREG16(uint8_t REG);
     private:
         int m_cyclesToWait = 0;

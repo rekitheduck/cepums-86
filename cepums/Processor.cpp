@@ -44,21 +44,23 @@ namespace Cepums {
 
             if (isWord)
             {
-                DC_CORE_TRACE("WORD operation");
-                // Get the actual register
-                uint16_t& reg = getRegisterFromREG16(regBits);
-
-                // Now we need fetch two bytes of data
+                // Fetch a word of data
                 uint16_t word = memoryManager.readWord(m_codeSegment, m_instructionPointer);
                 m_instructionPointer += 2;
+
+                // Get the actual register
+                uint16_t& reg = getRegisterFromREG16(regBits);
 
                 // And put the data where it belongs
                 reg = word;
             }
             else
             {
-                DC_CORE_TRACE("BYTE operation");
-                TODO();
+                // Fetch a byte of data
+                uint8_t byte = memoryManager.readByte(m_codeSegment, m_instructionPointer);
+                m_instructionPointer++;
+
+                updateRegisterFromREG8(regBits, byte);
             }
 
             return;
@@ -185,41 +187,40 @@ namespace Cepums {
         reg = value;
     }
 
-    //uint8_t& Processor::getRegisterFromREG8(uint8_t REG)
-    //{
-    //    //switch (REG)
-    //    //{
-    //    //case 0x0:
-    //    //    return m_AL;
+    void Processor::updateRegisterFromREG8(uint8_t REG, uint8_t data)
+    {
+        switch (REG)
+        {
+        case 0x0:
+            return AL(data);
 
-    //    //case 0x1:
-    //    //    return m_CL;
+        case 0x1:
+            return CL(data);
 
-    //    //case 0x2:
-    //    //    return m_DL;
+        case 0x2:
+            return DL(data);
 
-    //    //case 0x3:
-    //    //    return m_BL;
+        case 0x3:
+            return BL(data);
 
-    //    //case 0x4:
-    //    //    return m_AH;
+        case 0x4:
+            return AH(data);
 
-    //    //case 0x5:
-    //    //    return m_CH;
+        case 0x5:
+            return CH(data);
 
-    //    //case 0x6:
-    //    //    return m_DH;
+        case 0x6:
+            return DH(data);
 
-    //    //case 0x7:
-    //    //    return m_BH;
+        case 0x7:
+            return BH(data);
 
-    //    //default:
-    //    //    DC_CORE_ERROR("Malformed REG bits : 0b{0:b}", REG);
-    //    //    TODO();
-    //    //    return m_AL;
-    //    //}
-    //    TODO();
-    //}
+        default:
+            DC_CORE_ERROR("Malformed REG bits : 0b{0:b}", REG);
+            TODO();
+            return;
+        }
+    }
 
     uint16_t& Processor::getRegisterFromREG16(uint8_t REG)
     {
