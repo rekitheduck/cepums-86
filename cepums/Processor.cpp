@@ -92,48 +92,17 @@ namespace Cepums {
         {
         case 0x0: // ADD: 8-bit from register to register/memory
         {
-            auto byte = memoryManager.readByte(m_codeSegment, m_instructionPointer);
-            m_instructionPointer++;
+            LOAD_NEXT_INSTRUCTION_BYTE(byte);
+            PARSE_REG_MOD_RM_BITS(byte, rmBits, regBits, modBits);
 
-            uint8_t regBits = byte;
-            REG(3, regBits);
-
-            uint8_t modBits = byte;
-            MOD(6, modBits);
-
-            uint8_t rmBits = byte;
-            MOD(0, rmBits);
-
-            // Are we in register mode?
-            if (modBits == 0b11)
-            {
-                m_instructionPointer++;
+            if (IS_IN_REGISTER_MODE(modBits))
                 return ins$ADDregisterToRegisterByte(rmBits, regBits);
-            }
 
-            uint8_t displacementLowByte = 0;
-            uint8_t displacementHighByte = 0;
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, regBits, modBits, 0, displacementLowByte, displacementHighByte);
 
-            // Do we have 8- or 16-bit displacement
-            if (modBits == 0b01)
-            {
-                displacementLowByte = memoryManager.readByte(m_codeSegment, m_instructionPointer);
-                m_instructionPointer++;
-            }
-            else if (modBits == 0b10)
-            {
-                displacementLowByte = memoryManager.readByte(m_codeSegment, m_instructionPointer);
-                m_instructionPointer++;
-                displacementHighByte = memoryManager.readByte(m_codeSegment, m_instructionPointer);
-                m_instructionPointer++;
-            }
-
-            uint8_t reg = getRegisterValueFromREG8(regBits);
-            uint16_t effectiveAddress = getEffectiveAddressFromBits(rmBits, regBits, modBits, 0, displacementLowByte, displacementHighByte);
-
-            return ins$ADDregisterToMemory(memoryManager, effectiveAddress, reg);
+            return ins$ADDregisterToMemory(memoryManager, effectiveAddress, getRegisterValueFromREG8(regBits));
         }
-
         case 0x1: // ADD: 16-bit from register to register/memory
         {
         }
@@ -533,6 +502,27 @@ namespace Cepums {
         default:
             ILLEGAL_INSTRUCTION();
             return 0;
+        }
+    }
+
+    void Processor::loadDisplacementsFromInstructionStream(MemoryManager & memoryManager, uint8_t modBits, uint8_t & displacementLowByte, uint8_t & displacementHighByte)
+    {
+        // Do we have 8- or 16-bit displacement
+        if (modBits == 0b01)
+        {
+            displacementLowByte = memoryManager.readByte(m_codeSegment, m_instructionPointer);
+            m_instructionPointer++;
+        }
+        else if (modBits == 0b10)
+        {
+            displacementLowByte = memoryManager.readByte(m_codeSegment, m_instructionPointer);
+            m_instructionPointer++;
+            displacementHighByte = memoryManager.readByte(m_codeSegment, m_instructionPointer);
+            m_instructionPointer++;
+        }
+        else
+        {
+            DC_CORE_WARN("Useless loadDisplacementsFromInstructionStream call - modBits = 0b{0:b}", modBits);
         }
     }
 }
