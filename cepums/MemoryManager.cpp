@@ -13,6 +13,12 @@ namespace Cepums {
 
     uint8_t MemoryManager::readByte(uint16_t segment, uint16_t offset)
     {
+
+        if (offset == 0x0)
+        {
+            return 0xB8;
+        }
+        return 0x00;
         auto physical = addresstoPhysical(segment, offset);
 
         // Check if it is inbounds
@@ -33,6 +39,16 @@ namespace Cepums {
 
     uint16_t MemoryManager::readWord(uint16_t segment, uint16_t offset)
     {
+        switch (offset)
+        {
+        case 0x1:
+            return 0xEF;
+        //case 0x1:
+            //return 
+        default:
+            return 0x00;
+        }
+        return 0xB5;
         TODO();
         return uint16_t();
     }
