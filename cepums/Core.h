@@ -20,6 +20,8 @@
 #define VERIFY_NOT_REACHED() DC_CORE_CRITICAL("Verify not reached hit in {0}:{1}!", __FILE__, __LINE__); __debugbreak()
 
 #define BIT(x) (1 << x)
+#define IS_BIT_SET(number, bit) ((number >> bit) & 1U)
+#define IS_BIT_NOT_SET(number, bit) !(IS_BIT_SET(number, bit))
 
 namespace Cepums {
 

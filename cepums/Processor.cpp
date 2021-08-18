@@ -619,82 +619,130 @@ namespace Cepums {
         }
         case 0x70: // JO: Jump if overflow
         {
-            TODO();
+            LOAD_INCREMENT_BYTE(memoryManager, increment);
+            DC_CORE_WARN("ins$JMP: Jumping if OF=1");
+            if (IS_BIT_SET(m_flags, OVERFLOW_FLAG))
+                return ins$JMPshort(increment);
             return;
         }
         case 0x71: // JNO: Jump if no overflow
         {
-            TODO();
+            LOAD_INCREMENT_BYTE(memoryManager, increment);
+            DC_CORE_WARN("ins$JMP: Jumping if OF=0");
+            if (IS_BIT_NOT_SET(m_flags, OVERFLOW_FLAG))
+                return ins$JMPshort(increment);
             return;
         }
         case 0x72: // JB/JNAE/JC: Jump if below / Jump if not above nor equal / Jump if carry
         {
-            TODO();
+            LOAD_INCREMENT_BYTE(memoryManager, increment);
+            DC_CORE_WARN("ins$JMP: Jumping if CF=1");
+            if (IS_BIT_SET(m_flags, CARRY_FLAG))
+                return ins$JMPshort(increment);
             return;
         }
         case 0x73: // JNB/JAE/JNC: Jump if not below / Jump if above or equal / Jump if not carry
         {
-            TODO();
+            LOAD_INCREMENT_BYTE(memoryManager, increment);
+            DC_CORE_WARN("ins$JMP: Jumping if CF=0");
+            if (IS_BIT_NOT_SET(m_flags, CARRY_FLAG))
+                return ins$JMPshort(increment);
             return;
         }
         case 0x74: // JE/JZ: Jump if equal / Jump if zero
         {
-            TODO();
+            LOAD_INCREMENT_BYTE(memoryManager, increment);
+            DC_CORE_WARN("ins$JMP: Jumping if ZF=1");
+            if (IS_BIT_SET(m_flags, ZERO_FLAG))
+                return ins$JMPshort(increment);
             return;
         }
         case 0x75: // JNE/JNZ: Jump if not equal / Jump if not zero
         {
-            TODO();
+            LOAD_INCREMENT_BYTE(memoryManager, increment);
+            DC_CORE_WARN("ins$JMP: Jumping if ZF=0");
+            if (IS_BIT_NOT_SET(m_flags, ZERO_FLAG))
+                return ins$JMPshort(increment);
             return;
         }
         case 0x76: // JBE/JNA: Jump if below or equal / Jump if not above
         {
-            TODO();
+            LOAD_INCREMENT_BYTE(memoryManager, increment);
+            DC_CORE_WARN("ins$JMP: Jumping if CF=1 || ZF=1");
+            if (IS_BIT_SET(m_flags, CARRY_FLAG) || IS_BIT_SET(m_flags, ZERO_FLAG))
+                return ins$JMPshort(increment);
             return;
         }
         case 0x77: // JNBE/JA: Jump if not below nor equal / Jump if above
         {
-            TODO();
+            LOAD_INCREMENT_BYTE(memoryManager, increment);
+            DC_CORE_WARN("ins$JMP: Jumping if CF=0 && ZF=0");
+            if (IS_BIT_NOT_SET(m_flags, CARRY_FLAG) && IS_BIT_NOT_SET(m_flags, ZERO_FLAG))
+                return ins$JMPshort(increment);
             return;
         }
         case 0x78: // JS: Jump if sign
         {
-            TODO();
+            LOAD_INCREMENT_BYTE(memoryManager, increment);
+            DC_CORE_WARN("ins$JMP: Jumping if SF=1");
+            if (IS_BIT_SET(m_flags, SIGN_FLAG))
+                return ins$JMPshort(increment);
             return;
         }
         case 0x79: // JNS: Jump if not sign
         {
-            TODO();
+            LOAD_INCREMENT_BYTE(memoryManager, increment);
+            DC_CORE_WARN("ins$JMP: Jumping if SF=0");
+            if (IS_BIT_NOT_SET(m_flags, SIGN_FLAG))
+                return ins$JMPshort(increment);
             return;
         }
         case 0x7A: // JP/JPE: Jump if parity / Jump if parity even
         {
-            TODO();
+            LOAD_INCREMENT_BYTE(memoryManager, increment);
+            DC_CORE_WARN("ins$JMP: Jumping if PF=1");
+            if (IS_BIT_SET(m_flags, PARITY_FLAG))
+                return ins$JMPshort(increment);
             return;
         }
         case 0x7B: // JNP/NPO: Jump if not parity / Jump if parity odd
         {
-            TODO();
+            LOAD_INCREMENT_BYTE(memoryManager, increment);
+            DC_CORE_WARN("ins$JMP: Jumping if PF=0");
+            if (IS_BIT_NOT_SET(m_flags, PARITY_FLAG))
+                return ins$JMPshort(increment);
             return;
         }
         case 0x7C: // JL/JNGE: Jump if less / Jump if not greater nor equal
         {
-            TODO();
+            LOAD_INCREMENT_BYTE(memoryManager, increment);
+            DC_CORE_WARN("ins$JMP: Jumping if SF!=OF");
+            if (IS_BIT_SET(m_flags, SIGN_FLAG) != IS_BIT_SET(m_flags, OVERFLOW_FLAG))
+                return ins$JMPshort(increment);
             return;
         }
         case 0x7D: // JNL/JGE: Jump if greater or equal / Jump if not less
         {
-            TODO();
+            LOAD_INCREMENT_BYTE(memoryManager, increment);
+            DC_CORE_WARN("ins$JMP: Jumping if SF=OF");
+            if (IS_BIT_SET(m_flags, SIGN_FLAG) == IS_BIT_SET(m_flags, OVERFLOW_FLAG))
+                return ins$JMPshort(increment);
             return;
         }
         case 0x7E: // JLE/JNG: Jump if less or equal / Jump if not greater
         {
-            TODO();
+            LOAD_INCREMENT_BYTE(memoryManager, increment);
+            DC_CORE_WARN("ins$JMP: Jumping if ZF=1 || (SF!=OF)");
+            if (IS_BIT_SET(m_flags, ZERO_FLAG) || ( IS_BIT_SET(m_flags, SIGN_FLAG) != IS_BIT_SET(m_flags, OVERFLOW_FLAG)))
+                return ins$JMPshort(increment);
             return;
         }
         case 0x7F: // JNLE/JG: Jump if not less nor equal / Jump if greater
         {
-            TODO();
+            LOAD_INCREMENT_BYTE(memoryManager, increment);
+            DC_CORE_WARN("ins$JMP: Jumping if ZF=0 && (SF=OF)");
+            if (IS_BIT_NOT_SET(m_flags, ZERO_FLAG) && (IS_BIT_SET(m_flags, SIGN_FLAG) == IS_BIT_SET(m_flags, OVERFLOW_FLAG)))
+                return ins$JMPshort(increment);
             return;
         }
         case 0x80: // ADD/OR/ADC/SBB/AND/SUB/XOR/CMP: 8-bit immediate to register/memory
@@ -1500,6 +1548,12 @@ namespace Cepums {
 
         m_codeSegment = newCodeSegment;
         m_instructionPointer = newInstructionPointer;
+    }
+
+    void Processor::ins$JMPshort(int8_t increment)
+    {
+        DC_CORE_WARN("ins$JMP: Jumping to short");
+        m_instructionPointer += increment;
     }
 
     void Processor::ins$MOVimmediateToMemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
