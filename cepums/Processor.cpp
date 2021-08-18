@@ -26,9 +26,19 @@ namespace Cepums {
             m_cyclesToWait--;
             return;
         }
-        auto hopefully_an_instruction = memoryManager.readByte(m_codeSegment, m_instructionPointer);
+
+        DC_CORE_INFO("===== NEW CYCLE =====");
+        DC_CORE_TRACE(" AX: 0x{0:x}", m_AX);
+        DC_CORE_TRACE(" BX: 0x{0:x}", m_BX);
+        DC_CORE_TRACE(" CX: 0x{0:x}", m_CX);
+        DC_CORE_TRACE(" DX: 0x{0:x}", m_DX);
+
+        uint8_t hopefully_an_instruction = memoryManager.readByte(m_codeSegment, m_instructionPointer);
         m_instructionPointer++;
 
+        DC_CORE_TRACE("Fetched new instruction 0x{0:x}", hopefully_an_instruction);
+
+#if 0
         m_AX = 0x1234;
         DC_CORE_WARN("Test02: Testing AH updating ...");
         DC_CORE_TRACE("AX: 0x{0:x}  AH: 0x{1:x},  AL 0x{2:x}", m_AX, AH(), AL());
@@ -87,6 +97,8 @@ namespace Cepums {
 
             return;
         }
+#endif
+
 
         switch (hopefully_an_instruction)
         {
@@ -1147,8 +1159,10 @@ namespace Cepums {
         }
         case 0xEA: // JMP: Jump to FAR-LABEL
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, instructionPointer);
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, codeSegment);
+
+            return ins$JMPinterSegment(codeSegment, instructionPointer);
         }
         case 0xEB: // JMP: Jump to SHORT-LABEL
         {
@@ -1365,6 +1379,13 @@ namespace Cepums {
     void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t sourceWord)
     {
         memoryManager.writeWord(m_dataSegment, effectiveAddress, sourceWord);
+    }
+
+    void Processor::ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer)
+    {
+        DC_CORE_TRACE("ins$JMP: Jumping to {0:x}:{1:x}", newCodeSegment, newInstructionPointer);
+        m_codeSegment = newCodeSegment;
+        m_instructionPointer = newInstructionPointer;
     }
 
     void Processor::ins$MOVimmediateToRegisterWord(uint16_t& reg, uint16_t value)
