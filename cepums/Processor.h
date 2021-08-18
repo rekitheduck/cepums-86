@@ -24,6 +24,17 @@
 #define IS_IN_REGISTER_MODE(byte) byte == 0b11
 #define IS_IN_MEMORY_BODE_NO_DISPLACEMENT(byte) byte == 0b00
 
+// Processor flags
+#define CARRY_FLAG 0
+#define PARITY_FLAG 2
+#define AUXCARRY_FLAG 4
+#define ZERO_FLAG 6
+#define SIGN_FLAG 7
+#define TRAP_FLAG 8
+#define INTERRUPT_ENABLE_FLAG 9
+#define DIRECTION_fLAG 10
+#define OVERFLOW_FLAG 11
+
 namespace Cepums {
 
     class Processor

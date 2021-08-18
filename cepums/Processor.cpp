@@ -1341,7 +1341,8 @@ namespace Cepums {
 
     void Processor::ins$CLC()
     {
-        TODO();
+        DC_CORE_WARN("ins$CLC: Clear carry flag");
+        m_flags &= ~(BIT(CARRY_FLAG));
     }
 
     void Processor::ins$CMC()
@@ -1351,27 +1352,32 @@ namespace Cepums {
 
     void Processor::ins$STC()
     {
-        TODO();
+        DC_CORE_WARN("ins$STC: Set carry flag");
+        m_flags |= BIT(CARRY_FLAG);
     }
 
     void Processor::ins$CLD()
     {
-        TODO();
+        DC_CORE_WARN("ins$CLD: Clear direction flag");
+        m_flags &= ~(BIT(DIRECTION_fLAG));
     }
 
     void Processor::ins$STD()
     {
-        TODO();
+        DC_CORE_WARN("ins$STD: Set direction flag");
+        m_flags |= BIT(DIRECTION_fLAG);
     }
 
     void Processor::ins$CLI()
     {
-        TODO();
+        DC_CORE_WARN("ins$CLI: Disable interrupts");
+        m_flags &= ~(BIT(INTERRUPT_ENABLE_FLAG));
     }
 
     void Processor::ins$STI()
     {
-        TODO();
+        DC_CORE_WARN("ins$STI: Enabling interrupts");
+        m_flags |= BIT(INTERRUPT_ENABLE_FLAG);
     }
 
     void Processor::ins$WAIT()
