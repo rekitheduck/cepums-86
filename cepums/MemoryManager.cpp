@@ -120,7 +120,15 @@ namespace Cepums {
 
         // Second BIOS binary
         if (physical < 0x100000)
-            return (m_BIOS_F8000.at(physical - 0xF8000) << 8) | (uint16_t)m_BIOS_F8000.at(++physical - 0xF8000);
+        {
+            auto first = m_BIOS_F8000.at(physical - 0xF8000);
+            auto second = m_BIOS_F8000.at(++physical - 0xF8000);
+            uint16_t result = (uint16_t)first << 8 | second;
+
+            // NOTE: For some reason putting it all into one line makes it return the second byte twice
+            //return ((uint16_t)m_BIOS_F8000.at(physical - 0xF8000) << 8) | m_BIOS_F8000.at(++physical - 0xF8000);
+            return result;
+        }
 
         // If we got here, we're probably out of bounds
         DC_CORE_CRITICAL("Accessing memory out of bounds 0x{0:x}", physical);
