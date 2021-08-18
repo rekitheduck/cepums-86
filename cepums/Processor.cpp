@@ -1425,7 +1425,7 @@ namespace Cepums {
 
         // Debug: Print the BIOS ROM address
         if (newCodeSegment == 0xF000)
-            DC_CORE_TRACE(".. which is at BIOS 0x{0:X}", MemoryManager::addresstoPhysical(newCodeSegment, newInstructionPointer) - 0xF8000);
+            DC_CORE_TRACE(".. which is at BIOS 0x{0:X} in HEX EDITOR or 0x{1:X} in the actual ROM", MemoryManager::addresstoPhysical(newCodeSegment, newInstructionPointer) - 0xF8000, MemoryManager::addresstoPhysical(newCodeSegment, newInstructionPointer) - 0xF0000);
 
         m_codeSegment = newCodeSegment;
         m_instructionPointer = newInstructionPointer;
