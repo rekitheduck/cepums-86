@@ -123,7 +123,7 @@ namespace Cepums {
         {
             auto first = m_BIOS_F8000.at(physical - 0xF8000);
             auto second = m_BIOS_F8000.at(++physical - 0xF8000);
-            uint16_t result = (uint16_t)first << 8 | second;
+            uint16_t result = (uint16_t)second << 8 | first;
 
             // NOTE: For some reason putting it all into one line makes it return the second byte twice
             //return ((uint16_t)m_BIOS_F8000.at(physical - 0xF8000) << 8) | m_BIOS_F8000.at(++physical - 0xF8000);

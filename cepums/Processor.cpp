@@ -98,32 +98,31 @@ namespace Cepums {
         }
 #endif
 
-
         switch (hopefully_an_instruction)
         {
         case 0x00: // ADD: 8-bit from register to register/memory
         {
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
-            PARSE_REG_MOD_RM_BITS(byte, rmBits, regBits, modBits);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
 
             if (IS_IN_REGISTER_MODE(modBits))
                 return ins$ADDregisterToRegisterByte(rmBits, regBits);
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, regBits, modBits, 0, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, 0, displacementLowByte, displacementHighByte);
 
             return ins$ADDregisterToMemory(memoryManager, effectiveAddress, getRegisterValueFromREG8(regBits));
         }
         case 0x01: // ADD: 16-bit from register to register/memory
         {
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
-            PARSE_REG_MOD_RM_BITS(byte, rmBits, regBits, modBits);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
 
             if (IS_IN_REGISTER_MODE(modBits))
                 return ins$ADDregisterToRegisterWord(rmBits, regBits);
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, regBits, modBits, 1, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, 1, displacementLowByte, displacementHighByte);
 
             return ins$ADDregisterToMemory(memoryManager, effectiveAddress, getRegisterFromREG16(regBits));
         }
@@ -139,6 +138,7 @@ namespace Cepums {
         }
         case 0x04: // ADD: 8-bit immediate to AL
         {
+            DC_CORE_WARN("ADD: 8-bit immediate to AL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
             AL(byte + AL());
 
@@ -146,6 +146,7 @@ namespace Cepums {
         }
         case 0x05: // ADD: 16-bit immediate to AX
         {
+            DC_CORE_WARN("ADD: 16-bit immediate to AX");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, word);
             AX() += word;
 
@@ -752,8 +753,23 @@ namespace Cepums {
         }
         case 0x8E: // MOV/unused: 16-bit from register/memory to segment register
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, srBits, rmBits);
+
+            // Are we doing a MOV (bit 2 is 0)?
+            if (srBits & BIT(2))
+            {
+                ILLEGAL_INSTRUCTION();
+                return;
+            }
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$MOVregisterToSegmentRegisterWord(srBits, getRegisterFromREG16(rmBits));
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, 0, displacementLowByte, displacementHighByte);
+
+            return ins$MOVmemoryToSegmentRegisterWord(memoryManager, srBits, effectiveAddress);
         }
         case 0x8F: // POP/unused/unused/unused/unused/unused/unused/unused: Pop 16-bit register/memory from stack
         {
@@ -961,7 +977,11 @@ namespace Cepums {
         }
         case 0xB8: // MOV: 16-bit from immediate to AX
         {
-            TODO();
+            DC_CORE_WARN("$MOV: 16-bit immediate to AX");
+
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
+            AX() = immediate;
+
             return;
         }
         case 0xB9: // MOV: 16-bit from immediate to CX
@@ -1300,7 +1320,7 @@ namespace Cepums {
 
     void Processor::ins$HLT()
     {
-        DC_CORE_TRACE("Hit Halt");
+        DC_CORE_WARN("ins$HLT: Halting");
         TODO();
     }
 
@@ -1356,6 +1376,7 @@ namespace Cepums {
 
     void Processor::ins$ADDregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
     {
+        DC_CORE_WARN("ins$ADD: 8-bit register to register");
         auto operand = getRegisterValueFromREG8(sourceREG);
         auto operand2 = getRegisterValueFromREG8(destREG);
         updateRegisterFromREG8(destREG, operand + operand2);
@@ -1363,6 +1384,7 @@ namespace Cepums {
 
     void Processor::ins$ADDregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
     {
+        DC_CORE_WARN("ins$ADD: 16-bit register to register");
         auto operand = getRegisterFromREG16(sourceREG);
         auto operand2 = getRegisterValueFromREG8(destREG);
         getRegisterFromREG16(destREG) = operand + operand2;
@@ -1372,29 +1394,96 @@ namespace Cepums {
 
     void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t sourceByte)
     {
+        DC_CORE_WARN("ins$ADD: 8-bit register to memory");
         memoryManager.writeByte(m_dataSegment, effectiveAddress, sourceByte);
     }
 
     void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t sourceWord)
     {
+        DC_CORE_WARN("ins$ADD: 16-bit register to memory");
         memoryManager.writeWord(m_dataSegment, effectiveAddress, sourceWord);
     }
 
     void Processor::ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer)
     {
-        DC_CORE_TRACE("ins$JMP: Jumping to {0:x}:{1:x}", newCodeSegment, newInstructionPointer);
+        DC_CORE_WARN("ins$JMP: Jumping to {0:x}:{1:x}", newCodeSegment, newInstructionPointer);
+
+        // Debug: Print the BIOS ROM address
+        if (newCodeSegment == 0xF000)
+            DC_CORE_TRACE(".. which is at BIOS 0x{0:X}", MemoryManager::addresstoPhysical(newCodeSegment, newInstructionPointer) - 0xF8000);
+
         m_codeSegment = newCodeSegment;
         m_instructionPointer = newInstructionPointer;
     }
 
-    void Processor::ins$MOVimmediateToRegisterWord(uint16_t& reg, uint16_t value)
+    void Processor::ins$MOVimmediateToRegisterByte(uint8_t& reg, uint8_t value)
     {
+        DC_CORE_WARN("ins$MOV: 8-bit immediate to register");
         reg = value;
     }
 
-    void Processor::ins$MOVimmediateToRegisterByte(uint8_t& reg, uint8_t value)
+    void Processor::ins$MOVimmediateToRegisterWord(uint16_t& reg, uint16_t value)
     {
+        DC_CORE_WARN("ins$MOV: 16-bit immediate to register");
         reg = value;
+    }
+
+    void Processor::ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t effectiveAddress)
+    {
+        DC_CORE_WARN("ins$MOV: 16-bit memory to segment register");
+        uint16_t value = memoryManager.readWord(m_codeSegment, effectiveAddress);
+
+        switch (srBits)
+        {
+        case 0b00:
+            m_extraSegment = value;
+            return;
+
+        case 0b01:
+            m_codeSegment = value;
+            return;
+
+        case 0b10:
+            m_stackSegment = value;
+            return;
+
+        case 0b11:
+            m_dataSegment = value;
+            return;
+
+        default:
+            DC_CORE_ERROR("Malformed segment register bits : 0b{0:b}", srBits);
+            VERIFY_NOT_REACHED();
+            return;
+        }
+    }
+
+    void Processor::ins$MOVregisterToSegmentRegisterWord(uint8_t srBits, uint16_t value)
+    {
+        DC_CORE_WARN("ins$MOV: 16-bit register to segment register");
+        switch (srBits)
+        {
+        case 0b00:
+            m_extraSegment = value;
+            return;
+
+        case 0b01:
+            m_codeSegment = value;
+            return;
+
+        case 0b10:
+            m_stackSegment = value;
+            return;
+
+        case 0b11:
+            m_dataSegment = value;
+            return;
+
+        default:
+            DC_CORE_ERROR("Malformed segment register bits : 0b{0:b}", srBits);
+            VERIFY_NOT_REACHED();
+            return;
+        }
     }
 
     void Processor::updateRegisterFromREG8(uint8_t REG, uint8_t data)
@@ -1427,7 +1516,7 @@ namespace Cepums {
 
         default:
             DC_CORE_ERROR("Malformed REG bits : 0b{0:b}", REG);
-            TODO();
+            VERIFY_NOT_REACHED();
             return;
         }
     }
@@ -1462,7 +1551,7 @@ namespace Cepums {
 
         default:
             DC_CORE_ERROR("Malformed REG bits : 0b{0:b}", REG);
-            TODO();
+            VERIFY_NOT_REACHED();
             return AL();
         }
     }
@@ -1497,53 +1586,53 @@ namespace Cepums {
 
         default:
             DC_CORE_ERROR("Malformed REG bits : 0b{0:b}", REG);
-            TODO();
+            VERIFY_NOT_REACHED();
             return m_AX;
         }
     }
 
-    uint16_t Processor::getEffectiveAddressFromBits(uint8_t rmBits, uint8_t regBits, uint8_t modBits, uint8_t isWord, uint8_t displacementLow, uint8_t displacementHigh)
+    uint16_t Processor::getEffectiveAddressFromBits(uint8_t rmBits, uint8_t modBits, uint8_t isWord, uint8_t displacementLow, uint8_t displacementHigh)
     {
         switch (modBits)
         {
-        case 0b11:
-            switch (rmBits)
-            {
-            case 0b000:
-                return m_BX + m_sourceIndex;
+        //case 0b11:
+        //    switch (rmBits)
+        //    {
+        //    case 0b000:
+        //        return m_BX + m_sourceIndex;
 
-            case 0b001:
-                return m_BX + m_destinationIndex;
+        //    case 0b001:
+        //        return m_BX + m_destinationIndex;
 
-            case 0b010:
-                return m_basePointer + m_sourceIndex;
+        //    case 0b010:
+        //        return m_basePointer + m_sourceIndex;
 
-            case 0b011:
-                return m_basePointer + m_destinationIndex;
+        //    case 0b011:
+        //        return m_basePointer + m_destinationIndex;
 
-            case 0b100:
-                return m_sourceIndex;
+        //    case 0b100:
+        //        return m_sourceIndex;
 
-            case 0b101:
-                return m_destinationIndex;
+        //    case 0b101:
+        //        return m_destinationIndex;
 
-            case 0b110:
-            {
-                DC_CORE_TRACE("Getting EA from DIRECT ADDRESS");
+        //    case 0b110:
+        //    {
+        //        DC_CORE_TRACE("Getting EA from DIRECT ADDRESS");
 
-                // TODO: Make sure these do the correct job
-                uint16_t directAddress;
-                SET8BITREGISTERLOW(directAddress, displacementLow);
-                SET8BITREGISTERHIGH(directAddress, displacementHigh);
-                return directAddress;
-            }
-            case 0b111:
-                return m_BX;
+        //        // TODO: Make sure these do the correct job
+        //        uint16_t directAddress;
+        //        SET8BITREGISTERLOW(directAddress, displacementLow);
+        //        SET8BITREGISTERHIGH(directAddress, displacementHigh);
+        //        return directAddress;
+        //    }
+        //    case 0b111:
+        //        return m_BX;
 
-            default:
-                ILLEGAL_INSTRUCTION();
-                return 0;
-            }
+        //    default:
+        //        VERIFY_NOT_REACHED();
+        //        return 0;
+        //    }
 
         case 0b00:
             switch (rmBits)
@@ -1574,7 +1663,7 @@ namespace Cepums {
                 return m_BX;
 
             default:
-                ILLEGAL_INSTRUCTION();
+                VERIFY_NOT_REACHED();
                 return 0;
             }
 
@@ -1607,7 +1696,7 @@ namespace Cepums {
                 return m_BX + displacementLow;
 
             default:
-                ILLEGAL_INSTRUCTION();
+                VERIFY_NOT_REACHED();
                 return 0;
             }
 
@@ -1648,12 +1737,12 @@ namespace Cepums {
                 return m_BX + fullDisplacement;
 
             default:
-                ILLEGAL_INSTRUCTION();
+                VERIFY_NOT_REACHED();
                 return 0;
             }
         }
         default:
-            ILLEGAL_INSTRUCTION();
+            VERIFY_NOT_REACHED();
             return 0;
         }
     }

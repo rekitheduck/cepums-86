@@ -10,15 +10,16 @@
 #define REGBITS(pos, byte) byte >>= pos; byte &= 0x7
 #define MODBITS(pos, byte) byte >>= pos; byte &= 0x3
 #define RMBITS(pos, byte) byte >>= pos; byte &= 0x7
+#define SRBITS(pos, byte) byte >>= pos; byte &=0x3;
 
 #define SET8BITREGISTERHIGH(reg, data) reg &= 0x00FF; uint16_t temp = data << 8; reg |= temp & 0xFF00
 #define SET8BITREGISTERLOW(reg, data) reg &= 0xFF00; reg |= data & 0x00FF
 
 #define LOAD_NEXT_INSTRUCTION_BYTE(mm, byte) uint8_t byte = mm.readByte(m_codeSegment, m_instructionPointer); m_instructionPointer++
 #define LOAD_NEXT_INSTRUCTION_WORD(mm, word) uint16_t word = mm.readWord(m_codeSegment, m_instructionPointer); m_instructionPointer +=2;
-#define PARSE_REG_MOD_RM_BITS(byte, rm, mod, reg) uint8_t rmBits = byte; MODBITS(0, rmBits); uint8_t regBits = byte; REGBITS(3, regBits); uint8_t modBits = byte; MODBITS(6, modBits)
-#define LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(mm, modBits, displLow, displHigh) uint8_t displacementLowByte = 0; uint8_t displacementHighByte = 0; loadDisplacementsFromInstructionStream(mm, modBits, displLow, displHigh)
-#define CALCULATE_EFFECTIVE_ADDRESS(ea, rmBits, regBits, modBits, isWord, displLow, displHigh) uint16_t ea = getEffectiveAddressFromBits(rmBits, regBits, modBits, isWord, displLow, displHigh)
+#define PARSE_MOD_REG_RM_BITS(byte, mod, reg, rm) uint8_t rm = byte; RMBITS(0, rm); uint8_t reg = byte; REGBITS(3, reg); uint8_t mod = byte; MODBITS(6, mod)
+#define LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(mm, modBits, displLow, displHigh) uint8_t displLow = 0; uint8_t displHigh = 0; loadDisplacementsFromInstructionStream(mm, modBits, displLow, displHigh)
+#define CALCULATE_EFFECTIVE_ADDRESS(ea, rmBits, modBits, isWord, displLow, displHigh) uint16_t ea = getEffectiveAddressFromBits(rmBits, modBits, isWord, displLow, displHigh)
 
 #define IS_IN_REGISTER_MODE(byte) byte == 0b11
 
@@ -53,8 +54,10 @@ namespace Cepums {
 
         void ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer);
 
-        void ins$MOVimmediateToRegisterWord(uint16_t& reg, uint16_t value);
         void ins$MOVimmediateToRegisterByte(uint8_t& reg, uint8_t value);
+        void ins$MOVimmediateToRegisterWord(uint16_t& reg, uint16_t value);
+        void ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t effectiveAddress);
+        void ins$MOVregisterToSegmentRegisterWord(uint8_t srBits, uint16_t value);
 
         uint16_t DS() { return m_dataSegment; }
         uint16_t CS() { return m_codeSegment; }
@@ -97,7 +100,7 @@ namespace Cepums {
         void updateRegisterFromREG8(uint8_t REG, uint8_t data);
         uint8_t getRegisterValueFromREG8(uint8_t REG);
         uint16_t& getRegisterFromREG16(uint8_t REG);
-        uint16_t getEffectiveAddressFromBits(uint8_t rmBits, uint8_t regBits, uint8_t modBits, uint8_t isWord, uint8_t displacementLow, uint8_t displacementHigh);
+        uint16_t getEffectiveAddressFromBits(uint8_t rmBits, uint8_t modBits, uint8_t isWord, uint8_t displacementLow, uint8_t displacementHigh);
 
         void loadDisplacementsFromInstructionStream(MemoryManager& memoryManager, uint8_t modBits, uint8_t& displacementLowByte, uint8_t& displacementHighByte);
 

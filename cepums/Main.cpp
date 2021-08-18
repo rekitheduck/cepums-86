@@ -15,6 +15,7 @@ int main()
 
     Cepums::MemoryManager memoryManager;
 
+#if 0
     uint16_t test_segment = 0x06EF;
     uint16_t test_offset = 0x1234;
     uint32_t expected_result = 0x08124;
@@ -33,6 +34,7 @@ int main()
     {
         DC_CORE_ERROR("Result != Expected. Got 0x{0:x} instead", test_result);
     }
+#endif
 
     bool shouldExecute = true;
 
