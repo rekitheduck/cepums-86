@@ -88,10 +88,11 @@ namespace Cepums {
         void DL(uint8_t dl) { SET8BITREGISTERLOW(m_DX, dl); }
 
         // Pointer and Index Registers
-        uint16_t SP() { return m_stackPointer; }
-        uint16_t BP() { return m_basePointer; }
-        uint16_t SI() { return m_sourceIndex; }
-        uint16_t DI() { return m_destinationIndex; }
+        uint16_t& SP() { return m_stackPointer; }
+        uint16_t& BP() { return m_basePointer; }
+        uint16_t& SI() { return m_sourceIndex; }
+        uint16_t& DI() { return m_destinationIndex; }
+        uint16_t& IP() { return m_instructionPointer; }
 
         void updateRegisterFromREG8(uint8_t REG, uint8_t data);
         uint8_t getRegisterValueFromREG8(uint8_t REG);
