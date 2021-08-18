@@ -361,13 +361,29 @@ namespace Cepums {
         }
         case 0x30: // XOR: 8-bit from register to register/memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$XORregisterToRegisterByte(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, 0, displacementLowByte, displacementHighByte);
+
+            return ins$XORregisterToMemory(memoryManager, effectiveAddress, getRegisterValueFromREG8(regBits));
         }
         case 0x31: // XOR: 16-bit from register to register/memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$XORregisterToRegisterWord(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, 1, displacementLowByte, displacementHighByte);
+
+            return ins$XORregisterToMemory(memoryManager, effectiveAddress, getRegisterFromREG16(regBits));
         }
         case 0x32: // XOR: 8-bit from register/memory to register
         {
@@ -1442,6 +1458,20 @@ namespace Cepums {
         TODO();
     }
 
+    void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t sourceByte)
+    {
+        DC_CORE_WARN("ins$ADD: 8-bit register to memory");
+        memoryManager.writeByte(m_dataSegment, effectiveAddress, sourceByte);
+        TODO(); // Actually add the things?
+    }
+
+    void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t sourceWord)
+    {
+        DC_CORE_WARN("ins$ADD: 16-bit register to memory");
+        memoryManager.writeWord(m_dataSegment, effectiveAddress, sourceWord);
+        TODO();
+    }
+
     void Processor::ins$ADDregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
     {
         DC_CORE_WARN("ins$ADD: 8-bit register to register");
@@ -1458,18 +1488,6 @@ namespace Cepums {
         getRegisterFromREG16(destREG) = operand + operand2;
         // TODO: verify this result please
         TODO(); 
-    }
-
-    void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t sourceByte)
-    {
-        DC_CORE_WARN("ins$ADD: 8-bit register to memory");
-        memoryManager.writeByte(m_dataSegment, effectiveAddress, sourceByte);
-    }
-
-    void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t sourceWord)
-    {
-        DC_CORE_WARN("ins$ADD: 16-bit register to memory");
-        memoryManager.writeWord(m_dataSegment, effectiveAddress, sourceWord);
     }
 
     void Processor::ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer)
@@ -1560,6 +1578,36 @@ namespace Cepums {
         }
     }
 
+    void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t sourceByte)
+    {
+        DC_CORE_WARN("ins$XOR: XOR-ing 8-bit register to memory");
+        auto original = memoryManager.readByte(m_dataSegment, effectiveAddress);
+        memoryManager.writeByte(m_dataSegment, effectiveAddress, original ^ sourceByte);
+    }
+
+    void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t sourceWord)
+    {
+        DC_CORE_WARN("ins$XOR: XOR-ing 16-bit register to memory");
+        auto original = memoryManager.readWord(m_dataSegment, effectiveAddress);
+        memoryManager.writeWord(m_dataSegment, effectiveAddress, original ^ sourceWord);
+    }
+
+    void Processor::ins$XORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
+    {
+        DC_CORE_WARN("ins$XOR: 8-bit register to register");
+        auto operand = getRegisterValueFromREG8(sourceREG);
+        auto operand2 = getRegisterValueFromREG8(destREG);
+        updateRegisterFromREG8(destREG, operand ^ operand2);
+    }
+
+    void Processor::ins$XORregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
+    {
+        DC_CORE_WARN("ins$XOR: 16-bit register to register");
+        auto operand = getRegisterFromREG16(sourceREG);
+        auto operand2 = getRegisterFromREG16(destREG);
+        updateRegisterFromREG16(destREG, operand ^ operand2);
+    }
+
     void Processor::updateRegisterFromREG8(uint8_t REG, uint8_t data)
     {
         switch (REG)
@@ -1587,6 +1635,49 @@ namespace Cepums {
 
         case 0x7:
             return BH(data);
+
+        default:
+            DC_CORE_ERROR("Malformed REG bits : 0b{0:b}", REG);
+            VERIFY_NOT_REACHED();
+            return;
+        }
+    }
+
+    void Processor::updateRegisterFromREG16(uint8_t REG, uint16_t data)
+    {
+        switch (REG)
+        {
+        case 0x0:
+            AX() = data;
+            return;
+
+        case 0x1:
+            CX() = data;
+            return;
+
+        case 0x2:
+            DX() = data;
+            return;
+
+        case 0x3:
+            BX() = data;
+            return;
+
+        case 0x4:
+            SP() = data;
+            return;
+
+        case 0x5:
+            BP() = data;
+            return;
+
+        case 0x6:
+            SI() = data;
+            return;
+
+        case 0x7:
+            DI() = data;
+            return;
 
         default:
             DC_CORE_ERROR("Malformed REG bits : 0b{0:b}", REG);

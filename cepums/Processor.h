@@ -59,10 +59,10 @@ namespace Cepums {
         void ins$LOCK();
         void ins$SEGMENT(); // ??
 
-        void ins$ADDregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
-        void ins$ADDregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
         void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t sourceByte);
         void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t sourceWord);
+        void ins$ADDregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
+        void ins$ADDregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
         void ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer);
 
@@ -71,6 +71,11 @@ namespace Cepums {
         void ins$MOVimmediateToRegisterWord(uint16_t& reg, uint16_t value);
         void ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t effectiveAddress);
         void ins$MOVregisterToSegmentRegisterWord(uint8_t srBits, uint16_t value);
+
+        void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t sourceByte);
+        void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t sourceWord);
+        void ins$XORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
+        void ins$XORregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
         uint16_t DS() { return m_dataSegment; }
         uint16_t CS() { return m_codeSegment; }
@@ -111,6 +116,7 @@ namespace Cepums {
         uint16_t& IP() { return m_instructionPointer; }
 
         void updateRegisterFromREG8(uint8_t REG, uint8_t data);
+        void updateRegisterFromREG16(uint8_t REG, uint16_t data);
         uint8_t getRegisterValueFromREG8(uint8_t REG);
         uint16_t& getRegisterFromREG16(uint8_t REG);
         uint16_t getEffectiveAddressFromBits(uint8_t rmBits, uint8_t modBits, uint8_t isWord, uint8_t displacementLow, uint8_t displacementHigh);
