@@ -14,6 +14,9 @@ builddir/
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.users
+# Keep copyrighted BIOS out of here pls :)
+*.BIN
+*.bin
 
 # Linux: Makefiles :)
 Makefile
