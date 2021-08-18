@@ -4,22 +4,22 @@
 #define KIBIBYTE 1024
 #define MEBIBYTE 1048576
 
-
 namespace Cepums {
 
     MemoryManager::MemoryManager()
     {
+        m_RAM.reserve(640 * KIBIBYTE);
     }
 
     uint8_t MemoryManager::readByte(uint16_t segment, uint16_t offset)
     {
+        uint32_t physical = addresstoPhysical(segment, offset);
 
-        if (offset == 0x0)
+        // Is this in RAM (lower 640k?)
+        if (physical < 0xA0000)
         {
-            return 0xB8;
+            return m_RAM.at(physical);
         }
-        return 0x00;
-        auto physical = addresstoPhysical(segment, offset);
 
         // Check if it is inbounds
         if (physical > MEBIBYTE)
@@ -29,32 +29,56 @@ namespace Cepums {
         }
 
         TODO();
-        return uint8_t();
+        return 0;
     }
 
     void MemoryManager::writeByte(uint16_t segment, uint16_t offset, uint8_t value)
     {
+        uint32_t physical = addresstoPhysical(segment, offset);
+
+        // Is this in RAM (lower 640k?)
+        if (physical < 0xA0000)
+        {
+            m_RAM.at(physical) = value;
+            return;
+        }
+
         TODO();
     }
 
     uint16_t MemoryManager::readWord(uint16_t segment, uint16_t offset)
     {
-        switch (offset)
+        uint32_t physical = addresstoPhysical(segment, offset);
+
+        // Is this in RAM (lower 640k?)
+        if (physical < 0xA0000)
         {
-        case 0x1:
-            return 0xEF;
-        //case 0x1:
-            //return 
-        default:
-            return 0x00;
+            // TODO: Maybe these are flipped
+            uint16_t result = (m_RAM.at(physical) << 8) | (uint16_t)m_RAM.at(++physical);
+            return m_RAM.at(physical);
         }
-        return 0xB5;
+
         TODO();
-        return uint16_t();
+        return 0;
     }
 
     void MemoryManager::writeWord(uint16_t segment, uint16_t offset, uint16_t value)
     {
+        uint32_t physical = addresstoPhysical(segment, offset);
+
+        // Split into two
+        uint8_t lower = value & 0x00FF;
+        uint8_t higher = (value >> 8) & 0x00FF;
+
+        // Is this in RAM (lower 640k?)
+        if (physical < 0xA0000)
+        {
+            // TODO: Maybe these are flipped
+            m_RAM.at(physical) = higher;
+            m_RAM.at(++physical) = lower;
+            return;
+        }
+
         TODO();
     }
 

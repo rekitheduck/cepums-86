@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utility>
+#include <vector>
 
 namespace Cepums {
 
@@ -17,5 +18,7 @@ namespace Cepums {
 
         uint32_t addresstoPhysical(const uint16_t& segment, const uint16_t& offset);
         std::pair<uint16_t, uint16_t> addressToLogical(const uint32_t& physicalAddress);
+    private:
+        std::vector<uint8_t> m_RAM;
     };
 }
