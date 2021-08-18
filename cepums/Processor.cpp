@@ -28,10 +28,9 @@ namespace Cepums {
         }
 
         DC_CORE_INFO("===== NEW CYCLE =====");
-        DC_CORE_TRACE(" AX: 0x{0:x}", m_AX);
-        DC_CORE_TRACE(" BX: 0x{0:x}", m_BX);
-        DC_CORE_TRACE(" CX: 0x{0:x}", m_CX);
-        DC_CORE_TRACE(" DX: 0x{0:x}", m_DX);
+        DC_CORE_TRACE(" AX: 0x{0:x}   BX: 0x{1:x}   CX: 0x{2:x}   DX: 0x{3:x}", AX(), BX(), CX(), DX());
+        DC_CORE_TRACE(" DS: 0x{0:x}   CS: 0x{1:x}   SS: 0x{2:x}   ES: 0x{3:x}", DS(), CS(), SS(), ES());
+        DC_CORE_TRACE(" IP: 0x{0:x}", IP());
 
         uint8_t hopefully_an_instruction = memoryManager.readByte(m_codeSegment, m_instructionPointer);
         m_instructionPointer++;
