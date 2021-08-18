@@ -18,10 +18,11 @@
 #define LOAD_NEXT_INSTRUCTION_BYTE(mm, byte) uint8_t byte = mm.readByte(m_codeSegment, m_instructionPointer); m_instructionPointer++
 #define LOAD_NEXT_INSTRUCTION_WORD(mm, word) uint16_t word = mm.readWord(m_codeSegment, m_instructionPointer); m_instructionPointer +=2;
 #define PARSE_MOD_REG_RM_BITS(byte, mod, reg, rm) uint8_t rm = byte; RMBITS(0, rm); uint8_t reg = byte; REGBITS(3, reg); uint8_t mod = byte; MODBITS(6, mod)
-#define LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(mm, modBits, displLow, displHigh) uint8_t displLow = 0; uint8_t displHigh = 0; loadDisplacementsFromInstructionStream(mm, modBits, displLow, displHigh)
+#define LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(mm, modBits, rmBits, displLow, displHigh) uint8_t displLow = 0; uint8_t displHigh = 0; loadDisplacementsFromInstructionStream(mm, modBits, rmBits, displLow, displHigh)
 #define CALCULATE_EFFECTIVE_ADDRESS(ea, rmBits, modBits, isWord, displLow, displHigh) uint16_t ea = getEffectiveAddressFromBits(rmBits, modBits, isWord, displLow, displHigh)
 
 #define IS_IN_REGISTER_MODE(byte) byte == 0b11
+#define IS_IN_MEMORY_BODE_NO_DISPLACEMENT(byte) byte == 0b00
 
 namespace Cepums {
 
@@ -54,6 +55,7 @@ namespace Cepums {
 
         void ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer);
 
+        void ins$MOVimmediateToMemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
         void ins$MOVimmediateToRegisterByte(uint8_t& reg, uint8_t value);
         void ins$MOVimmediateToRegisterWord(uint16_t& reg, uint16_t value);
         void ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t effectiveAddress);
@@ -102,8 +104,7 @@ namespace Cepums {
         uint16_t& getRegisterFromREG16(uint8_t REG);
         uint16_t getEffectiveAddressFromBits(uint8_t rmBits, uint8_t modBits, uint8_t isWord, uint8_t displacementLow, uint8_t displacementHigh);
 
-        void loadDisplacementsFromInstructionStream(MemoryManager& memoryManager, uint8_t modBits, uint8_t& displacementLowByte, uint8_t& displacementHighByte);
-
+        void loadDisplacementsFromInstructionStream(MemoryManager& memoryManager, uint8_t modBits, uint8_t rmBits, uint8_t& displacementLowByte, uint8_t& displacementHighByte);
     private:
         int m_cyclesToWait = 0;
 

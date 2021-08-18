@@ -108,7 +108,7 @@ namespace Cepums {
             if (IS_IN_REGISTER_MODE(modBits))
                 return ins$ADDregisterToRegisterByte(rmBits, regBits);
 
-            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, displacementLowByte, displacementHighByte);
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, 0, displacementLowByte, displacementHighByte);
 
             return ins$ADDregisterToMemory(memoryManager, effectiveAddress, getRegisterValueFromREG8(regBits));
@@ -121,7 +121,7 @@ namespace Cepums {
             if (IS_IN_REGISTER_MODE(modBits))
                 return ins$ADDregisterToRegisterWord(rmBits, regBits);
 
-            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, displacementLowByte, displacementHighByte);
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits,  displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, 1, displacementLowByte, displacementHighByte);
 
             return ins$ADDregisterToMemory(memoryManager, effectiveAddress, getRegisterFromREG16(regBits));
@@ -766,7 +766,7 @@ namespace Cepums {
             if (IS_IN_REGISTER_MODE(modBits))
                 return ins$MOVregisterToSegmentRegisterWord(srBits, getRegisterFromREG16(rmBits));
 
-            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, displacementLowByte, displacementHighByte);
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, 0, displacementLowByte, displacementHighByte);
 
             return ins$MOVmemoryToSegmentRegisterWord(memoryManager, srBits, effectiveAddress);
@@ -1046,8 +1046,23 @@ namespace Cepums {
         }
         case 0xC7: // MOV/unused/unused/unused/unused/unused/unused/unused/unused/unused: 16-bit from immediate to memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, mustBeZeroBits, rmBits);
+
+            // Instruction is only defined when these 3 bits are 0
+            if (mustBeZeroBits != 0)
+            {
+                ILLEGAL_INSTRUCTION();
+                return;
+            }
+
+            // We can go through this as no displacements will be loaded if we're in memory mode with no displacement
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, 1, displacementLowByte, displacementHighByte);
+
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
+
+            return ins$MOVimmediateToMemoryWord(memoryManager, effectiveAddress, immediate);
         }
         case 0xCA: // RET: Return intersegment adding immediate to SP
         {
@@ -1388,7 +1403,7 @@ namespace Cepums {
         auto operand = getRegisterFromREG16(sourceREG);
         auto operand2 = getRegisterValueFromREG8(destREG);
         getRegisterFromREG16(destREG) = operand + operand2;
-        // TODO: very this result please
+        // TODO: verify this result please
         TODO(); 
     }
 
@@ -1414,6 +1429,12 @@ namespace Cepums {
 
         m_codeSegment = newCodeSegment;
         m_instructionPointer = newInstructionPointer;
+    }
+
+    void Processor::ins$MOVimmediateToMemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
+    {
+        DC_CORE_WARN("ins$MOV: 16-bit immediate to memory");
+        memoryManager.writeWord(m_dataSegment, effectiveAddress, immediate);
     }
 
     void Processor::ins$MOVimmediateToRegisterByte(uint8_t& reg, uint8_t value)
@@ -1655,9 +1676,14 @@ namespace Cepums {
             case 0b101:
                 return m_destinationIndex;
 
+                // We use the "displacement" directly as it acts like a direct address at this point
             case 0b110:
-                TODO();
-                return 0;
+            {
+                uint16_t address = (uint16_t)displacementHigh << 8;
+                address |= displacementLow;
+
+                return address;
+            }
 
             case 0b111:
                 return m_BX;
@@ -1747,7 +1773,7 @@ namespace Cepums {
         }
     }
 
-    void Processor::loadDisplacementsFromInstructionStream(MemoryManager & memoryManager, uint8_t modBits, uint8_t & displacementLowByte, uint8_t & displacementHighByte)
+    void Processor::loadDisplacementsFromInstructionStream(MemoryManager & memoryManager, uint8_t modBits, uint8_t rmBits, uint8_t & displacementLowByte, uint8_t & displacementHighByte)
     {
         // Do we have 8- or 16-bit displacement
         if (modBits == 0b01)
@@ -1764,7 +1790,18 @@ namespace Cepums {
         }
         else
         {
-            DC_CORE_WARN("Useless loadDisplacementsFromInstructionStream call - modBits = 0b{0:b}", modBits);
+            // Perhaps we do have a 16-bit "displacement" (target address actually) after all
+            if (rmBits == 0b110)
+            {
+                displacementLowByte = memoryManager.readByte(m_codeSegment, m_instructionPointer);
+                m_instructionPointer++;
+                displacementHighByte = memoryManager.readByte(m_codeSegment, m_instructionPointer);
+                m_instructionPointer++;
+            }
+            else
+            {
+                DC_CORE_WARN("Useless loadDisplacementsFromInstructionStream call - modBits = 0b{0:b}", modBits);
+            }
         }
     }
 }
