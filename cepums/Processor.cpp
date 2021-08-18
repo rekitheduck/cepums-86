@@ -27,7 +27,7 @@ namespace Cepums {
             return;
         }
 
-        DC_CORE_INFO("===== NEW CYCLE =====");
+        DC_CORE_INFO("{0}: ===== NEW CYCLE =====", m_currentCycleCounter++);
         DC_CORE_TRACE(" AX: 0x{0:x}   BX: 0x{1:x}   CX: 0x{2:x}   DX: 0x{3:x}", AX(), BX(), CX(), DX());
         DC_CORE_TRACE(" DS: 0x{0:x}   CS: 0x{1:x}   SS: 0x{2:x}   ES: 0x{3:x}", DS(), CS(), SS(), ES());
         DC_CORE_TRACE(" IP: 0x{0:x}", IP());
@@ -1217,7 +1217,10 @@ namespace Cepums {
         }
         case 0xE6: // OUT: 8-bit immediate and AL
         {
-            TODO();
+            //TODO();
+            DC_CORE_ERROR("ins$OUT is unimplemented so we'll skip over :(");
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, data);
+
             return;
         }
         case 0xE7: // OUT: 8-bit immediate and AX ??

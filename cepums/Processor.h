@@ -118,6 +118,7 @@ namespace Cepums {
         void loadDisplacementsFromInstructionStream(MemoryManager& memoryManager, uint8_t modBits, uint8_t rmBits, uint8_t& displacementLowByte, uint8_t& displacementHighByte);
     private:
         int m_cyclesToWait = 0;
+        int m_currentCycleCounter = 0;
 
         // TODO: 6-byte instruction queue
 
