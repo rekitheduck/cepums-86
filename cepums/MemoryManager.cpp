@@ -8,7 +8,37 @@ namespace Cepums {
 
     MemoryManager::MemoryManager()
     {
-        m_RAM.reserve(640 * KIBIBYTE);
+        m_RAM.resize(640 * KIBIBYTE);
+        m_BIOS_F0000.resize(32 * KIBIBYTE);
+        m_BIOS_F8000.resize(32 * KIBIBYTE);
+
+        // Load BIOS
+        std::ifstream firstBIOSbinary;
+        std::ifstream secondBIOSbinary;
+
+        // Read 1st binary
+        firstBIOSbinary.open("BIOS_5160_F000.BIN", std::ios::binary);
+        if (firstBIOSbinary.is_open())
+        {
+            firstBIOSbinary.read((char*)m_BIOS_F0000.data(), 32 * KIBIBYTE);
+            firstBIOSbinary.close();
+        }
+        else
+        {
+            DC_CORE_CRITICAL("Error reading first BIOS binary");
+        }
+
+        // Read 2nd binary
+        secondBIOSbinary.open("BIOS_5160_F800.BIN", std::ios::binary);
+        if (secondBIOSbinary.is_open())
+        {
+            secondBIOSbinary.read((char*)m_BIOS_F8000.data(), 32 * KIBIBYTE);
+            secondBIOSbinary.close();
+        }
+        else
+        {
+            DC_CORE_CRITICAL("Error reading second BIOS binary");
+        }
     }
 
     uint8_t MemoryManager::readByte(uint16_t segment, uint16_t offset)
@@ -17,9 +47,31 @@ namespace Cepums {
 
         // Is this in RAM (lower 640k?)
         if (physical < 0xA0000)
-        {
             return m_RAM.at(physical);
+
+        if (physical < 0xF0000)
+        {
+            TODO();
         }
+
+        // First BIOS binary
+        if (physical < 0xF8000)
+            return m_BIOS_F0000.at(physical - 0xF0000);
+
+        // Second BIOS binary
+        if (physical < 0x100000)
+        {
+            if (physical - 0xF8000 > 32 * KIBIBYTE)
+            {
+                TODO();
+                return 0;
+            }
+            return m_BIOS_F8000.at(physical - 0xF8000);
+        }
+
+        // If we got here, we're probably out of bounds
+        DC_CORE_CRITICAL("Accessing memory out of bounds 0x{0:x}", physical);
+        TODO();
 
         // Check if it is inbounds
         if (physical > MEBIBYTE)
@@ -28,7 +80,6 @@ namespace Cepums {
             return 0;
         }
 
-        TODO();
         return 0;
     }
 
@@ -54,11 +105,26 @@ namespace Cepums {
         if (physical < 0xA0000)
         {
             // TODO: Maybe these are flipped
-            uint16_t result = (m_RAM.at(physical) << 8) | (uint16_t)m_RAM.at(++physical);
-            return m_RAM.at(physical);
+            return (m_RAM.at(physical) << 8) | (uint16_t)m_RAM.at(++physical);
         }
 
+        if (physical < 0xF0000)
+        {
+            TODO();
+        }
+
+        // First BIOS binary
+        if (physical < 0xF8000)
+            return (m_BIOS_F0000.at(physical - 0xF0000) << 8) | (uint16_t)m_BIOS_F0000.at(++physical - 0xF0000);
+
+        // Second BIOS binary
+        if (physical < 0x100000)
+            return (m_BIOS_F8000.at(physical - 0xF8000) << 8) | (uint16_t)m_BIOS_F8000.at(++physical - 0xF8000);
+
+        // If we got here, we're probably out of bounds
+        DC_CORE_CRITICAL("Accessing memory out of bounds 0x{0:x}", physical);
         TODO();
+
         return 0;
     }
 

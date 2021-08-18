@@ -20,5 +20,7 @@ namespace Cepums {
         std::pair<uint16_t, uint16_t> addressToLogical(const uint32_t& physicalAddress);
     private:
         std::vector<uint8_t> m_RAM;
+        std::vector<uint8_t> m_BIOS_F0000;
+        std::vector<uint8_t> m_BIOS_F8000;
     };
 }
