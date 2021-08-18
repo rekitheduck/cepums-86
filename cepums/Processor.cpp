@@ -937,48 +937,71 @@ namespace Cepums {
         }
         case 0xB0: // MOV: 8-bit from immediate to AL
         {
-            TODO();
+            DC_CORE_WARN("$MOV: 8-bit immediate to AL");
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
+            AL(immediate);
+
             return;
         }
         case 0xB1: // MOV: 8-bit from immediate to CL
         {
-            TODO();
+            DC_CORE_WARN("$MOV: 8-bit immediate to CL");
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
+            CL(immediate);
+
             return;
         }
         case 0xB2: // MOV: 8-bit from immediate to DL
         {
-            TODO();
+            DC_CORE_WARN("$MOV: 8-bit immediate to DL");
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
+            DL(immediate);
+
             return;
         }
         case 0xB3: // MOV: 8-bit from immediate to BL
         {
-            TODO();
+            DC_CORE_WARN("$MOV: 8-bit immediate to BL");
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
+            BL(immediate);
+
             return;
         }
         case 0xB4: // MOV: 8-bit from immediate to AH
         {
-            TODO();
+            DC_CORE_WARN("$MOV: 8-bit immediate to AH");
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
+            AH(immediate);
+
             return;
         }
         case 0xB5: // MOV: 8-bit from immediate to CH
         {
-            TODO();
+            DC_CORE_WARN("$MOV: 8-bit immediate to CH");
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
+            CH(immediate);
+
             return;
         }
         case 0xB6: // MOV: 8-bit from immediate to DH
         {
-            TODO();
+            DC_CORE_WARN("$MOV: 8-bit immediate to DH");
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
+            DH(immediate);
+
             return;
         }
         case 0xB7: // MOV: 8-bit from immediate to BH
         {
-            TODO();
+            DC_CORE_WARN("$MOV: 8-bit immediate to BH");
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
+            BH(immediate);
+
             return;
         }
         case 0xB8: // MOV: 16-bit from immediate to AX
         {
             DC_CORE_WARN("$MOV: 16-bit immediate to AX");
-
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
             AX() = immediate;
 
@@ -986,37 +1009,58 @@ namespace Cepums {
         }
         case 0xB9: // MOV: 16-bit from immediate to CX
         {
-            TODO();
+            DC_CORE_WARN("$MOV: 16-bit immediate to CX");
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
+            CX() = immediate;
+
             return;
         }
         case 0xBA: // MOV: 16-bit from immediate to DX
         {
-            TODO();
+            DC_CORE_WARN("$MOV: 16-bit immediate to DX");
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
+            DX() = immediate;
+
             return;
         }
         case 0xBB: // MOV: 16-bit from immediate to BX
         {
-            TODO();
+            DC_CORE_WARN("$MOV: 16-bit immediate to BX");
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
+            BX() = immediate;
+
             return;
         }
         case 0xBC: // MOV: 16-bit from immediate to SP
         {
-            TODO();
+            DC_CORE_WARN("$MOV: 16-bit immediate to SP");
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
+            SP() = immediate;
+
             return;
         }
         case 0xBD: // MOV: 16-bit from immediate to BP
         {
-            TODO();
+            DC_CORE_WARN("$MOV: 16-bit immediate to BP");
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
+            BP() = immediate;
+
             return;
         }
         case 0xBE: // MOV: 16-bit from immediate to SI
         {
-            TODO();
+            DC_CORE_WARN("$MOV: 16-bit immediate to SI");
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
+            SI() = immediate;
+
             return;
         }
         case 0xBF: // MOV: 16-bit from immediate to DI
         {
-            TODO();
+            DC_CORE_WARN("$MOV: 16-bit immediate to DI");
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
+            DI() = immediate;
+
             return;
         }
         case 0xC2: // RET: Return within segment adding immediate to SP
