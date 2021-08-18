@@ -29,7 +29,8 @@ namespace Cepums {
         }
 
         // Read 2nd binary
-        secondBIOSbinary.open("BIOS_5160_F800.BIN", std::ios::binary);
+        //secondBIOSbinary.open("BIOS_5160_F800.BIN", std::ios::binary);
+        secondBIOSbinary.open("bios.bin", std::ios::binary); // Load xi_8088 bios instead
         if (secondBIOSbinary.is_open())
         {
             secondBIOSbinary.read((char*)m_BIOS_F8000.data(), 32 * KIBIBYTE);
