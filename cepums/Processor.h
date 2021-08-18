@@ -25,6 +25,9 @@
 #define IS_IN_REGISTER_MODE(byte) byte == 0b11
 #define IS_IN_MEMORY_BODE_NO_DISPLACEMENT(byte) byte == 0b00
 
+#define CLEAR_FLAG_BIT(flags, flag_bit) flags &= ~(BIT(flag_bit))
+#define SET_FLAG_BIT(flags, flag_bit) flags |= BIT(flag_bit)
+
 // Processor flags
 #define CARRY_FLAG 0
 #define PARITY_FLAG 2
@@ -124,6 +127,8 @@ namespace Cepums {
         uint16_t getEffectiveAddressFromBits(uint8_t rmBits, uint8_t modBits, uint8_t isWord, uint8_t displacementLow, uint8_t displacementHigh);
 
         void loadDisplacementsFromInstructionStream(MemoryManager& memoryManager, uint8_t modBits, uint8_t rmBits, uint8_t& displacementLowByte, uint8_t& displacementHighByte);
+        void setFlagsAfterLogicalOperation(uint8_t byte);
+        void setFlagsAfterLogicalOperation(uint16_t word);
     private:
         int m_cyclesToWait = 0;
         int m_currentCycleCounter = 0;

@@ -22,6 +22,9 @@
 #define BIT(x) (1 << x)
 #define IS_BIT_SET(number, bit) ((number >> bit) & 1U)
 #define IS_BIT_NOT_SET(number, bit) !(IS_BIT_SET(number, bit))
+#define DO_PARITY_BYTE(byte) byte ^= byte >> 4; byte ^= byte >> 2; byte ^= byte >> 1
+#define DO_PARITY_WORD(byte) byte ^= byte >> 8; byte ^= byte >> 4; byte ^= byte >> 2; byte ^= byte >> 1
+#define IS_PARITY_EVEN(byteOrWord) (~byteOrWord) & 1
 
 namespace Cepums {
 

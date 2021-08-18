@@ -1453,7 +1453,7 @@ namespace Cepums {
     void Processor::ins$CLC()
     {
         DC_CORE_WARN("ins$CLC: Clear carry flag");
-        m_flags &= ~(BIT(CARRY_FLAG));
+        CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
     }
 
     void Processor::ins$CMC()
@@ -1464,31 +1464,32 @@ namespace Cepums {
     void Processor::ins$STC()
     {
         DC_CORE_WARN("ins$STC: Set carry flag");
-        m_flags |= BIT(CARRY_FLAG);
+        SET_FLAG_BIT(m_flags, CARRY_FLAG);
     }
 
     void Processor::ins$CLD()
     {
         DC_CORE_WARN("ins$CLD: Clear direction flag");
-        m_flags &= ~(BIT(DIRECTION_fLAG));
+        CLEAR_FLAG_BIT(m_flags, DIRECTION_fLAG);
     }
 
     void Processor::ins$STD()
     {
         DC_CORE_WARN("ins$STD: Set direction flag");
-        m_flags |= BIT(DIRECTION_fLAG);
+        SET_FLAG_BIT(m_flags, DIRECTION_fLAG);
+
     }
 
     void Processor::ins$CLI()
     {
         DC_CORE_WARN("ins$CLI: Disable interrupts");
-        m_flags &= ~(BIT(INTERRUPT_ENABLE_FLAG));
+        CLEAR_FLAG_BIT(m_flags, INTERRUPT_ENABLE_FLAG);
     }
 
     void Processor::ins$STI()
     {
         DC_CORE_WARN("ins$STI: Enabling interrupts");
-        m_flags |= BIT(INTERRUPT_ENABLE_FLAG);
+        SET_FLAG_BIT(m_flags, INTERRUPT_ENABLE_FLAG);
     }
 
     void Processor::ins$WAIT()
@@ -1636,14 +1637,18 @@ namespace Cepums {
     {
         DC_CORE_WARN("ins$XOR: XOR-ing 8-bit register to memory");
         auto original = memoryManager.readByte(m_dataSegment, effectiveAddress);
-        memoryManager.writeByte(m_dataSegment, effectiveAddress, original ^ sourceByte);
+        uint8_t result = original ^ sourceByte;
+        memoryManager.writeByte(m_dataSegment, effectiveAddress, result);
+        setFlagsAfterLogicalOperation(result);
     }
 
     void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t sourceWord)
     {
         DC_CORE_WARN("ins$XOR: XOR-ing 16-bit register to memory");
         auto original = memoryManager.readWord(m_dataSegment, effectiveAddress);
-        memoryManager.writeWord(m_dataSegment, effectiveAddress, original ^ sourceWord);
+        uint16_t result = original ^ sourceWord;
+        memoryManager.writeWord(m_dataSegment, effectiveAddress, result);
+        setFlagsAfterLogicalOperation(result);
     }
 
     void Processor::ins$XORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
@@ -1651,7 +1656,9 @@ namespace Cepums {
         DC_CORE_WARN("ins$XOR: 8-bit register to register");
         auto operand = getRegisterValueFromREG8(sourceREG);
         auto operand2 = getRegisterValueFromREG8(destREG);
-        updateRegisterFromREG8(destREG, operand ^ operand2);
+        uint8_t result = operand ^ operand2;
+        updateRegisterFromREG8(destREG, result);
+        setFlagsAfterLogicalOperation(result);
     }
 
     void Processor::ins$XORregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
@@ -1659,7 +1666,9 @@ namespace Cepums {
         DC_CORE_WARN("ins$XOR: 16-bit register to register");
         auto operand = getRegisterFromREG16(sourceREG);
         auto operand2 = getRegisterFromREG16(destREG);
-        updateRegisterFromREG16(destREG, operand ^ operand2);
+        uint8_t result = operand ^ operand2;
+        updateRegisterFromREG16(destREG, result);
+        setFlagsAfterLogicalOperation(result);
     }
 
     void Processor::updateRegisterFromREG8(uint8_t REG, uint8_t data)
@@ -2001,5 +2010,49 @@ namespace Cepums {
                 DC_CORE_WARN("Useless loadDisplacementsFromInstructionStream call - modBits = 0b{0:b}", modBits);
             }
         }
+    }
+
+    void Processor::setFlagsAfterLogicalOperation(uint8_t byte)
+    {
+        CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+
+        if (IS_BIT_SET(byte, 7))
+            SET_FLAG_BIT(m_flags, SIGN_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
+
+        if (byte == 0)
+            SET_FLAG_BIT(m_flags, ZERO_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
+
+        DO_PARITY_BYTE(byte);
+        if (IS_PARITY_EVEN(byte))
+            SET_FLAG_BIT(m_flags, PARITY_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
+    }
+
+    void Processor::setFlagsAfterLogicalOperation(uint16_t word)
+    {
+        CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+
+        if (IS_BIT_SET(word, 15))
+            SET_FLAG_BIT(m_flags, SIGN_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
+
+        if (word == 0)
+            SET_FLAG_BIT(m_flags, ZERO_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
+
+        DO_PARITY_WORD(word);
+        if (IS_PARITY_EVEN(word))
+            SET_FLAG_BIT(m_flags, PARITY_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
     }
 }
