@@ -2207,7 +2207,7 @@ namespace Cepums {
 
     void Processor::ins$SALregisterOnceByte(uint8_t rmBits)
     {
-        DC_CORE_WARN("ins$SAL: 8-bit register");
+        DC_CORE_WARN("ins$SAL: {0},1", getRegisterNameFromREG8(rmBits));
         uint8_t registerValue = getRegisterValueFromREG8(rmBits);
         uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 7);
         bool setCarry;
@@ -2233,7 +2233,7 @@ namespace Cepums {
 
     void Processor::ins$SALregisterOnceWord(uint8_t rmBits)
     {
-        DC_CORE_WARN("ins$SAL: 16-bit register");
+        DC_CORE_WARN("ins$SAL: {0},1", getRegisterNameFromREG16(rmBits));
         uint16_t registerValue = getRegisterFromREG16(rmBits);
         uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 15);
         bool setCarry;
