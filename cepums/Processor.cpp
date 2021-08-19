@@ -477,8 +477,7 @@ namespace Cepums {
         }
         case 0x40: // INC: AX
         {
-            TODO();
-            return;
+            return ins$INC(IS_WORD, REGISTER_AX);
         }
         case 0x41: // INC: CX
         {
@@ -1868,6 +1867,68 @@ namespace Cepums {
         setFlagsAfterArithmeticOperation(result);
     }
 
+    void Processor::ins$INC(uint8_t isWordBit, uint8_t REG)
+    {
+        if (isWordBit)
+        {
+            DC_CORE_WARN("ins$INC: INC {0}", getRegisterNameFromREG16(REG));
+            uint16_t currentValue = getRegisterFromREG16(REG);
+            uint16_t newValue = currentValue + 1;
+            updateRegisterFromREG16(REG, newValue);
+
+            // We shouldn't touch the CARRY_FLAG
+            if (currentValue >= SHRT_MAX)
+                SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+            if (IS_BIT_SET(currentValue, 15))
+                SET_FLAG_BIT(m_flags, SIGN_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
+
+            if (currentValue == 0)
+                SET_FLAG_BIT(m_flags, ZERO_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
+
+            DO_PARITY_BYTE(currentValue);
+            if (IS_PARITY_EVEN(currentValue))
+                SET_FLAG_BIT(m_flags, PARITY_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
+        }
+        else
+        {
+            DC_CORE_WARN("ins$INC: INC {0}", getRegisterNameFromREG8(REG));
+            uint8_t currentValue = getRegisterValueFromREG8(REG);
+            uint8_t newValue = currentValue + 1;
+            updateRegisterFromREG8(REG, newValue);
+
+            // We shouldn't touch the CARRY_FLAG
+            if (currentValue >= SCHAR_MAX)
+                SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+            if (IS_BIT_SET(currentValue, 7))
+                SET_FLAG_BIT(m_flags, SIGN_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
+
+            if (currentValue == 0)
+                SET_FLAG_BIT(m_flags, ZERO_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
+
+            DO_PARITY_BYTE(currentValue);
+            if (IS_PARITY_EVEN(currentValue))
+                SET_FLAG_BIT(m_flags, PARITY_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
+        }
+    }
+
     void Processor::ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer)
     {
         DC_CORE_WARN("ins$JMP: Jumping to {0:x}:{1:x}", newCodeSegment, newInstructionPointer);
@@ -2591,5 +2652,73 @@ namespace Cepums {
             SET_FLAG_BIT(m_flags, PARITY_FLAG);
         else
             CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
+    }
+    const char* Processor::getRegisterNameFromREG8(uint8_t REG)
+    {
+        switch (REG)
+        {
+        case 0x0:
+            return REGISTER_AL_NAME;
+
+        case 0x1:
+            return REGISTER_CL_NAME;
+
+        case 0x2:
+            return REGISTER_DL_NAME;
+
+        case 0x3:
+            return REGISTER_BL_NAME;
+
+        case 0x4:
+            return REGISTER_AH_NAME;
+
+        case 0x5:
+            return REGISTER_CH_NAME;
+
+        case 0x6:
+            return REGISTER_DH_NAME;
+
+        case 0x7:
+            return REGISTER_BH_NAME;
+
+        default:
+            DC_CORE_ERROR("Malformed REG bits : 0b{0:b}", REG);
+            VERIFY_NOT_REACHED();
+            return "ERROR";
+        }
+    }
+    const char* Processor::getRegisterNameFromREG16(uint8_t REG)
+    {
+        switch (REG)
+        {
+        case 0x0:
+            return REGISTER_AX_NAME;
+
+        case 0x1:
+            return REGISTER_CX_NAME;
+
+        case 0x2:
+            return REGISTER_DX_NAME;
+
+        case 0x3:
+            return REGISTER_BX_NAME;
+
+        case 0x4:
+            return REGISTER_SP_NAME;
+
+        case 0x5:
+            return REGISTER_BP_NAME;
+
+        case 0x6:
+            return REGISTER_SI_NAME;
+
+        case 0x7:
+            return REGISTER_DI_NAME;
+
+        default:
+            DC_CORE_ERROR("Malformed REG bits : 0b{0:b}", REG);
+            VERIFY_NOT_REACHED();
+            return "ERROR";
+        }
     }
 }
