@@ -42,6 +42,25 @@
 #define DIRECTION_fLAG 10
 #define OVERFLOW_FLAG 11
 
+// Registers
+#define REGISTER_AL 0b000
+#define REGISTER_CL 0b001
+#define REGISTER_DL 0b010
+#define REGISTER_BL 0b011
+#define REGISTER_AH 0b100
+#define REGISTER_CH 0b101
+#define REGISTER_DH 0b110
+#define REGISTER_BH 0b111
+
+#define REGISTER_AX 0b000
+#define REGISTER_CX 0b001
+#define REGISTER_DX 0b010
+#define REGISTER_BX 0b011
+#define REGISTER_SP 0b100
+#define REGISTER_BP 0b101
+#define REGISTER_SI 0b110
+#define REGISTER_DI 0b111
+
 namespace Cepums {
 
     class Processor
@@ -68,8 +87,8 @@ namespace Cepums {
 
         void ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t immediate);
         void ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
-        void ins$ADDimmediateToRegisterByte(uint8_t destREG, uint8_t value);
-        void ins$ADDimmediateToRegisterWord(uint8_t destREG, uint16_t value);
+        void ins$ADDimmediateToRegister(uint8_t destREG, uint8_t value);
+        void ins$ADDimmediateToRegister(uint8_t destREG, uint16_t value);
         void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue);
         void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue);
         void ins$ADDregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
@@ -83,6 +102,15 @@ namespace Cepums {
         void ins$MOVimmediateToRegisterWord(uint8_t reg, uint16_t immediate);
         void ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t effectiveAddress);
         void ins$MOVregisterToSegmentRegisterWord(uint8_t srBits, uint16_t value);
+
+        void ins$SUBimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t immediate);
+        void ins$SUBimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
+        void ins$SUBimmediateToRegister(uint8_t destREG, uint8_t value);
+        void ins$SUBimmediateToRegister(uint8_t destREG, uint16_t value);
+        void ins$SUBregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue);
+        void ins$SUBregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue);
+        void ins$SUBregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
+        void ins$SUBregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
         void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue);
         void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue);
