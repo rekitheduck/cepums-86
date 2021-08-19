@@ -124,6 +124,36 @@ namespace Cepums {
         void ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t effectiveAddress);
         void ins$MOVregisterToSegmentRegisterWord(uint8_t srBits, uint16_t value);
 
+        void ins$RCLmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$RCLmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$RCLregisterOnceByte(uint8_t REG);
+        void ins$RCLregisterOnceWord(uint8_t REG);
+        void ins$RCRmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$RCRmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$RCRregisterOnceByte(uint8_t REG);
+        void ins$RCRregisterOnceWord(uint8_t REG);
+        void ins$ROLmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$ROLmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$ROLregisterOnceByte(uint8_t REG);
+        void ins$ROLregisterOnceWord(uint8_t REG);
+        void ins$RORmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$RORmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$RORregisterOnceByte(uint8_t REG);
+        void ins$RORregisterOnceWord(uint8_t REG);
+
+        void ins$SALmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$SALmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$SALregisterOnceByte(uint8_t rmBits);
+        void ins$SALregisterOnceWord(uint8_t rmBits);
+        void ins$SARmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$SARmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$SARregisterOnceByte(uint8_t rmBits);
+        void ins$SARregisterOnceWord(uint8_t rmBits);
+        void ins$SHRmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$SHRmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$SHRregisterOnceByte(uint8_t rmBits);
+        void ins$SHRregisterOnceWord(uint8_t rmBits);
+
         void ins$SUBimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t immediate);
         void ins$SUBimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
         void ins$SUBimmediateToRegister(uint8_t destREG, uint8_t value);

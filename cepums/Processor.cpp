@@ -386,7 +386,7 @@ namespace Cepums {
                 return ins$XORregisterToRegisterByte(rmBits, regBits);
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, 0, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
 
             return ins$XORregisterToMemory(memoryManager, effectiveAddress, getRegisterValueFromREG8(regBits));
         }
@@ -399,7 +399,7 @@ namespace Cepums {
                 return ins$XORregisterToRegisterWord(rmBits, regBits);
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, 1, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
 
             return ins$XORregisterToMemory(memoryManager, effectiveAddress, getRegisterFromREG16(regBits));
         }
@@ -949,7 +949,7 @@ namespace Cepums {
                 return ins$MOVregisterToSegmentRegisterWord(srBits, getRegisterFromREG16(rmBits));
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, 0, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
 
             return ins$MOVmemoryToSegmentRegisterWord(memoryManager, srBits, effectiveAddress);
         }
@@ -1322,13 +1322,105 @@ namespace Cepums {
         }
         case 0xD0: // ROL/ROR/RCL/RCR/(SAL/SHL)/SHR/unused/SAR: 8-bit shift-like register/memory by 1
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+            if (IS_IN_REGISTER_MODE(modBits))
+            {
+                switch (regBits)
+                {
+                case 0b000:
+                    return ins$ROLregisterOnceByte(rmBits);
+                case 0b001:
+                    return ins$RORregisterOnceByte(rmBits);
+                case 0b010:
+                    return ins$RCLregisterOnceByte(rmBits);
+                case 0b011:
+                    return ins$RCRregisterOnceByte(rmBits);
+                case 0b100:
+                    return ins$SALregisterOnceByte(rmBits);
+                case 0b101:
+                    return ins$SHRregisterOnceByte(rmBits);
+                case 0b111:
+                    return ins$SARregisterOnceByte(rmBits);
+                default:
+                    ILLEGAL_INSTRUCTION();
+                    return;
+                }
+            }
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+
+            switch (regBits)
+            {
+            case 0b000:
+                return ins$ROLmemoryOnceByte(memoryManager, effectiveAddress);
+            case 0b001:
+                return ins$RORmemoryOnceByte(memoryManager, effectiveAddress);
+            case 0b010:
+                return ins$RCLmemoryOnceByte(memoryManager, effectiveAddress);
+            case 0b011:
+                return ins$RCRmemoryOnceByte(memoryManager, effectiveAddress);
+            case 0b100:
+                return ins$SALmemoryOnceByte(memoryManager, effectiveAddress);
+            case 0b101:
+                return ins$SHRmemoryOnceByte(memoryManager, effectiveAddress);
+            case 0b111:
+                return ins$SARmemoryOnceByte(memoryManager, effectiveAddress);
+            default:
+                ILLEGAL_INSTRUCTION();
+                return;
+            }
         }
         case 0xD1: // ROL/ROR/RCL/RCR/(SAL/SHL)/SHR/unused/SAR: 16-bit shift-like register/memory by 1
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+            if (IS_IN_REGISTER_MODE(modBits))
+            {
+                switch (regBits)
+                {
+                case 0b000:
+                    return ins$ROLregisterOnceWord(rmBits);
+                case 0b001:
+                    return ins$RORregisterOnceWord(rmBits);
+                case 0b010:
+                    return ins$RCLregisterOnceWord(rmBits);
+                case 0b011:
+                    return ins$RCRregisterOnceWord(rmBits);
+                case 0b100:
+                    return ins$SALregisterOnceWord(rmBits);
+                case 0b101:
+                    return ins$SHRregisterOnceWord(rmBits);
+                case 0b111:
+                    return ins$SARregisterOnceWord(rmBits);
+                default:
+                    ILLEGAL_INSTRUCTION();
+                    return;
+                }
+            }
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+
+            switch (regBits)
+            {
+            case 0b000:
+                return ins$ROLmemoryOnceWord(memoryManager, effectiveAddress);
+            case 0b001:
+                return ins$RORmemoryOnceWord(memoryManager, effectiveAddress);
+            case 0b010:
+                return ins$RCLmemoryOnceWord(memoryManager, effectiveAddress);
+            case 0b011:
+                return ins$RCRmemoryOnceWord(memoryManager, effectiveAddress);
+            case 0b100:
+                return ins$SALmemoryOnceWord(memoryManager, effectiveAddress);
+            case 0b101:
+                return ins$SHRmemoryOnceWord(memoryManager, effectiveAddress);
+            case 0b111:
+                return ins$SARmemoryOnceWord(memoryManager, effectiveAddress);
+            default:
+                ILLEGAL_INSTRUCTION();
+                return;
+            }
         }
         case 0xD2: // ROL/ROR/RCL/RCR/(SAL/SHL)/SHR/unused/SAR: 8-bit shift-like register/memory by CL
         {
@@ -2021,6 +2113,188 @@ namespace Cepums {
             VERIFY_NOT_REACHED();
             return;
         }
+    }
+
+    void Processor::ins$RCLmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    {
+        TODO();
+    }
+
+    void Processor::ins$RCLmemoryOnceWord(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    {
+        TODO();
+    }
+
+    void Processor::ins$RCLregisterOnceByte(uint8_t REG)
+    {
+        TODO();
+    }
+
+    void Processor::ins$RCLregisterOnceWord(uint8_t REG)
+    {
+        TODO();
+    }
+
+    void Processor::ins$RCRmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    {
+        TODO();
+    }
+
+    void Processor::ins$RCRmemoryOnceWord(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    {
+        TODO();
+    }
+
+    void Processor::ins$RCRregisterOnceByte(uint8_t REG)
+    {
+        TODO();
+    }
+
+    void Processor::ins$RCRregisterOnceWord(uint8_t REG)
+    {
+        TODO();
+    }
+
+    void Processor::ins$ROLmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    {
+        TODO();
+    }
+
+    void Processor::ins$ROLmemoryOnceWord(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    {
+        TODO();
+    }
+
+    void Processor::ins$ROLregisterOnceByte(uint8_t REG)
+    {
+        TODO();
+    }
+
+    void Processor::ins$ROLregisterOnceWord(uint8_t REG)
+    {
+        TODO();
+    }
+
+    void Processor::ins$RORmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    {
+        TODO();
+    }
+
+    void Processor::ins$RORmemoryOnceWord(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    {
+        TODO();
+    }
+
+    void Processor::ins$RORregisterOnceByte(uint8_t REG)
+    {
+        TODO();
+    }
+
+    void Processor::ins$RORregisterOnceWord(uint8_t REG)
+    {
+        TODO();
+    }
+
+    void Processor::ins$SALmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    {
+        TODO();
+    }
+
+    void Processor::ins$SALmemoryOnceWord(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    {
+        TODO();
+    }
+
+    void Processor::ins$SALregisterOnceByte(uint8_t rmBits)
+    {
+        DC_CORE_WARN("ins$SAL: 8-bit register");
+        uint8_t registerValue = getRegisterValueFromREG8(rmBits);
+        uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 7);
+        bool setCarry;
+        if (registerValue > SCHAR_MAX)
+            setCarry = true;
+        else
+            setCarry = false;
+
+        registerValue <<= 1;
+        setFlagsAfterLogicalOperation(registerValue);
+        // Set carry flag
+        if (setCarry)
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        // Set overflow flag
+        if (bitZeroBefore == IS_BIT_SET(registerValue, 7))
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        updateRegisterFromREG8(rmBits, registerValue);
+    }
+
+    void Processor::ins$SALregisterOnceWord(uint8_t rmBits)
+    {
+        DC_CORE_WARN("ins$SAL: 16-bit register");
+        uint16_t registerValue = getRegisterFromREG16(rmBits);
+        uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 15);
+        bool setCarry;
+        if (registerValue > SHRT_MAX)
+            setCarry = true;
+        else
+            setCarry = false;
+
+        registerValue <<= 1;
+        setFlagsAfterLogicalOperation(registerValue);
+        // Set carry flag
+        if (setCarry)
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        // Set overflow flag
+        if (bitZeroBefore == IS_BIT_SET(registerValue, 15))
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        updateRegisterFromREG16(rmBits, registerValue);
+    }
+
+    void Processor::ins$SARmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    {
+        TODO();
+    }
+
+    void Processor::ins$SARmemoryOnceWord(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    {
+        TODO();
+    }
+
+    void Processor::ins$SARregisterOnceByte(uint8_t rmBits)
+    {
+        TODO();
+    }
+
+    void Processor::ins$SARregisterOnceWord(uint8_t rmBits)
+    {
+        TODO();
+    }
+
+    void Processor::ins$SHRmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    {
+        TODO();
+    }
+
+    void Processor::ins$SHRmemoryOnceWord(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    {
+        TODO();
+    }
+
+    void Processor::ins$SHRregisterOnceByte(uint8_t rmBits)
+    {
+        TODO();
+    }
+
+    void Processor::ins$SHRregisterOnceWord(uint8_t rmBits)
+    {
+        TODO();
     }
 
     void Processor::ins$SUBimmediateToRegister(uint8_t destREG, uint8_t value)
