@@ -747,8 +747,62 @@ namespace Cepums {
         }
         case 0x80: // ADD/OR/ADC/SBB/AND/SUB/XOR/CMP: 8-bit immediate to register/memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+            {
+                LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
+                switch (regBits)
+                {
+                case 0b000:
+                    return ins$ADDimmediateToRegisterByte(rmBits, immediate);
+                case 0b001:
+                    //return ins$ORimmediateToRegisterByte(rmBits, immediate);
+                case 0b010:
+                    //return ins$ADCimmediateToRegisterByte(rmBits, immediate);
+                case 0b011:
+                    //return ins$SBBimmediateToRegisterByte(rmBits, immediate);
+                case 0b100:
+                    //return ins$ANDimmediateToRegisterByte(rmBits, immediate);
+                case 0b101:
+                    //return ins$SUBimmediateToRegisterByte(rmBits, immediate);
+                case 0b110:
+                    //return ins$XORimmediateToRegisterByte(rmBits, immediate);
+                case 0b111:
+                    //return ins$CMPimmediateToRegisterByte(rmBits, immediate);
+                default:
+                    ILLEGAL_INSTRUCTION();
+                    return;
+                }
+            }
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
+
+            switch (regBits)
+            {
+            case 0b000:
+                return ins$ADDimmediateToMemory(memoryManager, effectiveAddress, immediate);
+            case 0b001:
+                //return ins$ORimmediateToMemory(memoryManager, effectiveAddress, immediate);
+            case 0b010:
+                //return ins$ADCimmediateToMemory(memoryManager, effectiveAddress, immediate);
+            case 0b011:
+                //return ins$SBBimmediateToMemory(memoryManager, effectiveAddress, immediate);
+            case 0b100:
+                //return ins$ANDimmediateToMemory(memoryManager, effectiveAddress, immediate);
+            case 0b101:
+                //return ins$SUBimmediateToMemory(memoryManager, effectiveAddress, immediate);
+            case 0b110:
+                //return ins$XORimmediateToMemory(memoryManager, effectiveAddress, immediate);
+            case 0b111:
+                //return ins$CMPimmediateToMemory(memoryManager, effectiveAddress, immediate);
+            default:
+                ILLEGAL_INSTRUCTION();
+                return;
+            }
         }
         case 0x81: // ADD/OR/ADC/SBB/AND/SUB/XOR/CMP: 16-bit immediate to register/memory
         {
@@ -760,8 +814,55 @@ namespace Cepums {
             TODO();
             return;
         }
-        case 0x83: // ADD/unused/ADC/SBB/unused/SUB/unused/CMP: 16-bit immediate to register/memory
+        case 0x83: // ADD/unused/ADC/SBB/unused/SUB/unused/CMP: sign-extended 8-bit immediate to 16-bit register/memory
         {
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+            {
+                LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate_byte);
+                // Sign-extend to word
+                uint16_t immediate = signExtendByteToWord(immediate_byte);
+                switch (regBits)
+                {
+                case 0b000:
+                    return ins$ADDimmediateToRegisterWord(rmBits, immediate);
+                case 0b010:
+                    //return ins$ADCimmediateToRegisterWord(rmBits, immediate);
+                case 0b011:
+                    //return ins$SBBimmediateToRegisterWord(rmBits, immediate);
+                case 0b101:
+                    //return ins$SUBimmediateToRegisterWord(rmBits, immediate);
+                case 0b111:
+                    //return ins$CMPimmediateToRegisterWord(rmBits, immediate);
+                default:
+                    ILLEGAL_INSTRUCTION();
+                    return;
+                }
+            }
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate_byte);
+            // Sign-extend to word
+            uint16_t immediate = signExtendByteToWord(immediate_byte);
+            switch (regBits)
+            {
+            case 0b000:
+                return ins$ADDimmediateToMemory(memoryManager, effectiveAddress, immediate);
+            case 0b010:
+                //return ins$ADCimmediateToMemory(memoryManager, effectiveAddress, immediate);
+            case 0b011:
+                //return ins$SBBimmediateToMemory(memoryManager, effectiveAddress, immediate);
+            case 0b101:
+                //return ins$SUBimmediateToMemory(memoryManager, effectiveAddress, immediate);
+            case 0b111:
+                //return ins$CMPimmediateToMemory(memoryManager, effectiveAddress, immediate);
+            default:
+                ILLEGAL_INSTRUCTION();
+                return;
+            }
             TODO();
             return;
         }
@@ -1170,7 +1271,7 @@ namespace Cepums {
 
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
 
-            return ins$MOVimmediateToMemoryWord(memoryManager, effectiveAddress, immediate);
+            return ins$MOVimmediateToMemory(memoryManager, effectiveAddress, immediate);
         }
         case 0xCA: // RET: Return intersegment adding immediate to SP
         {
@@ -1507,36 +1608,246 @@ namespace Cepums {
         TODO();
     }
 
-    void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t sourceByte)
+    void Processor::ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t immediate)
     {
-        DC_CORE_WARN("ins$ADD: 8-bit register to memory");
-        memoryManager.writeByte(m_dataSegment, effectiveAddress, sourceByte);
-        TODO(); // Actually add the things?
+        DC_CORE_WARN("ins$ADD: 8-bit imediate to memory");
+        uint8_t memoryValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
+        
+        // Note: this may be UB :(
+        uint8_t result = memoryValue + immediate;
+
+        // Carry (unsigned overflow)
+        if (immediate > UCHAR_MAX - memoryValue)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            // Fix UB
+            result = (UCHAR_MAX - memoryValue) + immediate;
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (immediate > SCHAR_MAX - memoryValue)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        memoryManager.writeByte(m_dataSegment, effectiveAddress, result);
+        setFlagsAfterArithmeticOperation(result);
     }
 
-    void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t sourceWord)
+    void Processor::ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
+    {
+        DC_CORE_WARN("ins$ADD: 16-bit immediate to memory");
+        uint16_t memoryValue = memoryManager.readWord(m_dataSegment, effectiveAddress);
+
+        // Note: this may be UB :(
+        uint16_t result = memoryValue + immediate;
+
+        // Carry (unsigned overflow)
+        if (immediate > USHRT_MAX - memoryValue)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            // Fix UB
+            result = (USHRT_MAX - memoryValue) + immediate;
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (immediate > SHRT_MAX - memoryValue)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        memoryManager.writeWord(m_codeSegment, effectiveAddress, result);
+        setFlagsAfterArithmeticOperation(result);
+    }
+
+    void Processor::ins$ADDimmediateToRegisterByte(uint8_t destREG, uint8_t value)
+    {
+        DC_CORE_WARN("ins$ADD: 8-bit immediate to register");
+        uint8_t registerValue = getRegisterValueFromREG8(destREG);
+
+        // Note: this may be UB :(
+        uint8_t result = registerValue + value;
+        
+        // Carry (unsigned overflow)
+        if (value > UCHAR_MAX - registerValue)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            // Fix UB
+            result = (UCHAR_MAX - registerValue) + value;
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (value > SCHAR_MAX - registerValue)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        updateRegisterFromREG8(destREG, result);
+        setFlagsAfterArithmeticOperation(result);
+    }
+
+    void Processor::ins$ADDimmediateToRegisterWord(uint8_t destREG, uint16_t value)
+    {
+        DC_CORE_WARN("ins$ADD: 16-bit immediate to register");
+        uint16_t registerValue = getRegisterFromREG16(destREG);
+
+        // Note: this may be UB :(
+        uint16_t result = registerValue + value;
+
+        // Carry (unsigned overflow)
+        if (value > USHRT_MAX - registerValue)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            // Fix UB
+            result = (USHRT_MAX - registerValue) + value;
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (value > SHRT_MAX - registerValue)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        updateRegisterFromREG16(destREG, result);
+        setFlagsAfterArithmeticOperation(result);
+    }
+
+    void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue)
+    {
+        DC_CORE_WARN("ins$ADD: 8-bit register to memory");
+        uint8_t memoryValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
+
+        // Note: this may be UB :(
+        uint8_t result = memoryValue + registerValue;
+
+        // Carry (unsigned overflow)
+        if (registerValue > UCHAR_MAX - memoryValue)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            // Fix UB
+            result = (UCHAR_MAX - memoryValue) + registerValue;
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (registerValue > SCHAR_MAX - memoryValue)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        memoryManager.writeByte(m_dataSegment, effectiveAddress, result);
+        setFlagsAfterArithmeticOperation(result);
+    }
+
+    void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue)
     {
         DC_CORE_WARN("ins$ADD: 16-bit register to memory");
-        memoryManager.writeWord(m_dataSegment, effectiveAddress, sourceWord);
-        TODO();
+        uint16_t memoryValue = memoryManager.readWord(m_dataSegment, effectiveAddress);
+
+        // Note: this may be UB :(
+        uint16_t result = memoryValue + registerValue;
+
+        // Carry (unsigned overflow)
+        if (registerValue > USHRT_MAX - memoryValue)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            // Fix UB
+            result = (USHRT_MAX - memoryValue) + registerValue;
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (registerValue > SHRT_MAX - memoryValue)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        memoryManager.writeWord(m_codeSegment, effectiveAddress, result);
+        setFlagsAfterArithmeticOperation(result);
     }
 
     void Processor::ins$ADDregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
     {
         DC_CORE_WARN("ins$ADD: 8-bit register to register");
-        auto operand = getRegisterValueFromREG8(sourceREG);
-        auto operand2 = getRegisterValueFromREG8(destREG);
-        updateRegisterFromREG8(destREG, operand + operand2);
+        uint8_t registerValue = getRegisterValueFromREG8(destREG);
+        uint8_t sourceValue = getRegisterValueFromREG8(sourceREG);
+
+        // Note: this may be UB :(
+        uint8_t result = registerValue + sourceValue;
+
+        // Carry (unsigned overflow)
+        if (sourceValue > UCHAR_MAX - registerValue)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            // Fix UB
+            result = (UCHAR_MAX - registerValue) + sourceValue;
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (sourceValue > SCHAR_MAX - registerValue)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        updateRegisterFromREG8(destREG, result);
+        setFlagsAfterArithmeticOperation(result);
     }
 
     void Processor::ins$ADDregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
     {
         DC_CORE_WARN("ins$ADD: 16-bit register to register");
-        auto operand = getRegisterFromREG16(sourceREG);
-        auto operand2 = getRegisterValueFromREG8(destREG);
-        getRegisterFromREG16(destREG) = operand + operand2;
-        // TODO: verify this result please
-        TODO(); 
+        uint16_t registerValue = getRegisterFromREG16(destREG);
+        uint16_t sourceValue = getRegisterFromREG16(sourceREG);
+
+        // Note: this may be UB :(
+        uint16_t result = registerValue + sourceValue;
+
+        // Carry (unsigned overflow)
+        if (sourceValue > USHRT_MAX - registerValue)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            // Fix UB
+            result = (USHRT_MAX - registerValue) + sourceValue;
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (sourceValue > SHRT_MAX - registerValue)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        updateRegisterFromREG16(destREG, result);
+        setFlagsAfterArithmeticOperation(result);
     }
 
     void Processor::ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer)
@@ -1557,22 +1868,22 @@ namespace Cepums {
         m_instructionPointer += increment;
     }
 
-    void Processor::ins$MOVimmediateToMemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
+    void Processor::ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
     {
         DC_CORE_WARN("ins$MOV: 16-bit immediate to memory");
         memoryManager.writeWord(m_dataSegment, effectiveAddress, immediate);
     }
 
-    void Processor::ins$MOVimmediateToRegisterByte(uint8_t& reg, uint8_t value)
+    void Processor::ins$MOVimmediateToRegisterByte(uint8_t reg, uint8_t immediate)
     {
         DC_CORE_WARN("ins$MOV: 8-bit immediate to register");
-        reg = value;
+        updateRegisterFromREG8(reg, immediate);
     }
 
-    void Processor::ins$MOVimmediateToRegisterWord(uint16_t& reg, uint16_t value)
+    void Processor::ins$MOVimmediateToRegisterWord(uint8_t reg, uint16_t immediate)
     {
         DC_CORE_WARN("ins$MOV: 16-bit immediate to register");
-        reg = value;
+        updateRegisterFromREG16(reg, immediate);
     }
 
     void Processor::ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t effectiveAddress)
@@ -1633,20 +1944,20 @@ namespace Cepums {
         }
     }
 
-    void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t sourceByte)
+    void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue)
     {
         DC_CORE_WARN("ins$XOR: XOR-ing 8-bit register to memory");
         auto original = memoryManager.readByte(m_dataSegment, effectiveAddress);
-        uint8_t result = original ^ sourceByte;
+        uint8_t result = original ^ registerValue;
         memoryManager.writeByte(m_dataSegment, effectiveAddress, result);
         setFlagsAfterLogicalOperation(result);
     }
 
-    void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t sourceWord)
+    void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue)
     {
         DC_CORE_WARN("ins$XOR: XOR-ing 16-bit register to memory");
         auto original = memoryManager.readWord(m_dataSegment, effectiveAddress);
-        uint16_t result = original ^ sourceWord;
+        uint16_t result = original ^ registerValue;
         memoryManager.writeWord(m_dataSegment, effectiveAddress, result);
         setFlagsAfterLogicalOperation(result);
     }
@@ -2039,6 +2350,44 @@ namespace Cepums {
         CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
         CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
 
+        if (IS_BIT_SET(word, 15))
+            SET_FLAG_BIT(m_flags, SIGN_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
+
+        if (word == 0)
+            SET_FLAG_BIT(m_flags, ZERO_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
+
+        DO_PARITY_WORD(word);
+        if (IS_PARITY_EVEN(word))
+            SET_FLAG_BIT(m_flags, PARITY_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
+    }
+
+    void Processor::setFlagsAfterArithmeticOperation(uint8_t byte)
+    {
+        if (IS_BIT_SET(byte, 7))
+            SET_FLAG_BIT(m_flags, SIGN_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
+
+        if (byte == 0)
+            SET_FLAG_BIT(m_flags, ZERO_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
+
+        DO_PARITY_BYTE(byte);
+        if (IS_PARITY_EVEN(byte))
+            SET_FLAG_BIT(m_flags, PARITY_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
+    }
+
+    void Processor::setFlagsAfterArithmeticOperation(uint16_t word)
+    {
         if (IS_BIT_SET(word, 15))
             SET_FLAG_BIT(m_flags, SIGN_FLAG);
         else

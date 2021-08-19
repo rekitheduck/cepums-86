@@ -22,11 +22,14 @@
 #define LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(mm, modBits, rmBits, displLow, displHigh) uint8_t displLow = 0; uint8_t displHigh = 0; loadDisplacementsFromInstructionStream(mm, modBits, rmBits, displLow, displHigh)
 #define CALCULATE_EFFECTIVE_ADDRESS(ea, rmBits, modBits, isWord, displLow, displHigh) uint16_t ea = getEffectiveAddressFromBits(rmBits, modBits, isWord, displLow, displHigh)
 
-#define IS_IN_REGISTER_MODE(byte) byte == 0b11
-#define IS_IN_MEMORY_BODE_NO_DISPLACEMENT(byte) byte == 0b00
+#define IS_IN_REGISTER_MODE(mod) mod == 0b11
+#define IS_IN_MEMORY_BODE_NO_DISPLACEMENT(mod) mod == 0b00
 
 #define CLEAR_FLAG_BIT(flags, flag_bit) flags &= ~(BIT(flag_bit))
 #define SET_FLAG_BIT(flags, flag_bit) flags |= BIT(flag_bit)
+
+#define IS_BYTE 0
+#define IS_WORD 1
 
 // Processor flags
 #define CARRY_FLAG 0
@@ -63,22 +66,26 @@ namespace Cepums {
         void ins$LOCK();
         void ins$SEGMENT(); // ??
 
-        void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t sourceByte);
-        void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t sourceWord);
+        void ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t immediate);
+        void ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
+        void ins$ADDimmediateToRegisterByte(uint8_t destREG, uint8_t value);
+        void ins$ADDimmediateToRegisterWord(uint8_t destREG, uint16_t value);
+        void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue);
+        void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue);
         void ins$ADDregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
         void ins$ADDregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
         void ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer);
         void ins$JMPshort(int8_t increment);
 
-        void ins$MOVimmediateToMemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
-        void ins$MOVimmediateToRegisterByte(uint8_t& reg, uint8_t value);
-        void ins$MOVimmediateToRegisterWord(uint16_t& reg, uint16_t value);
+        void ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
+        void ins$MOVimmediateToRegisterByte(uint8_t reg, uint8_t immediate);
+        void ins$MOVimmediateToRegisterWord(uint8_t reg, uint16_t immediate);
         void ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t effectiveAddress);
         void ins$MOVregisterToSegmentRegisterWord(uint8_t srBits, uint16_t value);
 
-        void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t sourceByte);
-        void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t sourceWord);
+        void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue);
+        void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue);
         void ins$XORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
         void ins$XORregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
@@ -129,6 +136,8 @@ namespace Cepums {
         void loadDisplacementsFromInstructionStream(MemoryManager& memoryManager, uint8_t modBits, uint8_t rmBits, uint8_t& displacementLowByte, uint8_t& displacementHighByte);
         void setFlagsAfterLogicalOperation(uint8_t byte);
         void setFlagsAfterLogicalOperation(uint16_t word);
+        void setFlagsAfterArithmeticOperation(uint8_t byte);
+        void setFlagsAfterArithmeticOperation(uint16_t word);
     private:
         int m_cyclesToWait = 0;
         int m_currentCycleCounter = 0;

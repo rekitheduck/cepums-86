@@ -28,6 +28,13 @@
 
 namespace Cepums {
 
+    // I don't know how this works
+    static uint16_t signExtendByteToWord(uint8_t byte)
+    {
+        uint16_t temp = 1u << (8 - 1);
+        return (byte ^ temp) - temp;
+    }
+
     // Unique pointers aka Scoped pointers
     template<typename T>
     using Scope = std::unique_ptr<T>;
