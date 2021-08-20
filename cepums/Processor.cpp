@@ -905,13 +905,29 @@ namespace Cepums {
         }
         case 0x88: // MOV: 8-bit from register to register/memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$MOVregisterToRegisterByte(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+
+            return ins$MOVregisterToMemory(memoryManager, effectiveAddress, getRegisterValueFromREG8(regBits));
         }
         case 0x89: // MOV: 16-bit from register to register/memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$MOVregisterToRegisterWord(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+
+            return ins$MOVregisterToMemory(memoryManager, effectiveAddress, getRegisterFromREG16(regBits));
         }
         case 0x8A: // MOV: 8-bit from register/memory to register
         {
@@ -925,8 +941,23 @@ namespace Cepums {
         }
         case 0x8C: // MOV/unused: 16-bit from segment register to register/memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, srBits, rmBits);
+
+            // Are we doing a MOV (bit 2 is 0)?
+            if (srBits & BIT(2))
+            {
+                ILLEGAL_INSTRUCTION();
+                return;
+            }
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$MOVsegmentRegisterToRegisterWord(rmBits, srBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+
+            return ins$MOVsegmentRegisterToMemoryWord(memoryManager, effectiveAddress, srBits);
         }
         case 0x8D: // LEA: Load effective address
         {
@@ -2087,6 +2118,32 @@ namespace Cepums {
         }
     }
 
+    void Processor::ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue)
+    {
+        DC_CORE_WARN("ins$MOV: 8-bit register to memory");
+        memoryManager.writeByte(m_dataSegment, effectiveAddress, registerValue);
+    }
+
+    void Processor::ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue)
+    {
+        DC_CORE_WARN("ins$MOV: 16-bit register to memory");
+        memoryManager.writeWord(m_dataSegment, effectiveAddress, registerValue);
+    }
+
+    void Processor::ins$MOVregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
+    {
+        DC_CORE_WARN("ins$MOV: 8-bit register to register");
+        uint8_t sourceValue = getRegisterValueFromREG8(sourceREG);
+        updateRegisterFromREG8(destREG, sourceValue);
+    }
+
+    void Processor::ins$MOVregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
+    {
+        DC_CORE_WARN("ins$MOV: 16-bit register to register");
+        uint16_t sourceValue = getRegisterFromREG16(sourceREG);
+        updateRegisterFromREG16(destREG, sourceValue);
+    }
+
     void Processor::ins$MOVregisterToSegmentRegisterWord(uint8_t srBits, uint16_t value)
     {
         DC_CORE_WARN("ins$MOV: 16-bit register to segment register");
@@ -2113,6 +2170,68 @@ namespace Cepums {
             VERIFY_NOT_REACHED();
             return;
         }
+    }
+
+    void Processor::ins$MOVsegmentRegisterToMemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t SEGREG)
+    {
+        DC_CORE_WARN("ins$MOV: 16-bit segment register to memory");
+        uint16_t segRegValue;
+        switch (SEGREG)
+        {
+        case 0b00:
+            segRegValue = m_extraSegment;
+            return;
+
+        case 0b01:
+            segRegValue = m_codeSegment;
+            return;
+
+        case 0b10:
+            segRegValue = m_stackSegment;
+            return;
+
+        case 0b11:
+            segRegValue = m_dataSegment ;
+            return;
+
+        default:
+            DC_CORE_ERROR("Malformed segment register bits : 0b{0:b}", SEGREG);
+            VERIFY_NOT_REACHED();
+            return;
+        }
+
+        memoryManager.writeWord(m_dataSegment, effectiveAddress, segRegValue);
+    }
+
+    void Processor::ins$MOVsegmentRegisterToRegisterWord(uint8_t REG, uint8_t SEGREG)
+    {
+        DC_CORE_WARN("ins$MOV: 16-bit segment register to register");
+        uint16_t segRegValue;
+        switch (SEGREG)
+        {
+        case 0b00:
+            segRegValue = m_extraSegment;
+            return;
+
+        case 0b01:
+            segRegValue = m_codeSegment;
+            return;
+
+        case 0b10:
+            segRegValue = m_stackSegment;
+            return;
+
+        case 0b11:
+            segRegValue = m_dataSegment;
+            return;
+
+        default:
+            DC_CORE_ERROR("Malformed segment register bits : 0b{0:b}", SEGREG);
+            VERIFY_NOT_REACHED();
+            return;
+        }
+
+        updateRegisterFromREG16(REG, segRegValue);
     }
 
     void Processor::ins$RCLmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)

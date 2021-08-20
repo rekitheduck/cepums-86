@@ -122,7 +122,13 @@ namespace Cepums {
         void ins$MOVimmediateToRegisterByte(uint8_t reg, uint8_t immediate);
         void ins$MOVimmediateToRegisterWord(uint8_t reg, uint16_t immediate);
         void ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t effectiveAddress);
+        void ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue);
+        void ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue);
+        void ins$MOVregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
+        void ins$MOVregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
         void ins$MOVregisterToSegmentRegisterWord(uint8_t srBits, uint16_t value);
+        void ins$MOVsegmentRegisterToMemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t SEGREG);
+        void ins$MOVsegmentRegisterToRegisterWord(uint8_t REG, uint8_t SEGREG);
 
         void ins$RCLmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
         void ins$RCLmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
