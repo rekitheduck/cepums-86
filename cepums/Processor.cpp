@@ -2409,7 +2409,7 @@ namespace Cepums {
     {
         DC_CORE_WARN("ins$NOT: 16-bit register");
         uint16_t registerValue = getRegisterFromREG16(REG);
-        registerValue = registerValue;
+        registerValue = ~registerValue;
         updateRegisterFromREG16(REG, registerValue);
     }
 
