@@ -113,6 +113,9 @@ namespace Cepums {
         void ins$ADDregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
         void ins$ADDregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
+        void ins$CMPimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
+        void ins$CMPimmediateToRegister(uint8_t destREG, uint16_t immediate);
+
         void ins$INC(uint8_t isWordBit, uint8_t REG);
 
         void ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer);
@@ -129,6 +132,9 @@ namespace Cepums {
         void ins$MOVregisterToSegmentRegisterWord(uint8_t srBits, uint16_t value);
         void ins$MOVsegmentRegisterToMemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t SEGREG);
         void ins$MOVsegmentRegisterToRegisterWord(uint8_t REG, uint8_t SEGREG);
+
+        void ins$NOTmemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$NOTregisterWord(uint8_t REG);
 
         void ins$RCLmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
         void ins$RCLmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
