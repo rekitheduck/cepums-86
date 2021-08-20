@@ -477,7 +477,7 @@ namespace Cepums {
         }
         case 0x40: // INC: AX
         {
-            return ins$INC(IS_WORD, REGISTER_AX);
+            return ins$INCregister(IS_WORD, REGISTER_AX);
         }
         case 0x41: // INC: CX
         {
@@ -1566,7 +1566,9 @@ namespace Cepums {
         }
         case 0xE4: // IN: 8-bit immediate and AL
         {
-            TODO();
+            //TODO();
+            DC_CORE_ERROR("ins$IN is unimplemented so we'll skip over :(");
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, data);
             return;
         }
         case 0xE5: // IN: 8-bit immediate and AX ??
@@ -1579,7 +1581,6 @@ namespace Cepums {
             //TODO();
             DC_CORE_ERROR("ins$OUT is unimplemented so we'll skip over :(");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, data);
-
             return;
         }
         case 0xE7: // OUT: 8-bit immediate and AX ??
@@ -1606,27 +1607,33 @@ namespace Cepums {
         }
         case 0xEB: // JMP: Jump to SHORT-LABEL
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            //// Sign-extend to word
+            //uint16_t label = signExtendByteToWord(byte);
+            return ins$JMPshort(byte);
         }
         case 0xEC: // IN: AL and AX
         {
-            TODO();
+            //TODO();
+            DC_CORE_ERROR("ins$IN is unimplemented so we'll skip over :(");
             return;
         }
-        case 0xED: // UN: AX and DX
+        case 0xED: // IN: AX and DX
         {
-            TODO();
+            //TODO();
+            DC_CORE_ERROR("ins$IN is unimplemented so we'll skip over :(");
             return;
         }
         case 0xEE: // OUT: AL and DX
         {
-            TODO();
+            //TODO();
+            DC_CORE_ERROR("ins$OUT is unimplemented so we'll skip over :(");
             return;
         }
         case 0xEF: // OUT: AX and DX
         {
-            TODO();
+            //TODO();
+            DC_CORE_ERROR("ins$OUT is unimplemented so we'll skip over :(");
             return;
         }
         case 0xF0: // LOCK: Lock bus
@@ -1742,8 +1749,35 @@ namespace Cepums {
         }
         case 0xFE: // INC/DEC/unused/unused/unused/unused/unused/unused: 8-bit register/memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+            {
+                switch (regBits)
+                {
+                case 0b000:
+                    return ins$INCregister(IS_BYTE, rmBits);
+                case 0b001:
+                    return ins$DECregister(IS_BYTE, rmBits);
+                default:
+                    ILLEGAL_INSTRUCTION();
+                    return;
+                }
+            }
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+
+            switch (regBits)
+            {
+            case 0b000:
+                return ins$INCmemoryByte(memoryManager, effectiveAddress);
+            case 0b001:
+                return ins$DECmemoryByte(memoryManager, effectiveAddress);
+            default:
+                ILLEGAL_INSTRUCTION();
+                return;
+            }
         }
         case 0xFF: // INC/DEC/CALL/CALL/JMP/JMP/PUSH/unused: 16-bit (memory)/(intrasegment register/memory)/(intrasegment memory)/(intrasegment register/memory)/(intersegment memory)/(memory)
         {
@@ -2153,7 +2187,22 @@ namespace Cepums {
         setFlagsAfterArithmeticOperation(result);
     }
 
-    void Processor::ins$INC(uint8_t isWordBit, uint8_t REG)
+    void Processor::ins$DECregister(uint8_t isWordBit, uint8_t REG)
+    {
+        TODO();
+    }
+
+    void Processor::ins$DECmemoryByte(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    {
+        TODO();
+    }
+
+    void Processor::ins$DECmemoryWord(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    {
+        TODO();
+    }
+
+    void Processor::ins$INCregister(uint8_t isWordBit, uint8_t REG)
     {
         if (isWordBit)
         {
@@ -2213,6 +2262,66 @@ namespace Cepums {
             else
                 CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
         }
+    }
+
+    void Processor::ins$INCmemoryByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    {
+        DC_CORE_WARN("ins$INC: 8-bit memory {0:X}:{1:X}", m_dataSegment, effectiveAddress);
+        uint8_t currentValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
+        uint8_t newValue = currentValue + 1;
+        memoryManager.writeByte(m_dataSegment, effectiveAddress, newValue);
+
+        // We shouldn't touch the CARRY_FLAG
+        if (currentValue >= SCHAR_MAX)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        if (IS_BIT_SET(currentValue, 7))
+            SET_FLAG_BIT(m_flags, SIGN_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
+
+        if (currentValue == 0)
+            SET_FLAG_BIT(m_flags, ZERO_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
+
+        DO_PARITY_BYTE(currentValue);
+        if (IS_PARITY_EVEN(currentValue))
+            SET_FLAG_BIT(m_flags, PARITY_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
+    }
+
+    void Processor::ins$INCmemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    {
+        DC_CORE_WARN("ins$INC: 16-bit memory {0:X}:{1:X}", m_dataSegment, effectiveAddress);
+        uint16_t currentValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
+        uint16_t newValue = currentValue + 1;
+        memoryManager.writeWord(m_dataSegment, effectiveAddress, newValue);
+
+        // We shouldn't touch the CARRY_FLAG
+        if (currentValue >= SHRT_MAX)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        if (IS_BIT_SET(currentValue, 15))
+            SET_FLAG_BIT(m_flags, SIGN_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
+
+        if (currentValue == 0)
+            SET_FLAG_BIT(m_flags, ZERO_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
+
+        DO_PARITY_BYTE(currentValue);
+        if (IS_PARITY_EVEN(currentValue))
+            SET_FLAG_BIT(m_flags, PARITY_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
     }
 
     void Processor::ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer)
