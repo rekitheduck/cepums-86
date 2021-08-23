@@ -40,7 +40,7 @@
 #define SIGN_FLAG 7
 #define TRAP_FLAG 8
 #define INTERRUPT_ENABLE_FLAG 9
-#define DIRECTION_fLAG 10
+#define DIRECTION_FLAG 10
 #define OVERFLOW_FLAG 11
 
 // Registers
@@ -149,6 +149,7 @@ namespace Cepums {
         void ins$MOVregisterToSegmentRegisterWord(uint8_t srBits, uint16_t value);
         void ins$MOVsegmentRegisterToMemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t SEGREG);
         void ins$MOVsegmentRegisterToRegisterWord(uint8_t REG, uint8_t SEGREG);
+        void ins$MOVSword(MemoryManager& memoryManager);
 
         void ins$NOTmemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
         void ins$NOTregisterWord(uint8_t REG);

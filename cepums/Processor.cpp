@@ -1152,8 +1152,7 @@ namespace Cepums {
         }
         case 0xA5: // MOVS: 16-bit move string from SRC-STR16 to DEST-STR16
         {
-            TODO();
-            return;
+            return ins$MOVSword(memoryManager);
         }
         case 0xA6: // CMPS: 8-bit compare string from SRC-STR8 to DEST-STR8
         {
@@ -1864,13 +1863,13 @@ namespace Cepums {
     void Processor::ins$CLD()
     {
         DC_CORE_WARN("ins$CLD: Clear direction flag");
-        CLEAR_FLAG_BIT(m_flags, DIRECTION_fLAG);
+        CLEAR_FLAG_BIT(m_flags, DIRECTION_FLAG);
     }
 
     void Processor::ins$STD()
     {
         DC_CORE_WARN("ins$STD: Set direction flag");
-        SET_FLAG_BIT(m_flags, DIRECTION_fLAG);
+        SET_FLAG_BIT(m_flags, DIRECTION_FLAG);
 
     }
 
@@ -2540,6 +2539,24 @@ namespace Cepums {
         }
 
         updateRegisterFromREG16(REG, segRegValue);
+    }
+
+    void Processor::ins$MOVSword(MemoryManager& memoryManager)
+    {
+        uint16_t source = memoryManager.readWord(m_dataSegment, m_sourceIndex);
+        memoryManager.writeWord(m_extraSegment, m_destinationIndex, source);
+
+        // Increment if not set, decrement if set
+        if (IS_BIT_SET(m_flags, DIRECTION_FLAG))
+        {
+            m_sourceIndex -= 2;
+            m_destinationIndex -= 2;
+        }
+        else
+        {
+            m_sourceIndex += 2;
+            m_destinationIndex += 2;
+        }
     }
 
     void Processor::ins$NOTmemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress)
