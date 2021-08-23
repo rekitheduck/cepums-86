@@ -19,6 +19,7 @@
 #define LOAD_NEXT_INSTRUCTION_BYTE(mm, byte) uint8_t byte = mm.readByte(m_codeSegment, m_instructionPointer); m_instructionPointer++
 #define LOAD_NEXT_INSTRUCTION_WORD(mm, word) uint16_t word = mm.readWord(m_codeSegment, m_instructionPointer); m_instructionPointer += 2
 #define LOAD_INCREMENT_BYTE(mm, byte) int8_t byte = mm.readByte(m_codeSegment, m_instructionPointer); m_instructionPointer++;
+#define LOAD_INCREMENT_WORD(mm, word) int16_t word = mm.readWord(m_codeSegment, m_instructionPointer); m_instructionPointer += 2
 #define PARSE_MOD_REG_RM_BITS(byte, mod, reg, rm) uint8_t rm = byte; RMBITS(0, rm); uint8_t reg = byte; REGBITS(3, reg); uint8_t mod = byte; MODBITS(6, mod)
 #define LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(mm, modBits, rmBits, displLow, displHigh) uint8_t displLow = 0; uint8_t displHigh = 0; loadDisplacementsFromInstructionStream(mm, modBits, rmBits, displLow, displHigh)
 #define CALCULATE_EFFECTIVE_ADDRESS(ea, rmBits, modBits, isWord, displLow, displHigh) uint16_t ea = getEffectiveAddressFromBits(rmBits, modBits, isWord, displLow, displHigh)
@@ -120,6 +121,8 @@ namespace Cepums {
         void ins$ADDregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
         void ins$ADDregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
+        void ins$CALLnear(MemoryManager& memoryManager, int16_t offset);
+
         void ins$CMPimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
         void ins$CMPimmediateToRegister(uint8_t destREG, uint16_t immediate);
 
@@ -187,6 +190,7 @@ namespace Cepums {
         void ins$SHRmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
         void ins$SHRregisterOnceByte(uint8_t rmBits);
         void ins$SHRregisterOnceWord(uint8_t rmBits);
+        void ins$STOSword(MemoryManager& memoryManager);
 
         void ins$SUBimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t immediate);
         void ins$SUBimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);

@@ -1181,8 +1181,7 @@ namespace Cepums {
         }
         case 0xAB: // STOS: 16-bit store byte or word string to DEST-STR8
         {
-            TODO();
-            return;
+            return ins$STOSword(memoryManager);
         }
         case 0xAC: // LODS: 8-bit load string to SRC-STR8
         {
@@ -1591,8 +1590,8 @@ namespace Cepums {
         }
         case 0xE8: // CALL: Call NEAR-PROC
         {
-            TODO();
-            return;
+            LOAD_INCREMENT_WORD(memoryManager, word);
+            return ins$CALLnear(memoryManager, word);
         }
         case 0xE9: // JMP: Jump to NEAR-LABEL
         {
@@ -2142,6 +2141,18 @@ namespace Cepums {
         setFlagsAfterArithmeticOperation(result);
     }
 
+    void Processor::ins$CALLnear(MemoryManager& memoryManager, int16_t offset)
+    {
+        DC_CORE_WARN("ins$CALL: near to {0:X}:{1:X}", m_codeSegment, offset + IP());
+        // Start by pushing IP onto stack
+        // Decrement the Stack Pointer (by size of register) before doing anything
+        SP() -= 2;
+        memoryManager.writeWord(SS(), SP(), IP());
+
+
+        IP() += offset;
+    }
+
     void Processor::ins$CMPimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
     {
         DC_CORE_WARN("ins$CMP: 16-bit immediate to memory");
@@ -2654,7 +2665,11 @@ namespace Cepums {
 
         for (uint16_t i = 0; i < CX(); i+=2)
         {
-            memoryManager.writeWord(m_extraSegment, i, AX());
+            memoryManager.writeWord(m_extraSegment, m_destinationIndex, AX());
+            if (IS_BIT_SET(m_flags, DIRECTION_FLAG))
+                m_destinationIndex -= 2;
+            else
+                m_destinationIndex += 2;
         }
     }
 
@@ -2798,6 +2813,17 @@ namespace Cepums {
     void Processor::ins$SHRregisterOnceWord(uint8_t rmBits)
     {
         TODO();
+    }
+
+    void Processor::ins$STOSword(MemoryManager& memoryManager)
+    {
+        DC_CORE_WARN("ins$STOS: Store AX into ES:DI");
+        memoryManager.writeWord(m_extraSegment, m_destinationIndex, AX());
+        // Increment if not set, decrement if set
+        if (IS_BIT_SET(m_flags, DIRECTION_FLAG))
+            m_destinationIndex -= 2;
+        else
+            m_destinationIndex += 2;
     }
 
     void Processor::ins$SUBimmediateToRegister(uint8_t destREG, uint8_t value)
