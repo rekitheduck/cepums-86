@@ -30,9 +30,9 @@ namespace Cepums {
         uint8_t hopefully_an_instruction = memoryManager.readByte(m_codeSegment, m_instructionPointer);
         m_instructionPointer++;
         DC_CORE_INFO("{0}: ===== Fetched new instruction: 0x{1:x} =====", m_currentCycleCounter++, hopefully_an_instruction);
-        DC_CORE_TRACE(" AX: 0x{0:x}   BX: 0x{1:x}   CX: 0x{2:x}   DX: 0x{3:x}", AX(), BX(), CX(), DX());
-        DC_CORE_TRACE(" DS: 0x{0:x}   CS: 0x{1:x}   SS: 0x{2:x}   ES: 0x{3:x}", DS(), CS(), SS(), ES());
-        DC_CORE_TRACE(" IP: 0x{0:x}   BP: 0x{1:X}   SI: 0x{2:x}   DI: 0x{3:X}", IP(), BP(), SI(), DI());
+        //DC_CORE_TRACE(" AX: 0x{0:x}   BX: 0x{1:x}   CX: 0x{2:x}   DX: 0x{3:x}", AX(), BX(), CX(), DX());
+        //DC_CORE_TRACE(" DS: 0x{0:x}   CS: 0x{1:x}   SS: 0x{2:x}   ES: 0x{3:x}", DS(), CS(), SS(), ES());
+        //DC_CORE_TRACE(" IP: 0x{0:x}   BP: 0x{1:X}   SI: 0x{2:x}   DI: 0x{3:X}", IP(), BP(), SI(), DI());
 
 #if 0
         m_AX = 0x1234;
@@ -193,8 +193,7 @@ namespace Cepums {
         }
         case 0x0E: // PUSH: Push CS to stack
         {
-            TODO();
-            return;
+            return ins$PUSHsegmentRegister(memoryManager, REGISTER_CS);
         }
         case 0x10: // ADC: 8-bit from register to register/memory
         {
@@ -273,8 +272,7 @@ namespace Cepums {
         }
         case 0x1F: // POP: Pop DS from stack
         {
-            TODO();
-            return;
+            return ins$POPsegmentRegister(memoryManager, REGISTER_DS);
         }
         case 0x20: // AND: 8-bit from register to register/memory
         {
@@ -2558,6 +2556,39 @@ namespace Cepums {
         uint16_t registerValue = getRegisterFromREG16(REG);
         registerValue = ~registerValue;
         updateRegisterFromREG16(REG, registerValue);
+    }
+
+    void Processor::ins$POPsegmentRegister(MemoryManager& memoryManager, uint8_t srBits)
+    {
+        DC_CORE_WARN("ins$POP: segment register");
+        switch (srBits)
+        {
+        case REGISTER_DS:
+            DS() = memoryManager.readWord(SS(), SP());
+            break;
+        default:
+            ILLEGAL_INSTRUCTION();
+            break;
+        }
+
+        // Increment the Stack Pointer (by size of register)
+        SP() += 2;
+    }
+
+    void Processor::ins$PUSHsegmentRegister(MemoryManager& memoryManager, uint8_t srBits)
+    {
+        DC_CORE_WARN("ins$PUSH: segment register");
+        // Decrement the Stack Pointer (by size of register) before doing anything
+        SP() -= 2;
+        switch (srBits)
+        {
+        case REGISTER_CS:
+            memoryManager.writeWord(SS(), SP(), CS());
+            break;
+        default:
+            ILLEGAL_INSTRUCTION();
+            break;
+        }
     }
 
     void Processor::ins$RCLmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)

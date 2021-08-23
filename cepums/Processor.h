@@ -81,6 +81,12 @@
 #define REGISTER_SI_NAME "SI"
 #define REGISTER_DI_NAME "DI"
 
+// Segment Registers
+#define REGISTER_ES 0b00
+#define REGISTER_CS 0b01
+#define REGISTER_SS 0b10
+#define REGISTER_DS 0b01
+
 namespace Cepums {
 
     class Processor
@@ -147,6 +153,9 @@ namespace Cepums {
         void ins$NOTmemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
         void ins$NOTregisterWord(uint8_t REG);
 
+        void ins$POPsegmentRegister(MemoryManager& memoryManager, uint8_t srBits);
+        void ins$PUSHsegmentRegister(MemoryManager& memoryManager, uint8_t srBits);
+
         void ins$RCLmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
         void ins$RCLmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
         void ins$RCLregisterOnceByte(uint8_t REG);
@@ -192,10 +201,10 @@ namespace Cepums {
         void ins$XORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
         void ins$XORregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
-        uint16_t DS() { return m_dataSegment; }
-        uint16_t CS() { return m_codeSegment; }
-        uint16_t SS() { return m_stackSegment; }
-        uint16_t ES() { return m_extraSegment; }
+        uint16_t& DS() { return m_dataSegment; }
+        uint16_t& CS() { return m_codeSegment; }
+        uint16_t& SS() { return m_stackSegment; }
+        uint16_t& ES() { return m_extraSegment; }
 
         // 16-bit General Registers (data)
         uint16_t& AX() { return m_AX; };
