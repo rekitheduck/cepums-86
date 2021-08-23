@@ -128,9 +128,12 @@ namespace Cepums {
         void ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer);
         void ins$JMPshort(int8_t increment);
 
+        void ins$LODSword(MemoryManager& memoryManager);
+
         void ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
         void ins$MOVimmediateToRegisterByte(uint8_t reg, uint8_t immediate);
         void ins$MOVimmediateToRegisterWord(uint8_t reg, uint16_t immediate);
+        void ins$MOVmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress);
         void ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t effectiveAddress);
         void ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue);
         void ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue);
@@ -151,6 +154,7 @@ namespace Cepums {
         void ins$RCRmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
         void ins$RCRregisterOnceByte(uint8_t REG);
         void ins$RCRregisterOnceWord(uint8_t REG);
+        void ins$REP_STOSword(MemoryManager& memoryManager);
         void ins$ROLmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
         void ins$ROLmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
         void ins$ROLregisterOnceByte(uint8_t REG);

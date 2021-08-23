@@ -32,7 +32,7 @@ namespace Cepums {
         DC_CORE_INFO("{0}: ===== Fetched new instruction: 0x{1:x} =====", m_currentCycleCounter++, hopefully_an_instruction);
         DC_CORE_TRACE(" AX: 0x{0:x}   BX: 0x{1:x}   CX: 0x{2:x}   DX: 0x{3:x}", AX(), BX(), CX(), DX());
         DC_CORE_TRACE(" DS: 0x{0:x}   CS: 0x{1:x}   SS: 0x{2:x}   ES: 0x{3:x}", DS(), CS(), SS(), ES());
-        DC_CORE_TRACE(" IP: 0x{0:x}", IP());
+        DC_CORE_TRACE(" IP: 0x{0:x}   BP: 0x{1:X}   SI: 0x{2:x}   DI: 0x{3:X}", IP(), BP(), SI(), DI());
 
 #if 0
         m_AX = 0x1234;
@@ -458,8 +458,8 @@ namespace Cepums {
         }
         case 0x3D: // CMP: 16-bit immediate with AX
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediateWord);
+            return ins$CMPimmediateToRegister(REGISTER_AX, immediateWord);
         }
         case 0x3E: // DS: Segment override prefix
         {
@@ -987,8 +987,16 @@ namespace Cepums {
         }
         case 0x8B: // MOV: 16-bit from register/memory to register
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$MOVregisterToRegisterWord(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+
+            return ins$MOVmemoryToRegisterWord(memoryManager, regBits, effectiveAddress);
         }
         case 0x8C: // MOV/unused: 16-bit from segment register to register/memory
         {
@@ -1186,8 +1194,7 @@ namespace Cepums {
         }
         case 0xAD: // LODS: 16-bit load string to SRC_STR16
         {
-            TODO();
-            return;
+            return ins$LODSword(memoryManager);
         }
         case 0xAE: // SCAS: 8-bit scan string to DEST-STR8
         {
@@ -1644,8 +1651,16 @@ namespace Cepums {
         }
         case 0xF3: // REP/REPE/REPZ: Repeat string operation/ Repeat string operation while equal / while zero
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            // Now find the real instruction :)
+            switch (byte)
+            {
+            case 0xAB: // STOS: 16-bit string
+                return ins$REP_STOSword(memoryManager);
+            default:
+                ILLEGAL_INSTRUCTION();
+                return;
+            }
         }
         case 0xF4: // HLT: Halt the processor
         {
@@ -2339,6 +2354,13 @@ namespace Cepums {
         m_instructionPointer += increment;
     }
 
+    void Processor::ins$LODSword(MemoryManager& memoryManager)
+    {
+        DC_CORE_WARN("ins$LODS: Load DS:SI word into AX");
+        uint16_t test = memoryManager.readWord(DS(), SI());
+        AX() = memoryManager.readWord(DS(), SI());
+    }
+
     void Processor::ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
     {
         DC_CORE_WARN("ins$MOV: 16-bit immediate to memory");
@@ -2357,10 +2379,17 @@ namespace Cepums {
         updateRegisterFromREG16(reg, immediate);
     }
 
+    void Processor::ins$MOVmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress)
+    {
+        DC_CORE_WARN("ins$MOV: 16-bit memory to segment register");
+        uint16_t value = memoryManager.readWord(m_dataSegment, effectiveAddress);
+        updateRegisterFromREG16(destREG, value);
+    }
+
     void Processor::ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t effectiveAddress)
     {
         DC_CORE_WARN("ins$MOV: 16-bit memory to segment register");
-        uint16_t value = memoryManager.readWord(m_codeSegment, effectiveAddress);
+        uint16_t value = memoryManager.readWord(m_dataSegment, effectiveAddress);
 
         switch (srBits)
         {
@@ -2557,6 +2586,16 @@ namespace Cepums {
     void Processor::ins$RCRregisterOnceWord(uint8_t REG)
     {
         TODO();
+    }
+
+    void Processor::ins$REP_STOSword(MemoryManager& memoryManager)
+    {
+        DC_CORE_WARN("ins$REP_STOS: Repeat fill with string");
+
+        for (uint16_t i = 0; i < CX(); i+=2)
+        {
+            memoryManager.writeWord(m_extraSegment, i, AX());
+        }
     }
 
     void Processor::ins$ROLmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
