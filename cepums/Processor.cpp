@@ -1560,8 +1560,8 @@ namespace Cepums {
         }
         case 0xE2: // LOOP: Loop
         {
-            TODO();
-            return;
+            LOAD_INCREMENT_BYTE(memoryManager, byte);
+            return ins$LOOP(byte);
         }
         case 0xE3: // JCXZ: Jump if CX is zero
         {
@@ -2357,8 +2357,20 @@ namespace Cepums {
     void Processor::ins$LODSword(MemoryManager& memoryManager)
     {
         DC_CORE_WARN("ins$LODS: Load DS:SI word into AX");
-        uint16_t test = memoryManager.readWord(DS(), SI());
         AX() = memoryManager.readWord(DS(), SI());
+    }
+
+    void Processor::ins$LOOP(int8_t offset)
+    {
+        DC_CORE_WARN("ins$LOOP: Loop with CX as counter");
+        // Decrement at the start
+        CX()--;
+        // Get out of loop if CX == 0
+        if (CX() == 0)
+            return;
+
+        // Otherwise we keep going
+        IP() += offset;
     }
 
     void Processor::ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
