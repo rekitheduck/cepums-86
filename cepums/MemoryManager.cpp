@@ -105,8 +105,9 @@ namespace Cepums {
         // Is this in RAM (lower 640k?)
         if (physical < 0xA0000)
         {
-            // TODO: Maybe these are flipped
-            return (m_RAM.at(physical) << 8) | (uint16_t)m_RAM.at(++physical);
+            auto first = m_RAM.at(physical);
+            auto second = m_RAM.at(++physical);
+            return (uint16_t)second << 8 | first;
         }
 
         if (physical < 0xF0000)
@@ -149,8 +150,8 @@ namespace Cepums {
         if (physical < 0xA0000)
         {
             // TODO: Maybe these are flipped
-            m_RAM.at(physical) = higher;
-            m_RAM.at(++physical) = lower;
+            m_RAM.at(physical) = lower;
+            m_RAM.at(++physical) = higher;
             return;
         }
 
