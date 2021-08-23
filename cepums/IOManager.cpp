@@ -37,6 +37,34 @@ namespace Cepums {
         if (address == 0x0D)
             return;
 
+        // PIT counter 0
+        if (address == 0x40)
+        {
+            DC_CORE_TRACE("PIT counter 0 (counter divisor) stub :(");
+            return;
+        }
+
+        // PIT counter 1
+        if (address == 0x41)
+        {
+            DC_CORE_TRACE("PIT counter 1 (RAM refresh counter) stub :(");
+            return;
+        }
+
+        // PIT counter 2
+        if (address == 0x42)
+        {
+            DC_CORE_TRACE("PIT counter 2 (cassette  and speaker) stub :(");
+            return;
+        }
+
+        // PIT mode port
+        if (address == 0x43)
+        {
+            DC_CORE_TRACE("PIT stub :(");
+            return;
+        }
+
         // POST register
         if (address == 0x80)
         {
