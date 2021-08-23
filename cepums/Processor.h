@@ -1,5 +1,6 @@
 #pragma once
 
+#include "IOManager.h"
 #include "MemoryManager.h"
 
 #define HIGHER(word) (uint8_t)(word >> 8)
@@ -89,7 +90,7 @@ namespace Cepums {
 
         void reset();
 
-        void execute(MemoryManager& memoryManager);
+        void execute(MemoryManager& memoryManager, IOManager& io);
 
         // Large pile of instructions
         void ins$HLT();

@@ -19,7 +19,7 @@ namespace Cepums {
         // TODO: Empty the queue here as well once that's implemented
     }
 
-    void Processor::execute(MemoryManager& memoryManager)
+    void Processor::execute(MemoryManager& memoryManager, IOManager& io)
     {
         if (m_cyclesToWait > 0)
         {
@@ -27,15 +27,12 @@ namespace Cepums {
             return;
         }
 
-        DC_CORE_INFO("{0}: ===== NEW CYCLE =====", m_currentCycleCounter++);
+        uint8_t hopefully_an_instruction = memoryManager.readByte(m_codeSegment, m_instructionPointer);
+        m_instructionPointer++;
+        DC_CORE_INFO("{0}: ===== Fetched new instruction: 0x{1:x} =====", m_currentCycleCounter++, hopefully_an_instruction);
         DC_CORE_TRACE(" AX: 0x{0:x}   BX: 0x{1:x}   CX: 0x{2:x}   DX: 0x{3:x}", AX(), BX(), CX(), DX());
         DC_CORE_TRACE(" DS: 0x{0:x}   CS: 0x{1:x}   SS: 0x{2:x}   ES: 0x{3:x}", DS(), CS(), SS(), ES());
         DC_CORE_TRACE(" IP: 0x{0:x}", IP());
-
-        uint8_t hopefully_an_instruction = memoryManager.readByte(m_codeSegment, m_instructionPointer);
-        m_instructionPointer++;
-
-        DC_CORE_TRACE("Fetched new instruction 0x{0:x}", hopefully_an_instruction);
 
 #if 0
         m_AX = 0x1234;
@@ -1566,9 +1563,9 @@ namespace Cepums {
         }
         case 0xE4: // IN: 8-bit immediate and AL
         {
-            //TODO();
-            DC_CORE_ERROR("ins$IN is unimplemented so we'll skip over :(");
+            DC_CORE_WARN("ins$IN: Data from port immediate into AL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, data);
+            AL(io.readByte(data));
             return;
         }
         case 0xE5: // IN: 8-bit immediate and AX ??
@@ -1578,9 +1575,9 @@ namespace Cepums {
         }
         case 0xE6: // OUT: 8-bit immediate and AL
         {
-            //TODO();
-            DC_CORE_ERROR("ins$OUT is unimplemented so we'll skip over :(");
+            DC_CORE_WARN("ins$OUT: immediate data to port AL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, data);
+            io.writeByte(data, AL());
             return;
         }
         case 0xE7: // OUT: 8-bit immediate and AX ??
@@ -1614,26 +1611,26 @@ namespace Cepums {
         }
         case 0xEC: // IN: AL and AX
         {
-            //TODO();
+            TODO();
             DC_CORE_ERROR("ins$IN is unimplemented so we'll skip over :(");
             return;
         }
         case 0xED: // IN: AX and DX
         {
-            //TODO();
+            TODO();
             DC_CORE_ERROR("ins$IN is unimplemented so we'll skip over :(");
             return;
         }
         case 0xEE: // OUT: AL and DX
         {
-            //TODO();
-            DC_CORE_ERROR("ins$OUT is unimplemented so we'll skip over :(");
+            DC_CORE_WARN("ins$OUT: DX to port AL");
+            io.writeByte(DX(), AL());
             return;
         }
         case 0xEF: // OUT: AX and DX
         {
-            //TODO();
-            DC_CORE_ERROR("ins$OUT is unimplemented so we'll skip over :(");
+            TODO();
+            // TODO: This needs to do 16-bit transfers I think
             return;
         }
         case 0xF0: // LOCK: Lock bus

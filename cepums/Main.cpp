@@ -1,5 +1,6 @@
 #include "cepumspch.h"
 
+#include "IOManager.h"
 #include "Log.h"
 #include "MemoryManager.h"
 #include "Processor.h"
@@ -14,6 +15,7 @@ int main()
     Cepums::Processor processor;
 
     Cepums::MemoryManager memoryManager;
+    Cepums::IOManager ioManager;
 
 #if 0
     uint16_t test_segment = 0x06EF;
@@ -39,7 +41,7 @@ int main()
     bool shouldExecute = true;
 
     while (shouldExecute)
-        processor.execute(memoryManager);
+        processor.execute(memoryManager, ioManager);
 
     return 0;
 }
