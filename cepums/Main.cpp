@@ -64,9 +64,28 @@ int main(int argc, char** argv)
     // Create the Processor loop thread
 
     std::thread processing([&] { while (shouldExecute) processor.execute(memoryManager, ioManager); });
-    
-    SDL_Delay(2000);
 
+    while (shouldExecute)
+    {
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
+        {
+            switch (event.type)
+            {
+            case SDL_USEREVENT:
+                break;
+            case SDL_KEYDOWN:
+                break;
+            case SDL_MOUSEBUTTONDOWN:
+                break;
+            case SDL_QUIT:
+                shouldExecute = false;
+                break;
+            default:
+                break;
+            }
+        }
+    }
 
     // Quit
     shouldExecute = false;
