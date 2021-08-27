@@ -5,11 +5,32 @@
 #include "MemoryManager.h"
 #include "Processor.h"
 
-int main()
+#include <thread>
+
+#define SDL_MAIN_HANDLED
+#include <SDL.h>
+
+int main(int argc, char** argv)
 {
+    SDL_SetMainReady();
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+
     // Initialize the basics
     Cepums::Log::init();
     DC_CORE_INFO("Cepums-86 starting up ...");
+
+    // Create a window
+    SDL_Window* window = SDL_CreateWindow("Cepums-86", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);
+
+    // Handle errors
+    if (!window)
+    {
+        DC_CORE_CRITICAL("SDL_CreateWindow: {0}", SDL_GetError());
+        return 1;
+    }
+
+    // Create the renderer
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     // Make a processor
     Cepums::Processor processor;
@@ -40,8 +61,17 @@ int main()
 
     bool shouldExecute = true;
 
-    while (shouldExecute)
-        processor.execute(memoryManager, ioManager);
+    // Create the Processor loop thread
 
+    std::thread processing([&] { while (shouldExecute) processor.execute(memoryManager, ioManager); });
+    
+    SDL_Delay(2000);
+
+
+    // Quit
+    shouldExecute = false;
+    processing.join();
+
+    SDL_Quit();
     return 0;
 }

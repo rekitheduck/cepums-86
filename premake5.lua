@@ -14,6 +14,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 -- Include directories
 includeDir = {}
 includeDir["spdlog"] = "subprojects/spdlog/include"
+includeDir["SDL"] = "subprojects/SDL/SDL-repo/include"
 
 -- spdlog project premake
 project "spdlog"
@@ -77,10 +78,17 @@ project "Cepums-86"
     {
         "%{prj.location}",
         "%{includeDir.spdlog}",
+        "%{includeDir.SDL}",
     }
 
     links
     {
+        "SDL2"
+    }
+
+    libdirs
+    {
+        "subprojects/SDL/lib"
     }
 
     filter "system:linux"
