@@ -17,6 +17,8 @@ builddir/
 # Keep copyrighted BIOS out of here pls :)
 *.BIN
 *.bin
+*.dll
+*.lib
 
 # Linux: Makefiles :)
 Makefile
