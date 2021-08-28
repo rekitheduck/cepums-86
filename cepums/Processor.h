@@ -23,6 +23,7 @@
 #define PARSE_MOD_REG_RM_BITS(byte, mod, reg, rm) uint8_t rm = byte; RMBITS(0, rm); uint8_t reg = byte; REGBITS(3, reg); uint8_t mod = byte; MODBITS(6, mod)
 #define LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(mm, modBits, rmBits, displLow, displHigh) uint8_t displLow = 0; uint8_t displHigh = 0; loadDisplacementsFromInstructionStream(mm, modBits, rmBits, displLow, displHigh)
 #define CALCULATE_EFFECTIVE_ADDRESS(ea, rmBits, modBits, isWord, displLow, displHigh) uint16_t ea = getEffectiveAddressFromBits(rmBits, modBits, isWord, displLow, displHigh)
+#define RESET_SEGMENT_PREFIX() m_segmentPrefix = EMPTY_SEGMENT_OVERRIDE; m_segmentPrefixCounter = 0
 
 #define IS_IN_REGISTER_MODE(mod) mod == 0b11
 #define IS_IN_MEMORY_BODE_NO_DISPLACEMENT(mod) mod == 0b00
@@ -259,6 +260,7 @@ namespace Cepums {
         void setFlagsAfterArithmeticOperation(uint16_t word);
         const char* getRegisterNameFromREG8(uint8_t REG);
         const char* getRegisterNameFromREG16(uint8_t REG);
+        const char* getSegmentRegisterName(uint8_t REG);
     private:
         int m_cyclesToWait = 0;
         int m_currentCycleCounter = 0;

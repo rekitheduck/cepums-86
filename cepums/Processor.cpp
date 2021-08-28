@@ -2374,7 +2374,33 @@ namespace Cepums {
 
     void Processor::ins$LODSword(MemoryManager& memoryManager)
     {
-        INSTRUCTION_TRACE("ins$LODS: Load DS:SI word into AX");
+        std::string segRegName = getSegmentRegisterName(REGISTER_DS);
+        switch (m_segmentPrefix)
+        {
+        case REGISTER_ES:
+            segRegName = getSegmentRegisterName(m_segmentPrefix);
+            AX() = memoryManager.readWord(ES(), SI());
+            RESET_SEGMENT_PREFIX();
+            return;
+
+        case REGISTER_CS:
+            segRegName = getSegmentRegisterName(m_segmentPrefix);
+            AX() = memoryManager.readWord(CS(), SI());
+            RESET_SEGMENT_PREFIX();
+            return;
+
+        case REGISTER_SS:
+            segRegName = getSegmentRegisterName(m_segmentPrefix);
+            AX() = memoryManager.readWord(SS(), SI());
+            RESET_SEGMENT_PREFIX();
+            return;
+
+        case REGISTER_DS:
+        default:
+            break;
+        }
+
+        INSTRUCTION_TRACE("ins$LODS: Load {0}:SI word into AX", segRegName);
         AX() = memoryManager.readWord(DS(), SI());
     }
 
@@ -3529,6 +3555,25 @@ namespace Cepums {
 
         default:
             DC_CORE_ERROR("Malformed REG bits : 0b{0:b}", REG);
+            VERIFY_NOT_REACHED();
+            return "ERROR";
+        }
+    }
+
+    const char* Processor::getSegmentRegisterName(uint8_t REG)
+    {
+        switch (REG)
+        {
+        case REGISTER_ES:
+            return "ES";
+        case REGISTER_CS:
+            return "CS";
+        case REGISTER_SS:
+            return "SS";
+        case REGISTER_DS:
+            return "DS";
+        default:
+            DC_CORE_ERROR("Malformed SegReg bits : 0b{0:b}", REG);
             VERIFY_NOT_REACHED();
             return "ERROR";
         }
