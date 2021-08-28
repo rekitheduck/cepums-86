@@ -2381,27 +2381,27 @@ namespace Cepums {
             segRegName = getSegmentRegisterName(m_segmentPrefix);
             AX() = memoryManager.readWord(ES(), SI());
             RESET_SEGMENT_PREFIX();
-            return;
+            break;
 
         case REGISTER_CS:
             segRegName = getSegmentRegisterName(m_segmentPrefix);
             AX() = memoryManager.readWord(CS(), SI());
             RESET_SEGMENT_PREFIX();
-            return;
+            break;
 
         case REGISTER_SS:
             segRegName = getSegmentRegisterName(m_segmentPrefix);
             AX() = memoryManager.readWord(SS(), SI());
             RESET_SEGMENT_PREFIX();
-            return;
+            break;
 
         case REGISTER_DS:
         default:
+            AX() = memoryManager.readWord(DS(), SI());
             break;
         }
 
         INSTRUCTION_TRACE("ins$LODS: Load {0}:SI word into AX", segRegName);
-        AX() = memoryManager.readWord(DS(), SI());
     }
 
     void Processor::ins$LOOP(int8_t offset)
