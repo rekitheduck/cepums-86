@@ -12,6 +12,13 @@ namespace Cepums {
 
     uint8_t IOManager::readByte(uint16_t address)
     {
+        // I don't know how to deal with this anymore, so let's log and ignore
+        if (address == 0x61)
+        {
+            DC_CORE_TRACE("Dummy read from Programmable Peripheral Interface (PPI) B control register");
+            return 0;
+        }
+
         // Dummy read from CMOS RAM/RTC
         if (address == 0x71)
         {

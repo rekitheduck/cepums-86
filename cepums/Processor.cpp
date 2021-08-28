@@ -193,8 +193,8 @@ namespace Cepums {
         }
         case 0x0C: // OR: 8-bit immediate with AL
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
+            return ins$ORimmediateToRegister(REGISTER_AL, immediate);
         }
         case 0x0D: // OR: 16-bit immediate with AX
         {
@@ -911,7 +911,7 @@ namespace Cepums {
                 case 0b101:
                     //return ins$SUBimmediateToRegisterWord(rmBits, immediate);
                 case 0b111:
-                    //return ins$CMPimmediateToRegisterWord(rmBits, immediate);
+                    return ins$CMPimmediateToRegister(rmBits, immediate);
                 default:
                     ILLEGAL_INSTRUCTION();
                     return;
@@ -934,7 +934,7 @@ namespace Cepums {
             case 0b101:
                 //return ins$SUBimmediateToMemory(memoryManager, effectiveAddress, immediate);
             case 0b111:
-                //return ins$CMPimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                return ins$CMPimmediateToMemory(memoryManager, effectiveAddress, immediate);
             default:
                 ILLEGAL_INSTRUCTION();
                 return;
@@ -2620,6 +2620,15 @@ namespace Cepums {
         uint16_t registerValue = getRegisterFromREG16(REG);
         registerValue = ~registerValue;
         updateRegisterFromREG16(REG, registerValue);
+    }
+
+    void Processor::ins$ORimmediateToRegister(uint8_t destREG, uint8_t immediate)
+    {
+        INSTRUCTION_TRACE("ins$OR: 8-bit immediate to register");
+        auto operand = getRegisterValueFromREG8(destREG);
+        uint8_t result = operand | immediate;
+        updateRegisterFromREG8(destREG, result);
+        setFlagsAfterLogicalOperation(result);
     }
 
     void Processor::ins$POPsegmentRegister(MemoryManager& memoryManager, uint8_t srBits)
