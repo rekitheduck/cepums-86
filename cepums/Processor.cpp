@@ -27,6 +27,16 @@ namespace Cepums {
             return;
         }
 
+        // Increment segment prefix counter if it's being used
+        if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
+            m_segmentPrefixCounter++;
+
+        // If the previous instruction hasn't reset the segment prefix (and counter), it means it hasn't handled it
+        if (m_segmentPrefixCounter == 2)
+        {
+            VERIFY_NOT_REACHED();
+        }
+
         uint8_t hopefully_an_instruction = memoryManager.readByte(m_codeSegment, m_instructionPointer);
         m_instructionPointer++;
         //DC_CORE_INFO("{0}: ===== Fetched new instruction: 0x{1:x} =====", m_currentCycleCounter++, hopefully_an_instruction);

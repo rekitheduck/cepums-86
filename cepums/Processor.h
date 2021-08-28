@@ -86,7 +86,9 @@
 #define REGISTER_ES 0b00
 #define REGISTER_CS 0b01
 #define REGISTER_SS 0b10
-#define REGISTER_DS 0b01
+#define REGISTER_DS 0b11
+
+#define EMPTY_SEGMENT_OVERRIDE 0b111
 
 namespace Cepums {
 
@@ -262,6 +264,9 @@ namespace Cepums {
         int m_currentCycleCounter = 0;
 
         // TODO: 6-byte instruction queue
+
+        uint8_t m_segmentPrefix = EMPTY_SEGMENT_OVERRIDE;
+        uint8_t m_segmentPrefixCounter = 0;
 
         // Flags Register
         uint16_t m_flags = 0;
