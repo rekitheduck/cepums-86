@@ -18,6 +18,8 @@
 #define ILLEGAL_INSTRUCTION() { DC_CORE_CRITICAL("ILLEGAL INSTRUCTION REACHED in {0}:{1}", __FILE__, __LINE__); __debugbreak(); }
 #define UNKNOWN_INSTRUCTION() { DC_CORE_CRITICAL("Unknown instruction parsed in {0}:{1}", __FILE__, __LINE__); __debugbreak(); }
 #define VERIFY_NOT_REACHED() DC_CORE_CRITICAL("Verify not reached hit in {0}:{1}!", __FILE__, __LINE__); __debugbreak()
+//#define INSTRUCTION_TRACE(...) DC_CORE_WARN(__VA_ARGS__)
+#define INSTRUCTION_TRACE(...)
 
 #define BIT(x) (1 << x)
 #define IS_BIT_SET(number, bit) ((number >> bit) & 1U)

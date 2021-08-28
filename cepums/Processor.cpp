@@ -29,7 +29,7 @@ namespace Cepums {
 
         uint8_t hopefully_an_instruction = memoryManager.readByte(m_codeSegment, m_instructionPointer);
         m_instructionPointer++;
-        DC_CORE_INFO("{0}: ===== Fetched new instruction: 0x{1:x} =====", m_currentCycleCounter++, hopefully_an_instruction);
+        //DC_CORE_INFO("{0}: ===== Fetched new instruction: 0x{1:x} =====", m_currentCycleCounter++, hopefully_an_instruction);
         //DC_CORE_TRACE(" AX: 0x{0:x}   BX: 0x{1:x}   CX: 0x{2:x}   DX: 0x{3:x}", AX(), BX(), CX(), DX());
         //DC_CORE_TRACE(" DS: 0x{0:x}   CS: 0x{1:x}   SS: 0x{2:x}   ES: 0x{3:x}", DS(), CS(), SS(), ES());
         //DC_CORE_TRACE(" IP: 0x{0:x}   BP: 0x{1:X}   SI: 0x{2:x}   DI: 0x{3:X}", IP(), BP(), SI(), DI());
@@ -135,7 +135,7 @@ namespace Cepums {
         }
         case 0x04: // ADD: 8-bit immediate to AL
         {
-            DC_CORE_WARN("ADD: 8-bit immediate to AL");
+            INSTRUCTION_TRACE("ADD: 8-bit immediate to AL");
             TODO(); // flags
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
             AL(byte + AL());
@@ -144,7 +144,7 @@ namespace Cepums {
         }
         case 0x05: // ADD: 16-bit immediate to AX
         {
-            DC_CORE_WARN("ADD: 16-bit immediate to AX");
+            INSTRUCTION_TRACE("ADD: 16-bit immediate to AX");
             TODO(); // flags
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, word);
             AX() += word;
@@ -632,7 +632,7 @@ namespace Cepums {
         case 0x70: // JO: Jump if overflow
         {
             LOAD_INCREMENT_BYTE(memoryManager, increment);
-            DC_CORE_WARN("ins$JMP: Jumping if OF=1");
+            INSTRUCTION_TRACE("ins$JMP: Jumping if OF=1");
             if (IS_BIT_SET(m_flags, OVERFLOW_FLAG))
                 return ins$JMPshort(increment);
             return;
@@ -640,7 +640,7 @@ namespace Cepums {
         case 0x71: // JNO: Jump if no overflow
         {
             LOAD_INCREMENT_BYTE(memoryManager, increment);
-            DC_CORE_WARN("ins$JMP: Jumping if OF=0");
+            INSTRUCTION_TRACE("ins$JMP: Jumping if OF=0");
             if (IS_BIT_NOT_SET(m_flags, OVERFLOW_FLAG))
                 return ins$JMPshort(increment);
             return;
@@ -648,7 +648,7 @@ namespace Cepums {
         case 0x72: // JB/JNAE/JC: Jump if below / Jump if not above nor equal / Jump if carry
         {
             LOAD_INCREMENT_BYTE(memoryManager, increment);
-            DC_CORE_WARN("ins$JMP: Jumping if CF=1");
+            INSTRUCTION_TRACE("ins$JMP: Jumping if CF=1");
             if (IS_BIT_SET(m_flags, CARRY_FLAG))
                 return ins$JMPshort(increment);
             return;
@@ -656,7 +656,7 @@ namespace Cepums {
         case 0x73: // JNB/JAE/JNC: Jump if not below / Jump if above or equal / Jump if not carry
         {
             LOAD_INCREMENT_BYTE(memoryManager, increment);
-            DC_CORE_WARN("ins$JMP: Jumping if CF=0");
+            INSTRUCTION_TRACE("ins$JMP: Jumping if CF=0");
             if (IS_BIT_NOT_SET(m_flags, CARRY_FLAG))
                 return ins$JMPshort(increment);
             return;
@@ -664,7 +664,7 @@ namespace Cepums {
         case 0x74: // JE/JZ: Jump if equal / Jump if zero
         {
             LOAD_INCREMENT_BYTE(memoryManager, increment);
-            DC_CORE_WARN("ins$JMP: Jumping if ZF=1");
+            INSTRUCTION_TRACE("ins$JMP: Jumping if ZF=1");
             if (IS_BIT_SET(m_flags, ZERO_FLAG))
                 return ins$JMPshort(increment);
             return;
@@ -672,7 +672,7 @@ namespace Cepums {
         case 0x75: // JNE/JNZ: Jump if not equal / Jump if not zero
         {
             LOAD_INCREMENT_BYTE(memoryManager, increment);
-            DC_CORE_WARN("ins$JMP: Jumping if ZF=0");
+            INSTRUCTION_TRACE("ins$JMP: Jumping if ZF=0");
             if (IS_BIT_NOT_SET(m_flags, ZERO_FLAG))
                 return ins$JMPshort(increment);
             return;
@@ -680,7 +680,7 @@ namespace Cepums {
         case 0x76: // JBE/JNA: Jump if below or equal / Jump if not above
         {
             LOAD_INCREMENT_BYTE(memoryManager, increment);
-            DC_CORE_WARN("ins$JMP: Jumping if CF=1 || ZF=1");
+            INSTRUCTION_TRACE("ins$JMP: Jumping if CF=1 || ZF=1");
             if (IS_BIT_SET(m_flags, CARRY_FLAG) || IS_BIT_SET(m_flags, ZERO_FLAG))
                 return ins$JMPshort(increment);
             return;
@@ -688,7 +688,7 @@ namespace Cepums {
         case 0x77: // JNBE/JA: Jump if not below nor equal / Jump if above
         {
             LOAD_INCREMENT_BYTE(memoryManager, increment);
-            DC_CORE_WARN("ins$JMP: Jumping if CF=0 && ZF=0");
+            INSTRUCTION_TRACE("ins$JMP: Jumping if CF=0 && ZF=0");
             if (IS_BIT_NOT_SET(m_flags, CARRY_FLAG) && IS_BIT_NOT_SET(m_flags, ZERO_FLAG))
                 return ins$JMPshort(increment);
             return;
@@ -696,7 +696,7 @@ namespace Cepums {
         case 0x78: // JS: Jump if sign
         {
             LOAD_INCREMENT_BYTE(memoryManager, increment);
-            DC_CORE_WARN("ins$JMP: Jumping if SF=1");
+            INSTRUCTION_TRACE("ins$JMP: Jumping if SF=1");
             if (IS_BIT_SET(m_flags, SIGN_FLAG))
                 return ins$JMPshort(increment);
             return;
@@ -704,7 +704,7 @@ namespace Cepums {
         case 0x79: // JNS: Jump if not sign
         {
             LOAD_INCREMENT_BYTE(memoryManager, increment);
-            DC_CORE_WARN("ins$JMP: Jumping if SF=0");
+            INSTRUCTION_TRACE("ins$JMP: Jumping if SF=0");
             if (IS_BIT_NOT_SET(m_flags, SIGN_FLAG))
                 return ins$JMPshort(increment);
             return;
@@ -712,7 +712,7 @@ namespace Cepums {
         case 0x7A: // JP/JPE: Jump if parity / Jump if parity even
         {
             LOAD_INCREMENT_BYTE(memoryManager, increment);
-            DC_CORE_WARN("ins$JMP: Jumping if PF=1");
+            INSTRUCTION_TRACE("ins$JMP: Jumping if PF=1");
             if (IS_BIT_SET(m_flags, PARITY_FLAG))
                 return ins$JMPshort(increment);
             return;
@@ -720,7 +720,7 @@ namespace Cepums {
         case 0x7B: // JNP/NPO: Jump if not parity / Jump if parity odd
         {
             LOAD_INCREMENT_BYTE(memoryManager, increment);
-            DC_CORE_WARN("ins$JMP: Jumping if PF=0");
+            INSTRUCTION_TRACE("ins$JMP: Jumping if PF=0");
             if (IS_BIT_NOT_SET(m_flags, PARITY_FLAG))
                 return ins$JMPshort(increment);
             return;
@@ -728,7 +728,7 @@ namespace Cepums {
         case 0x7C: // JL/JNGE: Jump if less / Jump if not greater nor equal
         {
             LOAD_INCREMENT_BYTE(memoryManager, increment);
-            DC_CORE_WARN("ins$JMP: Jumping if SF!=OF");
+            INSTRUCTION_TRACE("ins$JMP: Jumping if SF!=OF");
             if (IS_BIT_SET(m_flags, SIGN_FLAG) != IS_BIT_SET(m_flags, OVERFLOW_FLAG))
                 return ins$JMPshort(increment);
             return;
@@ -736,7 +736,7 @@ namespace Cepums {
         case 0x7D: // JNL/JGE: Jump if greater or equal / Jump if not less
         {
             LOAD_INCREMENT_BYTE(memoryManager, increment);
-            DC_CORE_WARN("ins$JMP: Jumping if SF=OF");
+            INSTRUCTION_TRACE("ins$JMP: Jumping if SF=OF");
             if (IS_BIT_SET(m_flags, SIGN_FLAG) == IS_BIT_SET(m_flags, OVERFLOW_FLAG))
                 return ins$JMPshort(increment);
             return;
@@ -744,7 +744,7 @@ namespace Cepums {
         case 0x7E: // JLE/JNG: Jump if less or equal / Jump if not greater
         {
             LOAD_INCREMENT_BYTE(memoryManager, increment);
-            DC_CORE_WARN("ins$JMP: Jumping if ZF=1 || (SF!=OF)");
+            INSTRUCTION_TRACE("ins$JMP: Jumping if ZF=1 || (SF!=OF)");
             if (IS_BIT_SET(m_flags, ZERO_FLAG) || ( IS_BIT_SET(m_flags, SIGN_FLAG) != IS_BIT_SET(m_flags, OVERFLOW_FLAG)))
                 return ins$JMPshort(increment);
             return;
@@ -752,7 +752,7 @@ namespace Cepums {
         case 0x7F: // JNLE/JG: Jump if not less nor equal / Jump if greater
         {
             LOAD_INCREMENT_BYTE(memoryManager, increment);
-            DC_CORE_WARN("ins$JMP: Jumping if ZF=0 && (SF=OF)");
+            INSTRUCTION_TRACE("ins$JMP: Jumping if ZF=0 && (SF=OF)");
             if (IS_BIT_NOT_SET(m_flags, ZERO_FLAG) && (IS_BIT_SET(m_flags, SIGN_FLAG) == IS_BIT_SET(m_flags, OVERFLOW_FLAG)))
                 return ins$JMPshort(increment);
             return;
@@ -1204,7 +1204,7 @@ namespace Cepums {
         }
         case 0xB0: // MOV: 8-bit from immediate to AL
         {
-            DC_CORE_WARN("$MOV: 8-bit immediate to AL");
+            INSTRUCTION_TRACE("$MOV: 8-bit immediate to AL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
             AL(immediate);
 
@@ -1212,7 +1212,7 @@ namespace Cepums {
         }
         case 0xB1: // MOV: 8-bit from immediate to CL
         {
-            DC_CORE_WARN("$MOV: 8-bit immediate to CL");
+            INSTRUCTION_TRACE("$MOV: 8-bit immediate to CL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
             CL(immediate);
 
@@ -1220,7 +1220,7 @@ namespace Cepums {
         }
         case 0xB2: // MOV: 8-bit from immediate to DL
         {
-            DC_CORE_WARN("$MOV: 8-bit immediate to DL");
+            INSTRUCTION_TRACE("$MOV: 8-bit immediate to DL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
             DL(immediate);
 
@@ -1228,7 +1228,7 @@ namespace Cepums {
         }
         case 0xB3: // MOV: 8-bit from immediate to BL
         {
-            DC_CORE_WARN("$MOV: 8-bit immediate to BL");
+            INSTRUCTION_TRACE("$MOV: 8-bit immediate to BL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
             BL(immediate);
 
@@ -1236,7 +1236,7 @@ namespace Cepums {
         }
         case 0xB4: // MOV: 8-bit from immediate to AH
         {
-            DC_CORE_WARN("$MOV: 8-bit immediate to AH");
+            INSTRUCTION_TRACE("$MOV: 8-bit immediate to AH");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
             AH(immediate);
 
@@ -1244,7 +1244,7 @@ namespace Cepums {
         }
         case 0xB5: // MOV: 8-bit from immediate to CH
         {
-            DC_CORE_WARN("$MOV: 8-bit immediate to CH");
+            INSTRUCTION_TRACE("$MOV: 8-bit immediate to CH");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
             CH(immediate);
 
@@ -1252,7 +1252,7 @@ namespace Cepums {
         }
         case 0xB6: // MOV: 8-bit from immediate to DH
         {
-            DC_CORE_WARN("$MOV: 8-bit immediate to DH");
+            INSTRUCTION_TRACE("$MOV: 8-bit immediate to DH");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
             DH(immediate);
 
@@ -1260,7 +1260,7 @@ namespace Cepums {
         }
         case 0xB7: // MOV: 8-bit from immediate to BH
         {
-            DC_CORE_WARN("$MOV: 8-bit immediate to BH");
+            INSTRUCTION_TRACE("$MOV: 8-bit immediate to BH");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
             BH(immediate);
 
@@ -1268,7 +1268,7 @@ namespace Cepums {
         }
         case 0xB8: // MOV: 16-bit from immediate to AX
         {
-            DC_CORE_WARN("$MOV: 16-bit immediate to AX");
+            INSTRUCTION_TRACE("$MOV: 16-bit immediate to AX");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
             AX() = immediate;
 
@@ -1276,7 +1276,7 @@ namespace Cepums {
         }
         case 0xB9: // MOV: 16-bit from immediate to CX
         {
-            DC_CORE_WARN("$MOV: 16-bit immediate to CX");
+            INSTRUCTION_TRACE("$MOV: 16-bit immediate to CX");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
             CX() = immediate;
 
@@ -1284,7 +1284,7 @@ namespace Cepums {
         }
         case 0xBA: // MOV: 16-bit from immediate to DX
         {
-            DC_CORE_WARN("$MOV: 16-bit immediate to DX");
+            INSTRUCTION_TRACE("$MOV: 16-bit immediate to DX");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
             DX() = immediate;
 
@@ -1292,7 +1292,7 @@ namespace Cepums {
         }
         case 0xBB: // MOV: 16-bit from immediate to BX
         {
-            DC_CORE_WARN("$MOV: 16-bit immediate to BX");
+            INSTRUCTION_TRACE("$MOV: 16-bit immediate to BX");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
             BX() = immediate;
 
@@ -1300,7 +1300,7 @@ namespace Cepums {
         }
         case 0xBC: // MOV: 16-bit from immediate to SP
         {
-            DC_CORE_WARN("$MOV: 16-bit immediate to SP");
+            INSTRUCTION_TRACE("$MOV: 16-bit immediate to SP");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
             SP() = immediate;
 
@@ -1308,7 +1308,7 @@ namespace Cepums {
         }
         case 0xBD: // MOV: 16-bit from immediate to BP
         {
-            DC_CORE_WARN("$MOV: 16-bit immediate to BP");
+            INSTRUCTION_TRACE("$MOV: 16-bit immediate to BP");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
             BP() = immediate;
 
@@ -1316,7 +1316,7 @@ namespace Cepums {
         }
         case 0xBE: // MOV: 16-bit from immediate to SI
         {
-            DC_CORE_WARN("$MOV: 16-bit immediate to SI");
+            INSTRUCTION_TRACE("$MOV: 16-bit immediate to SI");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
             SI() = immediate;
 
@@ -1324,7 +1324,7 @@ namespace Cepums {
         }
         case 0xBF: // MOV: 16-bit from immediate to DI
         {
-            DC_CORE_WARN("$MOV: 16-bit immediate to DI");
+            INSTRUCTION_TRACE("$MOV: 16-bit immediate to DI");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
             DI() = immediate;
 
@@ -1566,7 +1566,7 @@ namespace Cepums {
         }
         case 0xE4: // IN: 8-bit immediate and AL
         {
-            DC_CORE_WARN("ins$IN: Data from port immediate into AL");
+            INSTRUCTION_TRACE("ins$IN: Data from port immediate into AL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, data);
             AL(io.readByte(data));
             return;
@@ -1578,7 +1578,7 @@ namespace Cepums {
         }
         case 0xE6: // OUT: 8-bit immediate and AL
         {
-            DC_CORE_WARN("ins$OUT: immediate data to port AL");
+            INSTRUCTION_TRACE("ins$OUT: immediate data to port AL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, data);
             io.writeByte(data, AL());
             return;
@@ -1626,7 +1626,7 @@ namespace Cepums {
         }
         case 0xEE: // OUT: AL and DX
         {
-            DC_CORE_WARN("ins$OUT: DX to port AL");
+            INSTRUCTION_TRACE("ins$OUT: DX to port AL");
             io.writeByte(DX(), AL());
             return;
         }
@@ -1838,13 +1838,13 @@ namespace Cepums {
 
     void Processor::ins$HLT()
     {
-        DC_CORE_WARN("ins$HLT: Halting");
+        INSTRUCTION_TRACE("ins$HLT: Halting");
         TODO();
     }
 
     void Processor::ins$CLC()
     {
-        DC_CORE_WARN("ins$CLC: Clear carry flag");
+        INSTRUCTION_TRACE("ins$CLC: Clear carry flag");
         CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
     }
 
@@ -1855,32 +1855,32 @@ namespace Cepums {
 
     void Processor::ins$STC()
     {
-        DC_CORE_WARN("ins$STC: Set carry flag");
+        INSTRUCTION_TRACE("ins$STC: Set carry flag");
         SET_FLAG_BIT(m_flags, CARRY_FLAG);
     }
 
     void Processor::ins$CLD()
     {
-        DC_CORE_WARN("ins$CLD: Clear direction flag");
+        INSTRUCTION_TRACE("ins$CLD: Clear direction flag");
         CLEAR_FLAG_BIT(m_flags, DIRECTION_FLAG);
     }
 
     void Processor::ins$STD()
     {
-        DC_CORE_WARN("ins$STD: Set direction flag");
+        INSTRUCTION_TRACE("ins$STD: Set direction flag");
         SET_FLAG_BIT(m_flags, DIRECTION_FLAG);
 
     }
 
     void Processor::ins$CLI()
     {
-        DC_CORE_WARN("ins$CLI: Disable interrupts");
+        INSTRUCTION_TRACE("ins$CLI: Disable interrupts");
         CLEAR_FLAG_BIT(m_flags, INTERRUPT_ENABLE_FLAG);
     }
 
     void Processor::ins$STI()
     {
-        DC_CORE_WARN("ins$STI: Enabling interrupts");
+        INSTRUCTION_TRACE("ins$STI: Enabling interrupts");
         SET_FLAG_BIT(m_flags, INTERRUPT_ENABLE_FLAG);
     }
 
@@ -1901,7 +1901,7 @@ namespace Cepums {
 
     void Processor::ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t immediate)
     {
-        DC_CORE_WARN("ins$ADD: 8-bit imediate to memory");
+        INSTRUCTION_TRACE("ins$ADD: 8-bit imediate to memory");
         uint8_t memoryValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
         
         // Note: this may be UB :(
@@ -1931,7 +1931,7 @@ namespace Cepums {
 
     void Processor::ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
     {
-        DC_CORE_WARN("ins$ADD: 16-bit immediate to memory");
+        INSTRUCTION_TRACE("ins$ADD: 16-bit immediate to memory");
         uint16_t memoryValue = memoryManager.readWord(m_dataSegment, effectiveAddress);
 
         // Note: this may be UB :(
@@ -1961,7 +1961,7 @@ namespace Cepums {
 
     void Processor::ins$ADDimmediateToRegister(uint8_t destREG, uint8_t value)
     {
-        DC_CORE_WARN("ins$ADD: 8-bit immediate to register");
+        INSTRUCTION_TRACE("ins$ADD: 8-bit immediate to register");
         uint8_t registerValue = getRegisterValueFromREG8(destREG);
 
         // Note: this may be UB :(
@@ -1991,7 +1991,7 @@ namespace Cepums {
 
     void Processor::ins$ADDimmediateToRegister(uint8_t destREG, uint16_t value)
     {
-        DC_CORE_WARN("ins$ADD: 16-bit immediate to register");
+        INSTRUCTION_TRACE("ins$ADD: 16-bit immediate to register");
         uint16_t registerValue = getRegisterFromREG16(destREG);
 
         // Note: this may be UB :(
@@ -2021,7 +2021,7 @@ namespace Cepums {
 
     void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue)
     {
-        DC_CORE_WARN("ins$ADD: 8-bit register to memory");
+        INSTRUCTION_TRACE("ins$ADD: 8-bit register to memory");
         uint8_t memoryValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
 
         // Note: this may be UB :(
@@ -2051,7 +2051,7 @@ namespace Cepums {
 
     void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue)
     {
-        DC_CORE_WARN("ins$ADD: 16-bit register to memory");
+        INSTRUCTION_TRACE("ins$ADD: 16-bit register to memory");
         uint16_t memoryValue = memoryManager.readWord(m_dataSegment, effectiveAddress);
 
         // Note: this may be UB :(
@@ -2081,7 +2081,7 @@ namespace Cepums {
 
     void Processor::ins$ADDregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
     {
-        DC_CORE_WARN("ins$ADD: 8-bit register to register");
+        INSTRUCTION_TRACE("ins$ADD: 8-bit register to register");
         uint8_t registerValue = getRegisterValueFromREG8(destREG);
         uint8_t sourceValue = getRegisterValueFromREG8(sourceREG);
 
@@ -2112,7 +2112,7 @@ namespace Cepums {
 
     void Processor::ins$ADDregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
     {
-        DC_CORE_WARN("ins$ADD: 16-bit register to register");
+        INSTRUCTION_TRACE("ins$ADD: 16-bit register to register");
         uint16_t registerValue = getRegisterFromREG16(destREG);
         uint16_t sourceValue = getRegisterFromREG16(sourceREG);
 
@@ -2143,7 +2143,7 @@ namespace Cepums {
 
     void Processor::ins$CALLnear(MemoryManager& memoryManager, int16_t offset)
     {
-        DC_CORE_WARN("ins$CALL: near to {0:X}:{1:X}", m_codeSegment, offset + IP());
+        INSTRUCTION_TRACE("ins$CALL: near to {0:X}:{1:X}", m_codeSegment, offset + IP());
         // Start by pushing IP onto stack
         // Decrement the Stack Pointer (by size of register) before doing anything
         SP() -= 2;
@@ -2155,7 +2155,7 @@ namespace Cepums {
 
     void Processor::ins$CMPimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
     {
-        DC_CORE_WARN("ins$CMP: 16-bit immediate to memory");
+        INSTRUCTION_TRACE("ins$CMP: 16-bit immediate to memory");
         uint16_t memoryValue = memoryManager.readWord(m_dataSegment, effectiveAddress);
 
         // Note: this may be UB :(
@@ -2182,7 +2182,7 @@ namespace Cepums {
 
     void Processor::ins$CMPimmediateToRegister(uint8_t destREG, uint16_t immediate)
     {
-        DC_CORE_WARN("ins$CMP: 16-bit immediate to register");
+        INSTRUCTION_TRACE("ins$CMP: 16-bit immediate to register");
         uint16_t registerValue = getRegisterFromREG16(destREG);
 
         // Note: this may be UB :(
@@ -2226,7 +2226,7 @@ namespace Cepums {
     {
         if (isWordBit)
         {
-            DC_CORE_WARN("ins$INC: INC {0}", getRegisterNameFromREG16(REG));
+            INSTRUCTION_TRACE("ins$INC: INC {0}", getRegisterNameFromREG16(REG));
             uint16_t currentValue = getRegisterFromREG16(REG);
             uint16_t newValue = currentValue + 1;
             updateRegisterFromREG16(REG, newValue);
@@ -2255,7 +2255,7 @@ namespace Cepums {
         }
         else
         {
-            DC_CORE_WARN("ins$INC: INC {0}", getRegisterNameFromREG8(REG));
+            INSTRUCTION_TRACE("ins$INC: INC {0}", getRegisterNameFromREG8(REG));
             uint8_t currentValue = getRegisterValueFromREG8(REG);
             uint8_t newValue = currentValue + 1;
             updateRegisterFromREG8(REG, newValue);
@@ -2286,7 +2286,7 @@ namespace Cepums {
 
     void Processor::ins$INCmemoryByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
     {
-        DC_CORE_WARN("ins$INC: 8-bit memory {0:X}:{1:X}", m_dataSegment, effectiveAddress);
+        INSTRUCTION_TRACE("ins$INC: 8-bit memory {0:X}:{1:X}", m_dataSegment, effectiveAddress);
         uint8_t currentValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
         uint8_t newValue = currentValue + 1;
         memoryManager.writeByte(m_dataSegment, effectiveAddress, newValue);
@@ -2316,7 +2316,7 @@ namespace Cepums {
 
     void Processor::ins$INCmemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress)
     {
-        DC_CORE_WARN("ins$INC: 16-bit memory {0:X}:{1:X}", m_dataSegment, effectiveAddress);
+        INSTRUCTION_TRACE("ins$INC: 16-bit memory {0:X}:{1:X}", m_dataSegment, effectiveAddress);
         uint16_t currentValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
         uint16_t newValue = currentValue + 1;
         memoryManager.writeWord(m_dataSegment, effectiveAddress, newValue);
@@ -2346,11 +2346,11 @@ namespace Cepums {
 
     void Processor::ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer)
     {
-        DC_CORE_WARN("ins$JMP: Jumping to {0:x}:{1:x}", newCodeSegment, newInstructionPointer);
+        INSTRUCTION_TRACE("ins$JMP: Jumping to {0:x}:{1:x}", newCodeSegment, newInstructionPointer);
 
         // Debug: Print the BIOS ROM address
         if (newCodeSegment == 0xF000)
-            DC_CORE_TRACE(".. which is at BIOS 0x{0:X} in HEX EDITOR or 0x{1:X} in the actual ROM", MemoryManager::addresstoPhysical(newCodeSegment, newInstructionPointer) - 0xF8000, MemoryManager::addresstoPhysical(newCodeSegment, newInstructionPointer) - 0xF0000);
+            INSTRUCTION_TRACE(".. which is at BIOS 0x{0:X} in HEX EDITOR or 0x{1:X} in the actual ROM", MemoryManager::addresstoPhysical(newCodeSegment, newInstructionPointer) - 0xF8000, MemoryManager::addresstoPhysical(newCodeSegment, newInstructionPointer) - 0xF0000);
 
         m_codeSegment = newCodeSegment;
         m_instructionPointer = newInstructionPointer;
@@ -2358,19 +2358,19 @@ namespace Cepums {
 
     void Processor::ins$JMPshort(int8_t increment)
     {
-        DC_CORE_WARN("ins$JMP: Jumping to short");
+        INSTRUCTION_TRACE("ins$JMP: Jumping to short");
         m_instructionPointer += increment;
     }
 
     void Processor::ins$LODSword(MemoryManager& memoryManager)
     {
-        DC_CORE_WARN("ins$LODS: Load DS:SI word into AX");
+        INSTRUCTION_TRACE("ins$LODS: Load DS:SI word into AX");
         AX() = memoryManager.readWord(DS(), SI());
     }
 
     void Processor::ins$LOOP(int8_t offset)
     {
-        DC_CORE_WARN("ins$LOOP: Loop with CX as counter");
+        INSTRUCTION_TRACE("ins$LOOP: Loop with CX as counter");
         // Decrement at the start
         CX()--;
         // Get out of loop if CX == 0
@@ -2383,32 +2383,32 @@ namespace Cepums {
 
     void Processor::ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
     {
-        DC_CORE_WARN("ins$MOV: 16-bit immediate to memory");
+        INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to memory");
         memoryManager.writeWord(m_dataSegment, effectiveAddress, immediate);
     }
 
     void Processor::ins$MOVimmediateToRegisterByte(uint8_t reg, uint8_t immediate)
     {
-        DC_CORE_WARN("ins$MOV: 8-bit immediate to register");
+        INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to register");
         updateRegisterFromREG8(reg, immediate);
     }
 
     void Processor::ins$MOVimmediateToRegisterWord(uint8_t reg, uint16_t immediate)
     {
-        DC_CORE_WARN("ins$MOV: 16-bit immediate to register");
+        INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to register");
         updateRegisterFromREG16(reg, immediate);
     }
 
     void Processor::ins$MOVmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress)
     {
-        DC_CORE_WARN("ins$MOV: 16-bit memory to segment register");
+        INSTRUCTION_TRACE("ins$MOV: 16-bit memory to segment register");
         uint16_t value = memoryManager.readWord(m_dataSegment, effectiveAddress);
         updateRegisterFromREG16(destREG, value);
     }
 
     void Processor::ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t effectiveAddress)
     {
-        DC_CORE_WARN("ins$MOV: 16-bit memory to segment register");
+        INSTRUCTION_TRACE("ins$MOV: 16-bit memory to segment register");
         uint16_t value = memoryManager.readWord(m_dataSegment, effectiveAddress);
 
         switch (srBits)
@@ -2438,33 +2438,33 @@ namespace Cepums {
 
     void Processor::ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue)
     {
-        DC_CORE_WARN("ins$MOV: 8-bit register to memory");
+        INSTRUCTION_TRACE("ins$MOV: 8-bit register to memory");
         memoryManager.writeByte(m_dataSegment, effectiveAddress, registerValue);
     }
 
     void Processor::ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue)
     {
-        DC_CORE_WARN("ins$MOV: 16-bit register to memory");
+        INSTRUCTION_TRACE("ins$MOV: 16-bit register to memory");
         memoryManager.writeWord(m_dataSegment, effectiveAddress, registerValue);
     }
 
     void Processor::ins$MOVregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
     {
-        DC_CORE_WARN("ins$MOV: 8-bit register to register");
+        INSTRUCTION_TRACE("ins$MOV: 8-bit register to register");
         uint8_t sourceValue = getRegisterValueFromREG8(sourceREG);
         updateRegisterFromREG8(destREG, sourceValue);
     }
 
     void Processor::ins$MOVregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
     {
-        DC_CORE_WARN("ins$MOV: 16-bit register to register");
+        INSTRUCTION_TRACE("ins$MOV: 16-bit register to register");
         uint16_t sourceValue = getRegisterFromREG16(sourceREG);
         updateRegisterFromREG16(destREG, sourceValue);
     }
 
     void Processor::ins$MOVregisterToSegmentRegisterWord(uint8_t srBits, uint16_t value)
     {
-        DC_CORE_WARN("ins$MOV: 16-bit register to segment register");
+        INSTRUCTION_TRACE("ins$MOV: 16-bit register to segment register");
         switch (srBits)
         {
         case 0b00:
@@ -2492,7 +2492,7 @@ namespace Cepums {
 
     void Processor::ins$MOVsegmentRegisterToMemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t SEGREG)
     {
-        DC_CORE_WARN("ins$MOV: 16-bit segment register to memory");
+        INSTRUCTION_TRACE("ins$MOV: 16-bit segment register to memory");
         uint16_t segRegValue;
         switch (SEGREG)
         {
@@ -2523,7 +2523,7 @@ namespace Cepums {
 
     void Processor::ins$MOVsegmentRegisterToRegisterWord(uint8_t REG, uint8_t SEGREG)
     {
-        DC_CORE_WARN("ins$MOV: 16-bit segment register to register");
+        INSTRUCTION_TRACE("ins$MOV: 16-bit segment register to register");
         uint16_t segRegValue;
         switch (SEGREG)
         {
@@ -2572,7 +2572,7 @@ namespace Cepums {
 
     void Processor::ins$NOTmemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress)
     {
-        DC_CORE_WARN("ins$NOT: 16-bit memory");
+        INSTRUCTION_TRACE("ins$NOT: 16-bit memory");
         uint16_t memoryValue = memoryManager.readWord(m_dataSegment, effectiveAddress);
         memoryValue = ~memoryValue;
         memoryManager.writeWord(m_dataSegment, effectiveAddress, memoryValue);
@@ -2580,7 +2580,7 @@ namespace Cepums {
 
     void Processor::ins$NOTregisterWord(uint8_t REG)
     {
-        DC_CORE_WARN("ins$NOT: 16-bit register");
+        INSTRUCTION_TRACE("ins$NOT: 16-bit register");
         uint16_t registerValue = getRegisterFromREG16(REG);
         registerValue = ~registerValue;
         updateRegisterFromREG16(REG, registerValue);
@@ -2588,7 +2588,7 @@ namespace Cepums {
 
     void Processor::ins$POPsegmentRegister(MemoryManager& memoryManager, uint8_t srBits)
     {
-        DC_CORE_WARN("ins$POP: segment register");
+        INSTRUCTION_TRACE("ins$POP: segment register");
         switch (srBits)
         {
         case REGISTER_DS:
@@ -2605,7 +2605,7 @@ namespace Cepums {
 
     void Processor::ins$PUSHsegmentRegister(MemoryManager& memoryManager, uint8_t srBits)
     {
-        DC_CORE_WARN("ins$PUSH: segment register");
+        INSTRUCTION_TRACE("ins$PUSH: segment register");
         // Decrement the Stack Pointer (by size of register) before doing anything
         SP() -= 2;
         switch (srBits)
@@ -2661,8 +2661,7 @@ namespace Cepums {
 
     void Processor::ins$REP_STOSword(MemoryManager& memoryManager)
     {
-        DC_CORE_WARN("ins$REP_STOS: Repeat fill with string");
-
+        INSTRUCTION_TRACE("ins$REP_STOS: Repeat fill with string");
         for (uint16_t i = 0; i < CX(); i+=2)
         {
             memoryManager.writeWord(m_extraSegment, m_destinationIndex, AX());
@@ -2725,7 +2724,7 @@ namespace Cepums {
 
     void Processor::ins$SALregisterOnceByte(uint8_t rmBits)
     {
-        DC_CORE_WARN("ins$SAL: {0},1", getRegisterNameFromREG8(rmBits));
+        INSTRUCTION_TRACE("ins$SAL: {0},1", getRegisterNameFromREG8(rmBits));
         uint8_t registerValue = getRegisterValueFromREG8(rmBits);
         uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 7);
         bool setCarry;
@@ -2751,7 +2750,7 @@ namespace Cepums {
 
     void Processor::ins$SALregisterOnceWord(uint8_t rmBits)
     {
-        DC_CORE_WARN("ins$SAL: {0},1", getRegisterNameFromREG16(rmBits));
+        INSTRUCTION_TRACE("ins$SAL: {0},1", getRegisterNameFromREG16(rmBits));
         uint16_t registerValue = getRegisterFromREG16(rmBits);
         uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 15);
         bool setCarry;
@@ -2817,7 +2816,7 @@ namespace Cepums {
 
     void Processor::ins$STOSword(MemoryManager& memoryManager)
     {
-        DC_CORE_WARN("ins$STOS: Store AX into ES:DI");
+        INSTRUCTION_TRACE("ins$STOS: Store AX into ES:DI");
         memoryManager.writeWord(m_extraSegment, m_destinationIndex, AX());
         // Increment if not set, decrement if set
         if (IS_BIT_SET(m_flags, DIRECTION_FLAG))
@@ -2828,7 +2827,7 @@ namespace Cepums {
 
     void Processor::ins$SUBimmediateToRegister(uint8_t destREG, uint8_t value)
     {
-        DC_CORE_WARN("ins$SUB: 8-bit immediate to register");
+        INSTRUCTION_TRACE("ins$SUB: 8-bit immediate to register");
         uint8_t registerValue = getRegisterValueFromREG8(destREG);
 
         // Note: this may be UB :(
@@ -2856,7 +2855,7 @@ namespace Cepums {
 
     void Processor::ins$SUBimmediateToRegister(uint8_t destREG, uint16_t value)
     {
-        DC_CORE_WARN("ins$SUB: 16-bit immediate to register");
+        INSTRUCTION_TRACE("ins$SUB: 16-bit immediate to register");
         uint16_t registerValue = getRegisterFromREG16(destREG);
 
         // Note: this may be UB :(
@@ -2884,7 +2883,7 @@ namespace Cepums {
 
     void Processor::ins$SUBregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue)
     {
-        DC_CORE_WARN("ins$SUB: 8-bit register to memory");
+        INSTRUCTION_TRACE("ins$SUB: 8-bit register to memory");
         uint8_t memoryValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
 
         // Note: this may be UB :(
@@ -2912,7 +2911,7 @@ namespace Cepums {
 
     void Processor::ins$SUBregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue)
     {
-        DC_CORE_WARN("ins$SUB: 16-bit register to memory");
+        INSTRUCTION_TRACE("ins$SUB: 16-bit register to memory");
         uint16_t memoryValue = memoryManager.readWord(m_dataSegment, effectiveAddress);
 
         // Note: this may be UB :(
@@ -2940,7 +2939,7 @@ namespace Cepums {
 
     void Processor::ins$SUBregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
     {
-        DC_CORE_WARN("ins$SUB: 8-bit register to register");
+        INSTRUCTION_TRACE("ins$SUB: 8-bit register to register");
         uint8_t registerValue = getRegisterValueFromREG8(destREG);
         uint8_t sourceValue = getRegisterValueFromREG8(sourceREG);
 
@@ -2969,7 +2968,7 @@ namespace Cepums {
 
     void Processor::ins$SUBregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
     {
-        DC_CORE_WARN("ins$SUB: 16-bit register to register");
+        INSTRUCTION_TRACE("ins$SUB: 16-bit register to register");
         uint16_t registerValue = getRegisterFromREG16(destREG);
         uint16_t sourceValue = getRegisterFromREG16(sourceREG);
 
@@ -2998,7 +2997,7 @@ namespace Cepums {
 
     void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue)
     {
-        DC_CORE_WARN("ins$XOR: XOR-ing 8-bit register to memory");
+        INSTRUCTION_TRACE("ins$XOR: XOR-ing 8-bit register to memory");
         auto original = memoryManager.readByte(m_dataSegment, effectiveAddress);
         uint8_t result = original ^ registerValue;
         memoryManager.writeByte(m_dataSegment, effectiveAddress, result);
@@ -3007,7 +3006,7 @@ namespace Cepums {
 
     void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue)
     {
-        DC_CORE_WARN("ins$XOR: XOR-ing 16-bit register to memory");
+        INSTRUCTION_TRACE("ins$XOR: XOR-ing 16-bit register to memory");
         auto original = memoryManager.readWord(m_dataSegment, effectiveAddress);
         uint16_t result = original ^ registerValue;
         memoryManager.writeWord(m_dataSegment, effectiveAddress, result);
@@ -3016,7 +3015,7 @@ namespace Cepums {
 
     void Processor::ins$XORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
     {
-        DC_CORE_WARN("ins$XOR: 8-bit register to register");
+        INSTRUCTION_TRACE("ins$XOR: 8-bit register to register");
         auto operand = getRegisterValueFromREG8(sourceREG);
         auto operand2 = getRegisterValueFromREG8(destREG);
         uint8_t result = operand ^ operand2;
@@ -3026,7 +3025,7 @@ namespace Cepums {
 
     void Processor::ins$XORregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
     {
-        DC_CORE_WARN("ins$XOR: 16-bit register to register");
+        INSTRUCTION_TRACE("ins$XOR: 16-bit register to register");
         auto operand = getRegisterFromREG16(sourceREG);
         auto operand2 = getRegisterFromREG16(destREG);
         uint8_t result = operand ^ operand2;
