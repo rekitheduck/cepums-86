@@ -11,6 +11,32 @@ namespace Cepums {
         m_RAM.resize(640 * KIBIBYTE);
         m_BIOS_F0000.resize(32 * KIBIBYTE);
         m_BIOS_F8000.resize(32 * KIBIBYTE);
+        m_MDA.resize(80 * 25 * 2);
+
+#if 0
+        // Test MDA
+        uint8_t attribute = 0;
+
+        for (auto y = 0; y < 16; y++)
+        {
+            for (auto x = 0; x < 16 * 3 * 2; x += 3 * 2)
+            {
+                uint8_t char0 = halfByteToHexChar(LOWER_HALFBYTE(attribute));
+                uint8_t char1 = halfByteToHexChar(HIGHER_HALFBYTE(attribute));
+
+                m_MDA.at((x + 80 * 2 * y) + 0) = char1; // upper half of attribute
+                m_MDA.at((x + 80 * 2 * y) + 1) = attribute;
+
+                m_MDA.at((x + 80 * 2 * y) + 2) = char0; // lower half of attribute
+                m_MDA.at((x + 80 * 2 * y) + 3) = attribute;
+
+                m_MDA.at((x + 80 * 2 * y) + 4) = 0;
+                m_MDA.at((x + 80 * 2 * y) + 5) = attribute;
+
+                attribute++;
+            }
+        }
+#endif
 
         // Load BIOS
         std::ifstream firstBIOSbinary;
