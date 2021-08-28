@@ -561,43 +561,35 @@ namespace Cepums {
         }
         case 0x50: // PUSH: AX
         {
-            TODO();
-            return;
+            return ins$PUSHregisterWord(memoryManager, REGISTER_AX);
         }
         case 0x51: // PUSH: CX
         {
-            TODO();
-            return;
+            return ins$PUSHregisterWord(memoryManager, REGISTER_CX);
         }
         case 0x52: // PUSH: DX
         {
-            TODO();
-            return;
+            return ins$PUSHregisterWord(memoryManager, REGISTER_DX);
         }
         case 0x53: // PUSH: BX
         {
-            TODO();
-            return;
+            return ins$PUSHregisterWord(memoryManager, REGISTER_BX);
         }
         case 0x54: // PUSH: SP
         {
-            TODO();
-            return;
+            return ins$PUSHregisterWord(memoryManager, REGISTER_SP);
         }
         case 0x55: // PUSH: BP
         {
-            TODO();
-            return;
+            return ins$PUSHregisterWord(memoryManager, REGISTER_BP);
         }
         case 0x56: // PUSH: SI
         {
-            TODO();
-            return;
+            return ins$PUSHregisterWord(memoryManager, REGISTER_SI);
         }
         case 0x57: // PUSH: DI
         {
-            TODO();
-            return;
+            return ins$PUSHregisterWord(memoryManager, REGISTER_DI);
         }
         case 0x58: // POP: AX
         {
@@ -2646,6 +2638,96 @@ namespace Cepums {
 
         // Increment the Stack Pointer (by size of register)
         SP() += 2;
+    }
+
+    void Processor::ins$PUSHregisterByte(MemoryManager& memoryManager, uint8_t REG)
+    {
+        INSTRUCTION_TRACE("ins$PUSH: register byte");
+        // Decrement the Stack Pointer (by size of register) before doing anything
+        SP() -= 1;
+        switch (REG)
+        {
+        case REGISTER_AL:
+            memoryManager.writeByte(SS(), SP(), AL());
+            return;
+
+        case REGISTER_CL:
+            memoryManager.writeByte(SS(), SP(), CL());
+            return;
+
+        case REGISTER_DL:
+            memoryManager.writeByte(SS(), SP(), DL());
+            return;
+
+        case REGISTER_BL:
+            memoryManager.writeByte(SS(), SP(), BL());
+            return;
+
+        case REGISTER_AH:
+            memoryManager.writeByte(SS(), SP(), AH());
+            return;
+
+        case REGISTER_CH:
+            memoryManager.writeByte(SS(), SP(), CH());
+            return;
+
+        case REGISTER_DH:
+            memoryManager.writeByte(SS(), SP(), DH());
+            return;
+
+        case REGISTER_BH:
+            memoryManager.writeByte(SS(), SP(), BH());
+            return;
+
+        default:
+            ILLEGAL_INSTRUCTION();
+            break;
+        }
+    }
+
+    void Processor::ins$PUSHregisterWord(MemoryManager& memoryManager, uint8_t REG)
+    {
+        INSTRUCTION_TRACE("ins$PUSH: register word");
+        // Decrement the Stack Pointer (by size of register) before doing anything
+        SP() -= 2;
+        switch (REG)
+        {
+        case REGISTER_AX:
+            memoryManager.writeWord(SS(), SP(), AX());
+            return;
+
+        case REGISTER_CX:
+            memoryManager.writeWord(SS(), SP(), CX());
+            return;
+
+        case REGISTER_DX:
+            memoryManager.writeWord(SS(), SP(), DX());
+            return;
+
+        case REGISTER_BX:
+            memoryManager.writeWord(SS(), SP(), BX());
+            return;
+
+        case REGISTER_SP:
+            memoryManager.writeWord(SS(), SP(), SP());
+            return;
+
+        case REGISTER_BP:
+            memoryManager.writeWord(SS(), SP(), BP());
+            return;
+
+        case REGISTER_SI:
+            memoryManager.writeWord(SS(), SP(), SI());
+            return;
+
+        case REGISTER_DI:
+            memoryManager.writeWord(SS(), SP(), DI());
+            return;
+
+        default:
+            ILLEGAL_INSTRUCTION();
+            break;
+        }
     }
 
     void Processor::ins$PUSHsegmentRegister(MemoryManager& memoryManager, uint8_t srBits)
