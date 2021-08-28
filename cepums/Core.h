@@ -35,6 +35,14 @@ namespace Cepums {
         return (byte ^ temp) - temp;
     }
 
+    static char halfByteToHexChar(uint8_t halfbyte)
+    {
+        if (halfbyte < 0xA)
+            return halfbyte + 48;
+        else
+            return halfbyte - 10 + 65;
+    }
+
     // Unique pointers aka Scoped pointers
     template<typename T>
     using Scope = std::unique_ptr<T>;
