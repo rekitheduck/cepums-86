@@ -316,8 +316,8 @@ namespace Cepums {
         }
         case 0x26: // ES: Segment override prefix
         {
-            // ???????????
-            TODO();
+            INSTRUCTION_TRACE("ins$ES: Override segment prefix to ES for next instruction");
+            m_segmentPrefix = REGISTER_ES;
             return;
         }
         case 0x27: // DAA: Decimal adjust for addition
@@ -373,8 +373,8 @@ namespace Cepums {
         }
         case 0x2E: // CS: Segment override prefix
         {
-            // ???????????
-            TODO();
+            INSTRUCTION_TRACE("ins$CS: Override segment prefix to CS for next instruction");
+            m_segmentPrefix = REGISTER_CS;
             return;
         }
         case 0x2F: // DAS: Decimal adjust for subtraction
@@ -430,8 +430,8 @@ namespace Cepums {
         }
         case 0x36: // SS: Segment override prefix
         {
-            // ???????????
-            TODO();
+            INSTRUCTION_TRACE("ins$SS: Override segment prefix to SS for next instruction");
+            m_segmentPrefix = REGISTER_SS;
             return;
         }
         case 0x37: // AAA: ASCII adjust for addition
@@ -471,8 +471,8 @@ namespace Cepums {
         }
         case 0x3E: // DS: Segment override prefix
         {
-            // ???????????
-            TODO();
+            INSTRUCTION_TRACE("ins$DS: Override segment prefix to DS for next instruction");
+            m_segmentPrefix = REGISTER_DS;
             return;
         }
         case 0x3F: // AAS: ASCII adjust for subtraction
