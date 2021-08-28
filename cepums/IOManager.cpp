@@ -69,89 +69,87 @@ namespace Cepums {
         if (address == 0x80)
         {
             m_port0x80 = value;
-
-            DC_CORE_WARN("POST CODE - {0:X}", value);
             switch (value)
             {
             case 0x00:
-                return DC_CORE_TRACE("Boot the OS");
+                return DC_CORE_WARN("POST[{0}]: Boot the OS", value);
             case 0x01:
-                return DC_CORE_TRACE("Start of BIOS POST, CPU test");
+                return DC_CORE_WARN("POST[{0}]: Start of BIOS POST, CPU test", value);
             case 0x02:
-                return DC_CORE_TRACE("Initial chipset configuration: init PPI, disable NMI, disable turbo, disable display");
+                return DC_CORE_WARN("POST[{0}]: Initial chipset configuration: init PPI, disable NMI, disable turbo, disable display", value);
             case 0x03:
-                return DC_CORE_TRACE("Initialize DMA controller");
+                return DC_CORE_WARN("POST[{0}]: Initialize DMA controller", value);
             case 0x04:
-                return DC_CORE_TRACE("Test low 32KiB of RAM");
+                return DC_CORE_WARN("POST[{0}]: Test low 32KiB of RAM", value);
             case 0x05:
-                return DC_CORE_TRACE("Initialize interrupt table");
+                return DC_CORE_WARN("POST[{0}]: Initialize interrupt table", value);
             case 0x06:
-                return DC_CORE_TRACE("Initialize PIT (timer); Player power-on melody");
+                return DC_CORE_WARN("POST[{0}]: Initialize PIT (timer); Player power-on melody", value);
             case 0x07:
-                return DC_CORE_TRACE("Initialize PIC");
+                return DC_CORE_WARN("POST[{0}]: Initialize PIC", value);
             case 0x08:
-                return DC_CORE_TRACE("Initialize KBC and keyboard");
+                return DC_CORE_WARN("POST[{0}]: Initialize KBC and keyboard", value);
             case 0x09:
-                return DC_CORE_TRACE("Enable interrupts");
+                return DC_CORE_WARN("POST[{0}]: Enable interrupts", value);
 
             case 0x10:
-                return DC_CORE_TRACE("Locate video BIOS");
+                return DC_CORE_WARN("POST[{0}]: Locate video BIOS", value);
             case 0x11:
-                return DC_CORE_TRACE("Initialize video BIOS");
+                return DC_CORE_WARN("POST[{0}]: Initialize video BIOS", value);
             case 0x12:
-                return DC_CORE_TRACE("No video BIOS, using MDA/CGA");
+                return DC_CORE_WARN("POST[{0}]: No video BIOS, using MDA/CGA", value);
 
             case 0x20:
-                return DC_CORE_TRACE("Initialize RTC");
+                return DC_CORE_WARN("POST[{0}]: Initialize RTC", value);
             case 0x21:
-                return DC_CORE_TRACE("Detect CPU type");
+                return DC_CORE_WARN("POST[{0}]: Detect CPU type", value);
             case 0x22:
-                return DC_CORE_TRACE("Detect FPU");
+                return DC_CORE_WARN("POST[{0}]: Detect FPU", value);
             case 0x24:
-                return DC_CORE_TRACE("Detect serial ports");
+                return DC_CORE_WARN("POST[{0}]: Detect serial ports", value);
             case 0x25:
-                return DC_CORE_TRACE("Detect parallel ports");
+                return DC_CORE_WARN("POST[{0}]: Detect parallel ports", value);
 
             case 0x30:
-                return DC_CORE_TRACE("Start RAM test");
+                return DC_CORE_WARN("POST[{0}]: Start RAM test", value);
             case 0x31:
-                return DC_CORE_TRACE("RAM test completed");
+                return DC_CORE_WARN("POST[{0}]: RAM test completed", value);
             case 0x32:
-                return DC_CORE_TRACE("RAM test cancelled");
+                return DC_CORE_WARN("POST[{0}]: RAM test cancelled", value);
 
             case 0x40:
-                return DC_CORE_TRACE("Start BIOS extension ROM scan");
+                return DC_CORE_WARN("POST[{0}]: Start BIOS extension ROM scan", value);
             case 0x41:
-                return DC_CORE_TRACE("BIOS extension ROM found, initialize");
+                return DC_CORE_WARN("POST[{0}]: BIOS extension ROM found, initialize", value);
             case 0x42:
-                return DC_CORE_TRACE("BIOS extension ROM initialized");
+                return DC_CORE_WARN("POST[{0}]: BIOS extension ROM initialized", value);
             case 0x43:
-                return DC_CORE_TRACE("BIOS extension scan complete");
+                return DC_CORE_WARN("POST[{0}]: BIOS extension scan complete", value);
 
             case 0x52:
-                return DC_CORE_TRACE("CPU test failed");
+                return DC_CORE_WARN("POST[{0}]: CPU test failed", value);
             case 0x54:
-                return DC_CORE_TRACE("Low 32 KiB RAM test failed");
+                return DC_CORE_WARN("POST[{0}]: Low 32 KiB RAM test failed", value);
             case 0x55:
-                return DC_CORE_TRACE("RAM test failed");
+                return DC_CORE_WARN("POST[{0}]: RAM test failed", value);
 
             case 0x60:
-                return DC_CORE_TRACE("Unable to flush KBC output buffer");
+                return DC_CORE_WARN("POST[{0}]: Unable to flush KBC output buffer", value);
             case 0x61:
-                return DC_CORE_TRACE("Unable to send command to KBC");
+                return DC_CORE_WARN("POST[{0}]: Unable to send command to KBC", value);
             case 0x62:
-                return DC_CORE_TRACE("Keyboard controller self test failed");
+                return DC_CORE_WARN("POST[{0}]: Keyboard controller self test failed", value);
             case 0x63:
-                return DC_CORE_TRACE("Keyboard interface test failed");
+                return DC_CORE_WARN("POST[{0}]: Keyboard interface test failed", value);
 
             case 0x70:
-                return DC_CORE_TRACE("Keyboard BAT test failed");
+                return DC_CORE_WARN("POST[{0}]: Keyboard BAT test failed", value);
             case 0x71:
-                return DC_CORE_TRACE("Keyboard disable command failed");
+                return DC_CORE_WARN("POST[{0}]: Keyboard disable command failed", value);
             case 0x72:
-                return DC_CORE_TRACE("Keyboard enable command failed");
+                return DC_CORE_WARN("POST[{0}]: Keyboard enable command failed", value);
             default:
-                return DC_CORE_TRACE("UNKNOWN POST code / possible bug");
+                return DC_CORE_WARN("POST[{0}]: UNKNOWN POST code / possible bug", value);
             }
             return;
         }
