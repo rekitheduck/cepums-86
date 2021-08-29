@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <vector>
+#include "PIT.h"
 
 namespace Cepums {
 
@@ -17,5 +18,6 @@ namespace Cepums {
         void writeWord(uint16_t address, uint16_t value);
     private:
         uint8_t m_port0x80;
+        PIT m_8254PIT;
     };
 }

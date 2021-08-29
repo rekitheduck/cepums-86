@@ -15,7 +15,7 @@ namespace Cepums {
         // I don't know how to deal with this anymore, so let's log and ignore
         if (address == 0x61)
         {
-            DC_CORE_TRACE("Dummy read from Programmable Peripheral Interface (PPI) B control register");
+            DC_CORE_TRACE("Dummy read from PPI B control register");
             return 0;
         }
 
@@ -46,31 +46,19 @@ namespace Cepums {
 
         // PIT counter 0
         if (address == 0x40)
-        {
-            DC_CORE_TRACE("PIT counter 0 (counter divisor) stub :(");
-            return;
-        }
+            return m_8254PIT.writeCounter0(value);
 
         // PIT counter 1
         if (address == 0x41)
-        {
-            DC_CORE_TRACE("PIT counter 1 (RAM refresh counter) stub :(");
-            return;
-        }
+            return m_8254PIT.writeCounter1(value);
 
         // PIT counter 2
         if (address == 0x42)
-        {
-            DC_CORE_TRACE("PIT counter 2 (cassette  and speaker) stub :(");
-            return;
-        }
+            return m_8254PIT.writeCounter2(value);
 
-        // PIT mode port
+        // PIT control register
         if (address == 0x43)
-        {
-            DC_CORE_TRACE("PIT stub :(");
-            return;
-        }
+            return m_8254PIT.writeControlRegister(value);
 
         // POST register
         if (address == 0x80)
@@ -168,7 +156,7 @@ namespace Cepums {
         // I don't know how to deal with this anymore, so let's log and ignore
         if (address == 0x61)
         {
-            DC_CORE_TRACE("Dummy write to Programmable Peripheral Interface (PPI) B control register");
+            DC_CORE_TRACE("Dummy write to PPI B control register with 0x{0:x}", value);
             return;
         }
 
