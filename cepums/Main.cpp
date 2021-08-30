@@ -160,19 +160,29 @@ int main(int argc, char** argv)
     std::thread processing([&] {
         uint64_t thrLastTime = 0;
         uint64_t thrCurrentTime = 0;
-        double deltaAccumulator = 0;
+        double processorTimerAccumulator = 0;
+        double PITTimerAccumulator = 0;
 
         while (shouldExecute)
         {
             thrLastTime = thrCurrentTime;
             thrCurrentTime = SDL_GetPerformanceCounter();
-            double delta = (double)(thrCurrentTime - thrLastTime) * 1000 * 1000 / SDL_GetPerformanceFrequency();
-            deltaAccumulator += delta;
+            double delta = (double)(thrCurrentTime - thrLastTime) * 1000 * 1000 / SDL_GetPerformanceFrequency(); // This is in microseconds
+            processorTimerAccumulator += delta;
+            PITTimerAccumulator += delta;
 
-            if (deltaAccumulator > 0.20952383642268)
+            // Run the CPU at 4.77272666 MHz
+            if (processorTimerAccumulator > 0.20952383642268)
             {
-                deltaAccumulator = 0;
+                processorTimerAccumulator = 0;
                 processor.execute(memoryManager, ioManager);
+            }
+
+            // Run the PIT at 1.193182 MHz
+            if (PITTimerAccumulator > 0.83809511038551)
+            {
+                PITTimerAccumulator = 0;
+                ioManager.runPIT();
             }
         }
     });

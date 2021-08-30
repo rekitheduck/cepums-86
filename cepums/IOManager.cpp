@@ -197,4 +197,9 @@ namespace Cepums {
     {
         TODO();
     }
+
+    void IOManager::runPIT()
+    {
+        m_8254PIT.update();
+    }
 }

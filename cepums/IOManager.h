@@ -16,6 +16,8 @@ namespace Cepums {
 
         uint16_t readWord(uint16_t address);
         void writeWord(uint16_t address, uint16_t value);
+
+        void runPIT();
     private:
         uint8_t m_port0x80;
         PIT m_8254PIT;
