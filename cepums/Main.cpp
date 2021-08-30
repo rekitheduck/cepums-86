@@ -91,7 +91,7 @@ void deleteFontTextures()
 int main(int argc, char** argv)
 {
     SDL_SetMainReady();
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
 
     // Initialize the basics
     Cepums::Log::init();
@@ -157,7 +157,25 @@ int main(int argc, char** argv)
     bool shouldExecute = true;
 
     // Create the Processor loop thread
-    std::thread processing([&] { while (shouldExecute) processor.execute(memoryManager, ioManager); });
+    std::thread processing([&] {
+        uint64_t thrLastTime = 0;
+        uint64_t thrCurrentTime = 0;
+        double deltaAccumulator = 0;
+
+        while (shouldExecute)
+        {
+            thrLastTime = thrCurrentTime;
+            thrCurrentTime = SDL_GetPerformanceCounter();
+            double delta = (double)(thrCurrentTime - thrLastTime) * 1000 * 1000 / SDL_GetPerformanceFrequency();
+            deltaAccumulator += delta;
+
+            if (deltaAccumulator > 0.20952383642268)
+            {
+                deltaAccumulator = 0;
+                processor.execute(memoryManager, ioManager);
+            }
+        }
+    });
 
     uint8_t colorRegularR = 0xCC;
     uint8_t colorRegularG = 0x99;
