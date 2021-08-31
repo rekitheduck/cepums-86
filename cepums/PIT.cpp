@@ -146,7 +146,7 @@ namespace Cepums {
         writeCounter(2, value);
     }
 
-    void PIT::update()
+    PITState& PIT::update()
     {
         for (auto counter = 0; counter < 3; counter++)
         {
@@ -213,6 +213,24 @@ namespace Cepums {
                 break;
             }
         }
+        
+        // Update state
+        if (m_counter[0].output)
+            m_state.counter0output = true;
+        else
+            m_state.counter0output = false;
+
+        if (m_counter[1].output)
+            m_state.counter1output = true;
+        else
+            m_state.counter1output = false;
+
+        if (m_counter[2].output)
+            m_state.counter2output = true;
+        else
+            m_state.counter2output = false;
+
+        return m_state;
     }
 
     void PIT::writeCounter(size_t counter, uint8_t value)

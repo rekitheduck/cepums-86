@@ -21,5 +21,8 @@ namespace Cepums {
     private:
         uint8_t m_port0x80;
         PIT m_8254PIT;
+
+        // State stuff
+        bool m_refreshRequest = false;
     };
 }

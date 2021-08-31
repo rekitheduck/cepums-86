@@ -4,6 +4,8 @@
 #define KIBIBYTE 1024
 #define MEBIBYTE 1048576
 
+#define SET_BIT(byte, bit) byte |= BIT(bit)
+
 namespace Cepums {
 
     IOManager::IOManager()
@@ -27,8 +29,23 @@ namespace Cepums {
         // I don't know how to deal with this anymore, so let's log and ignore
         if (address == 0x61)
         {
-            DC_CORE_TRACE("Dummy read from PPI B control register");
-            return 0;
+            uint8_t data = 0;
+            /*
+            bit 7   parity check occurred
+            bit 6   channel check occurred
+            bit 5   mirrors timer 2 output condition
+            bit 4   toggles with each refresh request
+            bit 3   channel check status
+            bit 2   parity check status
+            bit 1   speaker data status
+            bit 0   timer 2 gate to speaker status
+            */
+            if (m_refreshRequest)
+            {
+                SET_BIT(data, 4);
+            }
+
+            return data;
         }
 
         // Dummy read from CMOS RAM/RTC
@@ -212,6 +229,10 @@ namespace Cepums {
 
     void IOManager::runPIT()
     {
-        m_8254PIT.update();
+        PITState& state = m_8254PIT.update();
+        if (state.counter0output)
+            m_refreshRequest = true;
+        else
+            m_refreshRequest = false;
     }
 }

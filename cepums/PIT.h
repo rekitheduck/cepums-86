@@ -9,6 +9,13 @@ namespace Cepums {
         LeastSignificantFirstThenMostSignificant
     };
 
+    struct PITState
+    {
+        bool counter0output = false;
+        bool counter1output = false;
+        bool counter2output = false;
+    };
+
     struct PITCounter
     {
         uint16_t current;
@@ -37,11 +44,12 @@ namespace Cepums {
         void writeCounter1(uint8_t value);
         void writeCounter2(uint8_t value);
 
-        void update();
+        PITState& update();
     private:
         void writeCounter(size_t counter, uint8_t value);
         uint8_t readCounter(size_t counter);
     private:
+        PITState m_state;
         // Counter 0: Counter divisor
         // Counter 1: RAM refresh counter
         // Counter 2: Cassette  and speaker
