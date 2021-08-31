@@ -461,8 +461,8 @@ namespace Cepums {
         }
         case 0x3C: // CMP: 8-bit immediate with AL
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediateByte);
+            return ins$CMPimmediateToRegister(REGISTER_AL, immediateByte);
         }
         case 0x3D: // CMP: 16-bit immediate with AX
         {
@@ -2234,9 +2234,36 @@ namespace Cepums {
         setFlagsAfterArithmeticOperation(result);
     }
 
+    void Processor::ins$CMPimmediateToRegister(uint8_t destREG, uint8_t immediate)
+    {
+        INSTRUCTION_TRACE("ins$CMP: 8-bit immediate to register {0}", getRegisterNameFromREG8(destREG));
+        uint8_t registerValue = getRegisterValueFromREG8(destREG);
+
+        // Note: this may be UB :(
+        uint8_t result = registerValue - immediate;
+
+        // Carry (unsigned overflow)
+        if (immediate > registerValue)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (immediate > SCHAR_MAX - registerValue)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        setFlagsAfterArithmeticOperation(result);
+    }
+
     void Processor::ins$CMPimmediateToRegister(uint8_t destREG, uint16_t immediate)
     {
-        INSTRUCTION_TRACE("ins$CMP: 16-bit immediate to register");
+        INSTRUCTION_TRACE("ins$CMP: 16-bit immediate to register {0}", getRegisterNameFromREG16(destREG));
         uint16_t registerValue = getRegisterFromREG16(destREG);
 
         // Note: this may be UB :(
