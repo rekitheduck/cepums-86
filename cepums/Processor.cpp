@@ -1660,8 +1660,62 @@ namespace Cepums {
         }
         case 0xF6: // TEST/unused/NOT/NEG/MUL/IMUL/DIV/IDIV: (8-bit from immediate to register/memory)/(8-bit register/memory)
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+            {
+                switch (regBits)
+                {
+                case 0b000:
+                {
+                    LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
+                    return ins$TESTimmediateToRegister(rmBits, immediate);
+                }
+                case 0b010:
+                    //return ins$NOTregisterByte(rmBits);
+                case 0b011:
+                    //return ins$NEGregisterByte(rmBits);
+                case 0b100:
+                    //return ins$MULregisterByte(rmBits);
+                case 0b101:
+                    //return ins$IMULergisterByte(rmBits);
+                case 0b110:
+                    //return ins$DIVregisterByte(rmBits);
+                case 0b111:
+                    //return ins$IDIVregisterByte(rmBits);
+                default:
+                    ILLEGAL_INSTRUCTION();
+                    return;
+                }
+            }
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+
+            switch (regBits)
+            {
+            case 0b000:
+            {
+                LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
+                return ins$TESTimmediateToMemory(memoryManager, effectiveAddress, immediate);
+            }
+            case 0b010:
+                //return ins$NOTmemoryByte(memoryManager, effectiveAddress);
+            case 0b011:
+                //return ins$NEGmemoryByte(memoryManager, effectiveAddress);
+            case 0b100:
+                //return ins$MULmemoryByte(memoryManager, effectiveAddress);
+            case 0b101:
+                //return ins$IMULmemoryByte(memoryManager, effectiveAddress);
+            case 0b110:
+                //return ins$DIVmemoryByte(memoryManager, effectiveAddress);
+            case 0b111:
+                //return ins$IDIVmemoryByte(memoryManager, effectiveAddress);
+            default:
+                ILLEGAL_INSTRUCTION();
+                return;
+            }
         }
         case 0xF7: // TEST/unused/NOT/NEG/MUL/IMUL/DIV/IDIV: (16-bit from immediate to register/memory)/(16-bit register/memory)
         {
@@ -1697,7 +1751,6 @@ namespace Cepums {
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
-            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
 
             switch (regBits)
             {
@@ -3244,6 +3297,14 @@ namespace Cepums {
         INSTRUCTION_TRACE("ins$TEST: 8-bit immediate to register");
         uint8_t registerValue = getRegisterValueFromREG8(destREG);
         uint8_t result = registerValue & value;
+        setFlagsAfterLogicalOperation(result);
+    }
+
+    void Processor::ins$TESTimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t immediate)
+    {
+        INSTRUCTION_TRACE("ins$TEST: 8-bit immediate to memory");
+        uint8_t memoryValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
+        uint8_t result = memoryValue & immediate;
         setFlagsAfterLogicalOperation(result);
     }
 
