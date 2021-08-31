@@ -163,6 +163,7 @@ namespace Cepums {
         void ins$ORimmediateToRegister(uint8_t destREG, uint8_t immediate);
 
         void ins$POPsegmentRegister(MemoryManager& memoryManager, uint8_t srBits);
+        void ins$POPregisterWord(MemoryManager& memoryManager, uint8_t REG);
         void ins$PUSHregisterByte(MemoryManager& memoryManager, uint8_t REG);
         void ins$PUSHregisterWord(MemoryManager& memoryManager, uint8_t REG);
         void ins$PUSHsegmentRegister(MemoryManager& memoryManager, uint8_t srBits);

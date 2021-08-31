@@ -585,43 +585,35 @@ namespace Cepums {
         }
         case 0x58: // POP: AX
         {
-            TODO();
-            return;
+            return ins$POPregisterWord(memoryManager, REGISTER_AX);
         }
         case 0x59: // POP: CX
         {
-            TODO();
-            return;
+            return ins$POPregisterWord(memoryManager, REGISTER_CX);
         }
         case 0x5A: // POP: DX
         {
-            TODO();
-            return;
+            return ins$POPregisterWord(memoryManager, REGISTER_DX);
         }
         case 0x5B: // POP: BX
         {
-            TODO();
-            return;
+            return ins$POPregisterWord(memoryManager, REGISTER_BX);
         }
         case 0x5C: // POP: SP
         {
-            TODO();
-            return;
+            return ins$POPregisterWord(memoryManager, REGISTER_SP);
         }
         case 0x5D: // POP: BP
         {
-            TODO();
-            return;
+            return ins$POPregisterWord(memoryManager, REGISTER_BP);
         }
         case 0x5E: // POP: SI
         {
-            TODO();
-            return;
+            return ins$POPregisterWord(memoryManager, REGISTER_SI);
         }
         case 0x5F: // POP: DI
         {
-            TODO();
-            return;
+            return ins$POPregisterWord(memoryManager, REGISTER_DI);
         }
         case 0x70: // JO: Jump if overflow
         {
@@ -2689,9 +2681,55 @@ namespace Cepums {
         SP() += 2;
     }
 
+    void Processor::ins$POPregisterWord(MemoryManager& memoryManager, uint8_t REG)
+    {
+        INSTRUCTION_TRACE("ins$POP: register {0}", getRegisterNameFromREG16(REG));
+        switch (REG)
+        {
+        case REGISTER_AX:
+            AX() = memoryManager.readWord(SS(), SP());
+            break;
+
+        case REGISTER_CX:
+            CX() = memoryManager.readWord(SS(), SP());
+            break;
+
+        case REGISTER_DX:
+            DX() = memoryManager.readWord(SS(), SP());
+            break;
+
+        case REGISTER_BX:
+            BX() = memoryManager.readWord(SS(), SP());
+            break;
+
+        case REGISTER_SP:
+            SP() = memoryManager.readWord(SS(), SP());
+            break;
+
+        case REGISTER_BP:
+            BP() = memoryManager.readWord(SS(), SP());
+            break;
+
+        case REGISTER_SI:
+            SI() = memoryManager.readWord(SS(), SP());
+            break;
+
+        case REGISTER_DI:
+            DI() = memoryManager.readWord(SS(), SP());
+            break;
+
+        default:
+            ILLEGAL_INSTRUCTION();
+            break;
+        }
+
+        // Increment the Stack Pointer (by size of register)
+        SP() += 2;
+    }
+
     void Processor::ins$PUSHregisterByte(MemoryManager& memoryManager, uint8_t REG)
     {
-        INSTRUCTION_TRACE("ins$PUSH: register byte");
+        INSTRUCTION_TRACE("ins$PUSH: register {0}", getRegisterNameFromREG8(REG));
         // Decrement the Stack Pointer (by size of register) before doing anything
         SP() -= 1;
         switch (REG)
