@@ -189,7 +189,7 @@ namespace Cepums {
                 if (m_counter[counter].current != 0)
                     m_counter[counter].current--;
                 else
-                    m_counter[counter].current = m_counter[counter].initial;
+                    m_counter[counter].current = 0xFF;
 
                 // This should turn on the output every 65536 if initial is set to 0
                 if (m_counter[counter].current == m_counter[counter].initial)
