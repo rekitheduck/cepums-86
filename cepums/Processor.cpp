@@ -930,8 +930,16 @@ namespace Cepums {
         }
         case 0x86: // XCHG: 8-bit exchange from register/memory to register
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$XCHGregisterToRegisterByte(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+
+            return ins$XCHGmemoryToRegisterByte(memoryManager, getRegisterValueFromREG8(regBits), effectiveAddress);
         }
         case 0x87: // XCHG: 16-bit exchange from register/memory to register
         {
@@ -3237,6 +3245,24 @@ namespace Cepums {
         uint8_t registerValue = getRegisterValueFromREG8(destREG);
         uint8_t result = registerValue & value;
         setFlagsAfterLogicalOperation(result);
+    }
+
+    void Processor::ins$XCHGmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress)
+    {
+        INSTRUCTION_TRACE("ins$XCHG: Exchange 8-bit memory with register {0}", getRegisterNameFromREG8(destREG));
+        uint8_t memoryValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
+        uint8_t registerValue = getRegisterValueFromREG8(destREG);
+        memoryManager.writeByte(m_dataSegment, effectiveAddress, registerValue);
+        updateRegisterFromREG8(destREG, memoryValue);
+    }
+
+    void Processor::ins$XCHGregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
+    {
+        INSTRUCTION_TRACE("ins$XCHG: Exchange 8-bit memory with register {0}", getRegisterNameFromREG8(destREG));
+        uint8_t registerOneValue = getRegisterValueFromREG8(destREG);
+        uint8_t registerTwoValue = getRegisterValueFromREG8(sourceREG);
+        updateRegisterFromREG8(destREG, registerTwoValue);
+        updateRegisterFromREG8(sourceREG, registerOneValue);
     }
 
     void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue)
