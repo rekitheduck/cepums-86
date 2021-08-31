@@ -3,6 +3,8 @@
 
 namespace Cepums {
 
+    static bool s_debugSpam = false;
+
     Processor::Processor()
     {
         reset();

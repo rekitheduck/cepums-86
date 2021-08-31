@@ -129,6 +129,7 @@ namespace Cepums {
         void ins$CALLnear(MemoryManager& memoryManager, int16_t offset);
 
         void ins$CMPimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
+        void ins$CMPimmediateToRegister(uint8_t destREG, uint8_t immediate);
         void ins$CMPimmediateToRegister(uint8_t destREG, uint16_t immediate);
 
         void ins$DECregister(uint8_t isWordBit, uint8_t REG);
