@@ -235,13 +235,6 @@ namespace Cepums {
 
     void PIT::writeCounter(size_t counter, uint8_t value)
     {
-        if (m_counter[counter].isInitialized)
-        {
-            // Bug in code somewhere (or weirdness to work around)
-            VERIFY_NOT_REACHED();
-            return;
-        }
-
         switch (m_counter[counter].readWriteMode)
         {
         case CounterReadWriteMode::LeastSignificantOnly:
