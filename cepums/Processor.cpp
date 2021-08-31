@@ -1323,8 +1323,7 @@ namespace Cepums {
         }
         case 0xC3: // RET: Return within segment
         {
-            TODO();
-            return;
+            return ins$RETnear(memoryManager);
         }
         case 0xC4: // LES: Load pointer using ES
         {
@@ -2886,12 +2885,20 @@ namespace Cepums {
         }
     }
 
+    void Processor::ins$RETnear(MemoryManager& memoryManager)
+    {
+        INSTRUCTION_TRACE("ins$RET: Return to NEAR");
+        // Pop into IP
+        IP() = memoryManager.readWord(SS(), SP());
+        SP() += 2;
+    }
+
     void Processor::ins$ROLmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
     {
         TODO();
     }
 
-    void Processor::ins$ROLmemoryOnceWord(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$ROLmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress)
     {
         TODO();
     }

@@ -177,6 +177,7 @@ namespace Cepums {
         void ins$RCRregisterOnceByte(uint8_t REG);
         void ins$RCRregisterOnceWord(uint8_t REG);
         void ins$REP_STOSword(MemoryManager& memoryManager);
+        void ins$RETnear(MemoryManager& memoryManager);
         void ins$ROLmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
         void ins$ROLmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
         void ins$ROLregisterOnceByte(uint8_t REG);
