@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <vector>
+#include "KeyboardController.h"
 #include "PIT.h"
 
 namespace Cepums {
@@ -20,6 +21,7 @@ namespace Cepums {
         void runPIT();
     private:
         uint8_t m_port0x80;
+        KeyboardController m_8042KBC;
         PIT m_8254PIT;
 
         // State stuff

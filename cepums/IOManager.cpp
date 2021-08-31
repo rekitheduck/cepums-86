@@ -28,10 +28,7 @@ namespace Cepums {
 
         // KBC Data Port
         if (address == 0x60)
-        {
-            DC_CORE_TRACE("Dummy read from KBC Data Port");
-            return 0;
-        }
+            return m_8042KBC.readDataPort();
 
         // I don't know how to deal with this anymore, so let's log and ignore
         if (address == 0x61)
@@ -57,10 +54,7 @@ namespace Cepums {
 
         // KBC Status Register
         if (address == 0x64)
-        {
-            DC_CORE_TRACE("Dummy read from KBC Status Register");
-            return 0;
-        }
+            return m_8042KBC.readStatusRegister();
 
         // Dummy read from CMOS RAM/RTC
         if (address == 0x71)
@@ -119,17 +113,11 @@ namespace Cepums {
 
         // KBC Data Port
         if (address == 0x60)
-        {
-            TODO();
-            return;
-        }
+            return m_8042KBC.writeDataPort(value);
 
         // KBC Command Register
         if (address == 0x64)
-        {
-            TODO();
-            return;
-        }
+            return m_8042KBC.writeCommandRegister(value);
 
         // POST register
         if (address == 0x80)
