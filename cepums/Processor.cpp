@@ -2889,13 +2889,14 @@ namespace Cepums {
     void Processor::ins$REP_STOSword(MemoryManager& memoryManager)
     {
         INSTRUCTION_TRACE("ins$REP_STOS: Repeat fill with string");
-        for (uint16_t i = 0; i < CX(); i+=2)
+        while (CX() != 0)
         {
             memoryManager.writeWord(m_extraSegment, m_destinationIndex, AX());
             if (IS_BIT_SET(m_flags, DIRECTION_FLAG))
                 m_destinationIndex -= 2;
             else
                 m_destinationIndex += 2;
+            CX()--;
         }
     }
 
