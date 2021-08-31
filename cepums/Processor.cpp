@@ -2441,6 +2441,12 @@ namespace Cepums {
             break;
         }
 
+        // Increment or decrement depending on DF
+        if (IS_BIT_SET(m_flags, DIRECTION_FLAG))
+            SI() -= 2;
+        else
+            SI() += 2;
+
         INSTRUCTION_TRACE("ins$LODS: Load {0}:SI word into AX", segRegName);
     }
 
