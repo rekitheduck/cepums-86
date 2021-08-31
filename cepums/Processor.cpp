@@ -306,8 +306,8 @@ namespace Cepums {
         }
         case 0x24: // AND: 8-bit immediate with AL
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            return ins$ANDimmediateToRegister(REGISTER_AL, byte);
         }
         case 0x25: // AND: 16-bit immediate with AX
         {
@@ -1034,7 +1034,6 @@ namespace Cepums {
         }
         case 0x90: // NOP
         {
-            TODO();
             return;
         }
         case 0x91: // XCHG: Exchange AX and CX
@@ -2124,6 +2123,15 @@ namespace Cepums {
 
         updateRegisterFromREG16(destREG, result);
         setFlagsAfterArithmeticOperation(result);
+    }
+
+    void Processor::ins$ANDimmediateToRegister(uint8_t destREG, uint8_t value)
+    {
+        INSTRUCTION_TRACE("ins$AND: 8-bit immediate to register {0}", getRegisterNameFromREG8(destREG));
+        uint8_t registerValue = getRegisterValueFromREG8(destREG);
+        uint8_t result = registerValue & value;
+        updateRegisterFromREG8(destREG, result);
+        setFlagsAfterLogicalOperation(result);
     }
 
     void Processor::ins$CALLnear(MemoryManager& memoryManager, int16_t offset)
