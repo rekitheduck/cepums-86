@@ -208,6 +208,8 @@ namespace Cepums {
         void ins$SUBregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
         void ins$SUBregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
+        void ins$TESTimmediateToRegister(uint8_t destREG, uint8_t value);
+
         void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue);
         void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue);
         void ins$XORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);

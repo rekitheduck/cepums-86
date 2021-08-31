@@ -1168,8 +1168,8 @@ namespace Cepums {
         }
         case 0xA8: // TEST: 8-bit from immediate to AL
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
+            return ins$TESTimmediateToRegister(REGISTER_AL, immediate);
         }
         case 0xA9: // TEST: 16-bit from immediate to AX
         {
@@ -3120,6 +3120,14 @@ namespace Cepums {
 
         updateRegisterFromREG16(destREG, result);
         setFlagsAfterArithmeticOperation(result);
+    }
+
+    void Processor::ins$TESTimmediateToRegister(uint8_t destREG, uint8_t value)
+    {
+        INSTRUCTION_TRACE("ins$TEST: 8-bit immediate to register");
+        uint8_t registerValue = getRegisterValueFromREG8(destREG);
+        uint8_t result = registerValue & value;
+        setFlagsAfterLogicalOperation(result);
     }
 
     void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue)
