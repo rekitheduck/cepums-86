@@ -521,43 +521,35 @@ namespace Cepums {
         }
         case 0x48: // DEC: AX
         {
-            TODO();
-            return;
+            return ins$DECregister(IS_WORD, REGISTER_AX);
         }
         case 0x49: // DEC: CX
         {
-            TODO();
-            return;
+            return ins$DECregister(IS_WORD, REGISTER_CX);
         }
         case 0x4A: // DEC: DX
         {
-            TODO();
-            return;
+            return ins$DECregister(IS_WORD, REGISTER_DX);
         }
         case 0x4B: // DEC: BX
         {
-            TODO();
-            return;
+            return ins$DECregister(IS_WORD, REGISTER_BX);
         }
         case 0x4C: // DEC: SP
         {
-            TODO();
-            return;
+            return ins$DECregister(IS_WORD, REGISTER_SP);
         }
         case 0x4D: // DEC: BP
         {
-            TODO();
-            return;
+            return ins$DECregister(IS_WORD, REGISTER_BP);
         }
         case 0x4E: // DEC: SI
         {
-            TODO();
-            return;
+            return ins$DECregister(IS_WORD, REGISTER_SI);
         }
         case 0x4F: // DEC: DI
         {
-            TODO();
-            return;
+            return ins$DECregister(IS_WORD, REGISTER_DI);
         }
         case 0x50: // PUSH: AX
         {
@@ -2211,15 +2203,72 @@ namespace Cepums {
 
     void Processor::ins$DECregister(uint8_t isWordBit, uint8_t REG)
     {
-        TODO();
+        if (isWordBit)
+        {
+            INSTRUCTION_TRACE("ins$DEC: DEC {0}", getRegisterNameFromREG16(REG));
+            uint16_t currentValue = getRegisterFromREG16(REG);
+            uint16_t newValue = currentValue - 1;
+            updateRegisterFromREG16(REG, newValue);
+
+            // We shouldn't touch the CARRY_FLAG
+            if (currentValue >= SHRT_MAX)
+                SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+            if (IS_BIT_SET(currentValue, 15))
+                SET_FLAG_BIT(m_flags, SIGN_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
+
+            if (currentValue == 0)
+                SET_FLAG_BIT(m_flags, ZERO_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
+
+            DO_PARITY_BYTE(currentValue);
+            if (IS_PARITY_EVEN(currentValue))
+                SET_FLAG_BIT(m_flags, PARITY_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
+        }
+        else
+        {
+            INSTRUCTION_TRACE("ins$DEC: DEC {0}", getRegisterNameFromREG8(REG));
+            uint8_t currentValue = getRegisterValueFromREG8(REG);
+            uint8_t newValue = currentValue - 1;
+            updateRegisterFromREG8(REG, newValue);
+
+            // We shouldn't touch the CARRY_FLAG
+            if (currentValue >= SCHAR_MAX)
+                SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+            if (IS_BIT_SET(currentValue, 7))
+                SET_FLAG_BIT(m_flags, SIGN_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
+
+            if (currentValue == 0)
+                SET_FLAG_BIT(m_flags, ZERO_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
+
+            DO_PARITY_BYTE(currentValue);
+            if (IS_PARITY_EVEN(currentValue))
+                SET_FLAG_BIT(m_flags, PARITY_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
+        }
     }
 
-    void Processor::ins$DECmemoryByte(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$DECmemoryByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
     {
         TODO();
     }
 
-    void Processor::ins$DECmemoryWord(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$DECmemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress)
     {
         TODO();
     }
