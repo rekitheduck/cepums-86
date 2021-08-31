@@ -26,6 +26,13 @@ namespace Cepums {
         if (address == 0x42)
             return m_8254PIT.readCounter2();
 
+        // KBC Data Port
+        if (address == 0x60)
+        {
+            DC_CORE_TRACE("Dummy read from KBC Data Port");
+            return 0;
+        }
+
         // I don't know how to deal with this anymore, so let's log and ignore
         if (address == 0x61)
         {
@@ -46,6 +53,13 @@ namespace Cepums {
             }
 
             return data;
+        }
+
+        // KBC Status Register
+        if (address == 0x64)
+        {
+            DC_CORE_TRACE("Dummy read from KBC Status Register");
+            return 0;
         }
 
         // Dummy read from CMOS RAM/RTC
@@ -73,6 +87,20 @@ namespace Cepums {
         if (address == 0x0D)
             return;
 
+        // PIC 1 register 0
+        if (address == 0x20)
+        {
+            DC_CORE_TRACE("PIC1 register 0 stub");
+            return;
+        }
+
+        // PIC 1 register 1
+        if (address == 0x21)
+        {
+            DC_CORE_TRACE("PIC1 register 1 stub");
+            return;
+        }
+
         // PIT counter 0
         if (address == 0x40)
             return m_8254PIT.writeCounter0(value);
@@ -88,6 +116,20 @@ namespace Cepums {
         // PIT control register
         if (address == 0x43)
             return m_8254PIT.writeControlRegister(value);
+
+        // KBC Data Port
+        if (address == 0x60)
+        {
+            TODO();
+            return;
+        }
+
+        // KBC Command Register
+        if (address == 0x64)
+        {
+            TODO();
+            return;
+        }
 
         // POST register
         if (address == 0x80)
@@ -193,6 +235,20 @@ namespace Cepums {
         if (address == 0x70 || address == 0x71)
         {
             DC_CORE_TRACE("Dummy write to CMOS");
+            return;
+        }
+
+        // PIC 2 register 0
+        if (address == 0xA0)
+        {
+            DC_CORE_TRACE("PIC2 register 0 stub");
+            return;
+        }
+
+        // PIC 2 register 1
+        if (address == 0xA1)
+        {
+            DC_CORE_TRACE("PIC2 register 1 stub");
             return;
         }
 
