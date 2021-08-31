@@ -12,6 +12,24 @@
 
 namespace Cepums {
 
+    uint8_t PIT::readCounter0()
+    {
+        DC_CORE_TRACE("PIT counter 0 reading value");
+        return readCounter(0);
+    }
+
+    uint8_t PIT::readCounter1()
+    {
+        DC_CORE_TRACE("PIT counter 1 reading value");
+        return readCounter(1);
+    }
+
+    uint8_t PIT::readCounter2()
+    {
+        DC_CORE_TRACE("PIT counter 2 reading value");
+        return readCounter(2);
+    }
+
     void PIT::writeControlRegister(uint8_t value)
     {
         PARSE_SC_RW_MODE_BCD_BITS(value, selectCounterBits, readWriteBits,  modeBits, BCDbit);
@@ -20,18 +38,14 @@ namespace Cepums {
         CounterReadWriteMode rwMode;
         switch (readWriteBits)
         {
-        case 0b00:
-            TODO();
+        case 0b00: // Latch 
             switch (selectCounterBits)
             {
             case 0:
-                m_latched = m_counter[0].counterCurrent;
-                return;
             case 1:
-                m_latched = m_counter[1].counterCurrent;
-                return;
             case 2:
-                m_latched = m_counter[2].counterCurrent;
+                m_counter[selectCounterBits].latched = m_counter[selectCounterBits].current;
+                m_counter[selectCounterBits].isLatched = true;
                 return;
             default:
                 VERIFY_NOT_REACHED();
@@ -107,6 +121,9 @@ namespace Cepums {
             VERIFY_NOT_REACHED();
             break;
         }
+        
+        // We're expecting a new initial count to be provided
+        m_counter[selectCounterBits].isInitialized = false;
 
         DC_CORE_TRACE("PIT control register called with mode={0} for counter {1}", mode, selectCounterBits);
     }
@@ -136,9 +153,6 @@ namespace Cepums {
             if (!m_counter[counter].isInitialized)
                 continue;
 
-            // This isn't finished yet
-            TODO();
-
             // BCD mode
             if (m_counter[counter].isInBCDmode)
             {
@@ -148,12 +162,54 @@ namespace Cepums {
             switch (m_counter[counter].mode)
             {
             case 0:
-                if (m_counter[counter].counterCurrent != 0)
-                    m_counter[counter].counterCurrent--;
-
-                // OUT0 is high when counterCurrent == 0
-            default:
                 TODO();
+                m_counter[counter].current--;
+                // OUT0 is high when counterCurrent == 0
+                break;
+
+            case 1:
+                TODO();
+                m_counter[counter].current--;
+                break;
+
+            case 2: // I don't know the difference between this and #3 so lets pretend it works the same for now
+                if (m_counter[counter].current != 0)
+                    m_counter[counter].current--;
+                else
+                    m_counter[counter].current = m_counter[counter].initial;
+
+                // This should turn on the output every 65536 if initial is set to 0
+                if (m_counter[counter].current == m_counter[counter].initial)
+                    m_counter[counter].output = true;
+                else
+                    m_counter[counter].output = false;
+                break;
+
+            case 3:
+                if (m_counter[counter].current != 0)
+                    m_counter[counter].current--;
+                else
+                    m_counter[counter].current = m_counter[counter].initial;
+
+                // This should turn on the output every 65536 if initial is set to 0
+                if (m_counter[counter].current == m_counter[counter].initial)
+                    m_counter[counter].output = true;
+                else
+                    m_counter[counter].output = false;
+                break;
+
+            case 4:
+                TODO();
+                m_counter[counter].current--;
+                break;
+
+            case 5:
+                TODO();
+                m_counter[counter].current--;
+                break;
+
+            default:
+                VERIFY_NOT_REACHED();
                 break;
             }
         }
@@ -161,27 +217,40 @@ namespace Cepums {
 
     void PIT::writeCounter(size_t counter, uint8_t value)
     {
+        if (m_counter[counter].isInitialized)
+        {
+            // Bug in code somewhere (or weirdness to work around)
+            VERIFY_NOT_REACHED();
+            return;
+        }
+
         switch (m_counter[counter].readWriteMode)
         {
         case CounterReadWriteMode::LeastSignificantOnly:
         {
-            SET8BITREGISTERLOW(m_counter[counter].counterInitial, value);
+            SET8BITREGISTERLOW(m_counter[counter].initial, value);
+            m_counter[counter].isInitialized = true;
+            m_counter[counter].current = 0xFFFF;
             break;
         }
         case CounterReadWriteMode::MostSignificantOnly:
         {
-            SET8BITREGISTERHIGH(m_counter[counter].counterInitial, value);
+            SET8BITREGISTERHIGH(m_counter[counter].initial, value);
+            m_counter[counter].isInitialized = true;
+            m_counter[counter].current = 0xFFFF;
             break;
         }
         case CounterReadWriteMode::LeastSignificantFirstThenMostSignificant:
         {
             if (m_counter[counter].isUpdatingLowByte)
             {
-                SET8BITREGISTERLOW(m_counter[counter].counterInitial, value);
+                SET8BITREGISTERLOW(m_counter[counter].initial, value);
             }
             else
             {
-                SET8BITREGISTERHIGH(m_counter[counter].counterInitial, value);
+                SET8BITREGISTERHIGH(m_counter[counter].initial, value);
+                m_counter[counter].isInitialized = true;
+                m_counter[counter].current = 0xFFFF;
             }
             m_counter[counter].isUpdatingLowByte = !m_counter[counter].isUpdatingLowByte;
             break;
@@ -190,5 +259,11 @@ namespace Cepums {
             VERIFY_NOT_REACHED();
             break;
         }
+    }
+
+    uint8_t PIT::readCounter(size_t counter)
+    {
+        TODO();
+        return 0;
     }
 }

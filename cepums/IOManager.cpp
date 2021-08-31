@@ -12,6 +12,18 @@ namespace Cepums {
 
     uint8_t IOManager::readByte(uint16_t address)
     {
+        // PIT counter 0
+        if (address == 0x40)
+            return m_8254PIT.readCounter0();
+
+        // PIT counter 1
+        if (address == 0x41)
+            return m_8254PIT.readCounter1();
+
+        // PIT counter 2
+        if (address == 0x42)
+            return m_8254PIT.readCounter2();
+
         // I don't know how to deal with this anymore, so let's log and ignore
         if (address == 0x61)
         {
