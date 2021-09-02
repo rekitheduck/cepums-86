@@ -151,6 +151,7 @@ namespace Cepums {
         void ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
         void ins$MOVimmediateToRegisterByte(uint8_t reg, uint8_t immediate);
         void ins$MOVimmediateToRegisterWord(uint8_t reg, uint16_t immediate);
+        void ins$MOVmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress);
         void ins$MOVmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress);
         void ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t effectiveAddress);
         void ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue);

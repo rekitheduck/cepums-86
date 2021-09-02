@@ -996,8 +996,16 @@ namespace Cepums {
         }
         case 0x8A: // MOV: 8-bit from register/memory to register
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$MOVregisterToRegisterByte(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+
+            return ins$MOVmemoryToRegisterByte(memoryManager, regBits, effectiveAddress);
         }
         case 0x8B: // MOV: 16-bit from register/memory to register
         {
@@ -2648,9 +2656,16 @@ namespace Cepums {
         updateRegisterFromREG16(reg, immediate);
     }
 
+    void Processor::ins$MOVmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress)
+    {
+        INSTRUCTION_TRACE("ins$MOV: 8-bit memory to register {0}", getRegisterNameFromREG8(destREG));
+        uint8_t value = memoryManager.readByte(m_dataSegment, effectiveAddress);
+        updateRegisterFromREG8(destREG, value);
+    }
+
     void Processor::ins$MOVmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress)
     {
-        INSTRUCTION_TRACE("ins$MOV: 16-bit memory to segment register");
+        INSTRUCTION_TRACE("ins$MOV: 16-bit memory to register {0}", getRegisterNameFromREG16(destREG));
         uint16_t value = memoryManager.readWord(m_dataSegment, effectiveAddress);
         updateRegisterFromREG16(destREG, value);
     }
