@@ -142,6 +142,9 @@ namespace Cepums {
         void ins$INCmemoryByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
         void ins$INCmemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
 
+        void ins$INT(MemoryManager& memoryManager, uint16_t immediate);
+        void ins$IRET(MemoryManager& memoryManager);
+
         void ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer);
         void ins$JMPshort(int8_t increment);
 

@@ -172,13 +172,11 @@ namespace Cepums {
         }
         case 0x06: // PUSH: Push ES to stack
         {
-            TODO();
-            return;
+            return ins$PUSHsegmentRegister(memoryManager, REGISTER_ES);
         }
         case 0x07: // POP: Pop ES from stack
         {
-            TODO();
-            return;
+            return ins$POPsegmentRegister(memoryManager, REGISTER_ES);
         }
         case 0x08: // OR: 8-bit register with register/memory
         {
@@ -246,13 +244,11 @@ namespace Cepums {
         }
         case 0x16: // PUSH: Push SS to stack
         {
-            TODO();
-            return;
+            return ins$PUSHsegmentRegister(memoryManager, REGISTER_SS);
         }
         case 0x017: // POP: Pop SS from stack
         {
-            TODO();
-            return;
+            return ins$POPsegmentRegister(memoryManager, REGISTER_SS);
         }
         case 0x18: // SBB: 8-bit subtract with borrow from register to register/memory
         {
@@ -286,8 +282,7 @@ namespace Cepums {
         }
         case 0x1E: // PUSH: Push DS to stack
         {
-            TODO();
-            return;
+            return ins$PUSHsegmentRegister(memoryManager, REGISTER_DS);
         }
         case 0x1F: // POP: Pop DS from stack
         {
@@ -1414,8 +1409,8 @@ namespace Cepums {
         }
         case 0xCD: // INT: Interrupt based on 8-bit immediate
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
+            return ins$INT(memoryManager, immediate);
         }
         case 0xCE: // INTO: Interrupt if overflow
         {
@@ -1424,8 +1419,7 @@ namespace Cepums {
         }
         case 0xCF: // IRET: Interrupt return
         {
-            TODO();
-            return;
+            return ins$IRET(memoryManager);
         }
         case 0xD0: // ROL/ROR/RCL/RCR/(SAL/SHL)/SHR/unused/SAR: 8-bit shift-like register/memory by 1
         {
@@ -2569,6 +2563,42 @@ namespace Cepums {
             CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
     }
 
+    void Processor::ins$INT(MemoryManager& memoryManager, uint16_t immediate)
+    {
+        INSTRUCTION_TRACE("ins$INT: Interrupt {0:x}", immediate);
+        // Push flags
+        SP() -= 2;
+        memoryManager.writeWord(SS(), SP(), m_flags);
+        // TODO: Handle TF
+        // Clear IF and TF
+        CLEAR_FLAG_BIT(m_flags, INTERRUPT_ENABLE_FLAG);
+        CLEAR_FLAG_BIT(m_flags, TRAP_FLAG);
+        // Push CS
+        SP() -= 2;
+        memoryManager.writeWord(SS(), SP(), CS());
+        // Push IP
+        SP() -= 2;
+        memoryManager.writeWord(SS(), SP(), IP());
+
+        // Get new CS:IP
+        IP() = memoryManager.readWord(0, immediate * 4);
+        CS() = memoryManager.readWord(0, immediate * 4 + 2);
+    }
+
+    void Processor::ins$IRET(MemoryManager & memoryManager)
+    {
+        INSTRUCTION_TRACE("ins$IRET: Returning from an interrupt service routine");
+        // Pop CS 
+        CS() = memoryManager.readWord(SS(), SP());
+        SP() += 2;
+        // Pop IP 
+        IP() = memoryManager.readWord(SS(), SP());
+        SP() += 2;
+        // Pop flags
+        m_flags = memoryManager.readWord(SS(), SP());
+        SP() += 2;
+    }
+
     void Processor::ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer)
     {
         INSTRUCTION_TRACE("ins$JMP: Jumping to {0:x}:{1:x}", newCodeSegment, newInstructionPointer);
@@ -2873,6 +2903,15 @@ namespace Cepums {
         INSTRUCTION_TRACE("ins$POP: segment register");
         switch (srBits)
         {
+        case REGISTER_ES:
+            ES() = memoryManager.readWord(SS(), SP());
+            break;
+        case REGISTER_CS:
+            CS() = memoryManager.readWord(SS(), SP());
+            break;
+        case REGISTER_SS:
+            SS() = memoryManager.readWord(SS(), SP());
+            break;
         case REGISTER_DS:
             DS() = memoryManager.readWord(SS(), SP());
             break;
@@ -3028,8 +3067,17 @@ namespace Cepums {
         SP() -= 2;
         switch (srBits)
         {
+        case REGISTER_ES:
+            memoryManager.writeWord(SS(), SP(), ES());
+            break;
         case REGISTER_CS:
             memoryManager.writeWord(SS(), SP(), CS());
+            break;
+        case REGISTER_SS:
+            memoryManager.writeWord(SS(), SP(), SS());
+            break;
+        case REGISTER_DS:
+            memoryManager.writeWord(SS(), SP(), DS());
             break;
         default:
             ILLEGAL_INSTRUCTION();
