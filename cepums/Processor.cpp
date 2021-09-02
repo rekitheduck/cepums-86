@@ -2216,15 +2216,17 @@ namespace Cepums {
         // Decrement the Stack Pointer (by size of register) before doing anything
         SP() -= 2;
         memoryManager.writeWord(SS(), SP(), IP());
-
-
         IP() += offset;
     }
 
     void Processor::ins$CMPimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
     {
         INSTRUCTION_TRACE("ins$CMP: 16-bit immediate to memory");
-        uint16_t memoryValue = memoryManager.readWord(m_dataSegment, effectiveAddress);
+        uint16_t segment = m_dataSegment;
+        if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
+            segment = getSegmentRegisterValueAndResetOverride();
+
+        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
 
         // Note: this may be UB :(
         uint16_t result = memoryValue - immediate;
@@ -3560,6 +3562,35 @@ namespace Cepums {
             VERIFY_NOT_REACHED();
             return m_AX;
         }
+    }
+
+    uint16_t Processor::getSegmentRegisterValueAndResetOverride()
+    {
+        uint16_t value = 0;
+        switch (m_segmentPrefix)
+        {
+        case REGISTER_ES:
+            value = ES();
+            break;
+
+        case REGISTER_CS:
+            value = CS();
+            break;
+
+        case REGISTER_SS:
+            value = SS();
+            break;
+
+        case REGISTER_DS:
+            value = DS();
+            break;
+        default:
+            DC_CORE_ERROR("Segment override not set");
+            VERIFY_NOT_REACHED();
+            break;
+        }
+        RESET_SEGMENT_PREFIX();
+        return value;
     }
 
     uint16_t Processor::getEffectiveAddressFromBits(uint8_t rmBits, uint8_t modBits, uint8_t isWord, uint8_t displacementLow, uint8_t displacementHigh)

@@ -220,7 +220,6 @@ namespace Cepums {
         void ins$XCHGmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress);
         void ins$XCHGregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
 
-
         void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue);
         void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue);
         void ins$XORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
@@ -268,6 +267,7 @@ namespace Cepums {
         void updateRegisterFromREG16(uint8_t REG, uint16_t data);
         uint8_t getRegisterValueFromREG8(uint8_t REG);
         uint16_t& getRegisterFromREG16(uint8_t REG);
+        uint16_t getSegmentRegisterValueAndResetOverride();
         uint16_t getEffectiveAddressFromBits(uint8_t rmBits, uint8_t modBits, uint8_t isWord, uint8_t displacementLow, uint8_t displacementHigh);
 
         void loadDisplacementsFromInstructionStream(MemoryManager& memoryManager, uint8_t modBits, uint8_t rmBits, uint8_t& displacementLowByte, uint8_t& displacementHighByte);
