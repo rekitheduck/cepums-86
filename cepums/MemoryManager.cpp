@@ -137,9 +137,7 @@ namespace Cepums {
         }
 
         if (physical < 0xF0000)
-        {
-            TODO();
-        }
+            return 0;
 
         // First BIOS binary
         if (physical < 0xF8000)
