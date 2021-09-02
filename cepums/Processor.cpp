@@ -1144,13 +1144,13 @@ namespace Cepums {
         }
         case 0xA2: // MOV: 8-bit from AL to memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, address);
+            return ins$MOVregisterToMemory(memoryManager, address, getRegisterValueFromREG8(REGISTER_AL));
         }
         case 0xA3: // MOV: 16-bit from AX to memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, address);
+            return ins$MOVregisterToMemory(memoryManager, address, getRegisterFromREG16(REGISTER_AX));
         }
         case 0xA4: // MOVS: 8-bit move string from SRC-STR8 to DEST-STR8
         {
