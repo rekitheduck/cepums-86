@@ -1,6 +1,13 @@
 #include "cepumspch.h"
 #include "Processor.h"
 
+// Uncomment to force strict original 8086 instruction set
+// Note: This may not be needed, but I'm not 100% sure. This is necessary
+//  because 80186 added new instruction variants (for example, OR 0x83/1)
+//  that somehow ended up on the 8086 instruction list. These need testing
+//  on a real machine as they might just work on an 8086
+//#define STRICT8086INSTRUCTIONSET
+
 namespace Cepums {
 
     static bool s_debugSpam = false;
@@ -905,6 +912,11 @@ namespace Cepums {
             {
             case 0b000:
                 return ins$ADDimmediateToMemory(memoryManager, effectiveAddress, immediate);
+            case 0b001:
+#ifdef STRICT8086INSTRUCTIONSET
+                ILLEGAL_INSTRUCTION();
+#endif
+                return ins$ORimmediateToMemory(memoryManager, effectiveAddress, immediate);
             case 0b010:
                 //return ins$ADCimmediateToMemory(memoryManager, effectiveAddress, immediate);
             case 0b011:
@@ -2756,6 +2768,15 @@ namespace Cepums {
         uint16_t registerValue = getRegisterFromREG16(REG);
         registerValue = ~registerValue;
         updateRegisterFromREG16(REG, registerValue);
+    }
+
+    void Processor::ins$ORimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
+    {
+        INSTRUCTION_TRACE("ins$OR: 16-bit immediate to memory");
+        uint16_t memoryValue = memoryManager.readWord(m_dataSegment, effectiveAddress);
+        uint16_t result = memoryValue | immediate;
+        memoryManager.writeWord(m_dataSegment, effectiveAddress, result);
+        setFlagsAfterLogicalOperation(result);
     }
 
     void Processor::ins$ORimmediateToRegister(uint8_t destREG, uint8_t immediate)
