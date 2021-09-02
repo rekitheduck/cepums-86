@@ -149,6 +149,8 @@ namespace Cepums {
         void ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer);
         void ins$JMPshort(int8_t increment);
 
+        void ins$LEStoRegister(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress);
+
         void ins$LODSword(MemoryManager& memoryManager);
         void ins$LOOP(int8_t offset);
 

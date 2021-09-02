@@ -1359,8 +1359,18 @@ namespace Cepums {
         }
         case 0xC4: // LES: Load pointer using ES
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+            {
+                DC_CORE_WARN("LES: I don't know what to do in this case");
+                TODO();
+            }
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+            return ins$LEStoRegister(memoryManager, rmBits, effectiveAddress);
         }
         case 0xC5: // LDS: Load pointer using DS
         {
@@ -2672,6 +2682,36 @@ namespace Cepums {
         m_instructionPointer += increment;
     }
 
+    void Processor::ins$LEStoRegister(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress)
+    {
+        uint16_t newRegisterValue = memoryManager.readWord(m_extraSegment, effectiveAddress);
+        uint16_t newSegmentValue = memoryManager.readWord(m_extraSegment, effectiveAddress + 2);
+
+        switch (m_segmentPrefix)
+        {
+        case REGISTER_DS:
+            DS() = newSegmentValue;
+            RESET_SEGMENT_PREFIX();
+            break;
+
+        case REGISTER_CS:
+            CS() = newSegmentValue;
+            RESET_SEGMENT_PREFIX();
+            break;
+
+        case REGISTER_SS:
+            SS() = newSegmentValue;
+            RESET_SEGMENT_PREFIX();
+            break;
+        case REGISTER_ES:
+        default:
+            ES() = newSegmentValue;
+            RESET_SEGMENT_PREFIX();
+            break;
+        }
+        updateRegisterFromREG16(destREG, newRegisterValue);
+    }
+
     void Processor::ins$LODSword(MemoryManager& memoryManager)
     {
         std::string segRegName = getSegmentRegisterName(REGISTER_DS);
@@ -2744,14 +2784,20 @@ namespace Cepums {
     void Processor::ins$MOVmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress)
     {
         INSTRUCTION_TRACE("ins$MOV: 8-bit memory to register {0}", getRegisterNameFromREG8(destREG));
-        uint8_t value = memoryManager.readByte(m_dataSegment, effectiveAddress);
+        uint16_t segment = m_codeSegment;
+        if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
+            segment = getSegmentRegisterValueAndResetOverride();
+        uint8_t value = memoryManager.readByte(segment, effectiveAddress);
         updateRegisterFromREG8(destREG, value);
     }
 
     void Processor::ins$MOVmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress)
     {
         INSTRUCTION_TRACE("ins$MOV: 16-bit memory to register {0}", getRegisterNameFromREG16(destREG));
-        uint16_t value = memoryManager.readWord(m_dataSegment, effectiveAddress);
+        uint16_t segment = m_codeSegment;
+        if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
+            segment = getSegmentRegisterValueAndResetOverride();
+        uint16_t value = memoryManager.readWord(segment, effectiveAddress);
         updateRegisterFromREG16(destREG, value);
     }
 
@@ -3931,7 +3977,7 @@ namespace Cepums {
         }
     }
 
-    void Processor::loadDisplacementsFromInstructionStream(MemoryManager & memoryManager, uint8_t modBits, uint8_t rmBits, uint8_t & displacementLowByte, uint8_t & displacementHighByte)
+    void Processor::loadDisplacementsFromInstructionStream(MemoryManager& memoryManager, uint8_t modBits, uint8_t rmBits, uint8_t& displacementLowByte, uint8_t& displacementHighByte)
     {
         // Do we have 8- or 16-bit displacement
         if (modBits == 0b01)
