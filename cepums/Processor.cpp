@@ -1858,8 +1858,51 @@ namespace Cepums {
         }
         case 0xFF: // INC/DEC/CALL/CALL/JMP/JMP/PUSH/unused: 16-bit (memory)/(intrasegment register/memory)/(intrasegment memory)/(intrasegment register/memory)/(intersegment memory)/(memory)
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+            {
+                switch (regBits)
+                {
+                case 0b010:
+                case 0b100:
+                    TODO();
+                    return;
+                default:
+                    VERIFY_NOT_REACHED();
+                    return;
+                }
+            }
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+
+            switch (regBits)
+            {
+            case 0b00:
+                TODO();
+                return;
+            case 0b001:
+                TODO();
+                return;
+            case 0b010: // CALL: Intrasegment
+                return ins$CALLnearFromMemory(memoryManager, effectiveAddress);
+            case 0b011: // CALL: Intersegment
+                TODO();
+                return;
+            case 0b100:
+                TODO();
+                return;
+            case 0b101:
+                TODO();
+                return;
+            case 0b110:
+                TODO();
+                return;
+            default:
+                VERIFY_NOT_REACHED();
+                return;
+            }
         }
 
         // Known unused:
@@ -2227,6 +2270,18 @@ namespace Cepums {
         SP() -= 2;
         memoryManager.writeWord(SS(), SP(), IP());
         IP() += offset;
+    }
+
+    void Processor::ins$CALLnearFromMemory(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    {
+        SP() -= 2;
+        memoryManager.writeWord(SS(), SP(), IP());
+        uint16_t segment = m_codeSegment;
+        if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
+            segment = getSegmentRegisterValueAndResetOverride();
+
+        IP() = memoryManager.readWord(segment, effectiveAddress);
+        INSTRUCTION_TRACE("ins$CALL: near to {0:X}:{1:X}", segment, IP());
     }
 
     void Processor::ins$CMPimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
@@ -3835,11 +3890,7 @@ namespace Cepums {
 
         case 0b10:
         {
-            DC_CORE_TRACE("R/M field decoding has entered the 'displacement' branch. This might be implemented incorrectly");
-
             uint16_t fullDisplacement;
-
-            // TODO: Make sure these do the correct job
             SET8BITREGISTERLOW(fullDisplacement, displacementLow);
             SET8BITREGISTERHIGH(fullDisplacement, displacementHigh);
 
