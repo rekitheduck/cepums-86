@@ -455,8 +455,16 @@ namespace Cepums {
         }
         case 0x39: // CMP: 16-bit from register to register/memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$CMPregisterToRegisterWord(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+
+            return ins$CMPregisterToMemory(memoryManager, effectiveAddress, getRegisterFromREG16(regBits));
         }
         case 0x3A: // CMP: 8-bit from register/memory to register
         {
@@ -2297,6 +2305,61 @@ namespace Cepums {
 
         // Overflow
         if (immediate > SHRT_MAX - registerValue)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        setFlagsAfterArithmeticOperation(result);
+    }
+
+    void Processor::ins$CMPregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
+    {
+        INSTRUCTION_TRACE("ins$CMP: 16-bit register {0} to register {1}", getRegisterNameFromREG16(sourceREG), getRegisterNameFromREG16(destREG));
+        uint16_t registerValue = getRegisterFromREG16(destREG);
+        uint16_t sourceValue = getRegisterFromREG16(sourceREG);
+
+        // Note: this may be UB :(
+        uint16_t result = registerValue - sourceValue;
+
+        // Carry (unsigned overflow)
+        if (sourceValue > registerValue)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (sourceValue > SHRT_MAX - registerValue)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        setFlagsAfterArithmeticOperation(result);
+    }
+
+    void Processor::ins$CMPregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue)
+    {
+        INSTRUCTION_TRACE("ins$CMP: 16-bit register to memory");
+        uint16_t memoryValue = memoryManager.readWord(m_dataSegment, effectiveAddress);
+
+        // Note: this may be UB :(
+        uint16_t result = memoryValue - registerValue;
+
+        // Carry (unsigned overflow)
+        if (memoryValue > registerValue)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (memoryValue > SHRT_MAX - registerValue)
             SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
         else
             CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
