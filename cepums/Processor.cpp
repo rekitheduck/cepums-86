@@ -2784,7 +2784,7 @@ namespace Cepums {
     void Processor::ins$MOVmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress)
     {
         INSTRUCTION_TRACE("ins$MOV: 8-bit memory to register {0}", getRegisterNameFromREG8(destREG));
-        uint16_t segment = m_codeSegment;
+        uint16_t segment = m_dataSegment;
         if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
             segment = getSegmentRegisterValueAndResetOverride();
         uint8_t value = memoryManager.readByte(segment, effectiveAddress);
@@ -2794,7 +2794,7 @@ namespace Cepums {
     void Processor::ins$MOVmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress)
     {
         INSTRUCTION_TRACE("ins$MOV: 16-bit memory to register {0}", getRegisterNameFromREG16(destREG));
-        uint16_t segment = m_codeSegment;
+        uint16_t segment = m_dataSegment;
         if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
             segment = getSegmentRegisterValueAndResetOverride();
         uint16_t value = memoryManager.readWord(segment, effectiveAddress);
