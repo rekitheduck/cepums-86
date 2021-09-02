@@ -777,7 +777,7 @@ namespace Cepums {
                 case 0b110:
                     //return ins$XORimmediateToRegisterByte(rmBits, immediate);
                 case 0b111:
-                    //return ins$CMPimmediateToRegisterByte(rmBits, immediate);
+                    return ins$CMPimmediateToRegister(rmBits, immediate);
                 default:
                     ILLEGAL_INSTRUCTION();
                     return;
