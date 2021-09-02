@@ -22,6 +22,7 @@ namespace Cepums {
             // Okay, we're waiting for the data now
             DC_CORE_TRACE("KBC Command: Write configuration byte");
             m_state = KeyboardControllerState::WaitingForCommandByte;
+            m_dataToMouse = false;
             return;
         }
 
@@ -64,21 +65,76 @@ namespace Cepums {
             return;
         }
 
+        if (value == CMD_ENABLE_AUX_INTERFACE)
+        {
+            DC_CORE_TRACE("KBC Command: Enable Mouse Port");
+            return;
+        }
+        
+        if (value == CMD_SEND_CMD_AUX_DEVICE)
+        {
+            DC_CORE_TRACE("KBC Command: Sending data to mouse port");
+            m_dataToMouse = true;
+            return;
+        }
+
         TODO();
     }
 
     void KeyboardController::writeDataPort(uint8_t value)
     {
+        if (m_dataToMouse)
+        {
+            if (value == CMD_DEV_RESET)
+                DC_CORE_TRACE("KBC Data Port: Received mouse reset");
+            else
+                DC_CORE_ERROR("KBC Data Port: Received unhandled mouse command");
+            return;
+        }
+
         switch (m_state)
         {
         case KeyboardControllerState::OK:
+            if (value == CMD_DEV_ENABLE)
+            {
+                m_state = KeyboardControllerState::EnableKeyboard;
+                m_dataBuffer.push_back(CMD_DEV_ACK);
+                m_keyboardEnabled = true;
+                return;
+            }
             DC_CORE_TRACE("KBC Data Port: Getting a new value while not really in a mode expecting anything", value);
             break;
         case KeyboardControllerState::WaitingForCommandByte:
             DC_CORE_TRACE("KBC Data Port: writing new command byte 0b{0:b}", value);
-            m_state = KeyboardControllerState::OK;
+            if (m_keyboardEnabled)
+                m_state = KeyboardControllerState::EnableKeyboard;
+            else
+                m_state = KeyboardControllerState::OK;
             m_commandByte = value;
             return;
+        case KeyboardControllerState::EnableKeyboard:
+            // Here we get keyboard commands
+            switch (value)
+            {
+            case CMD_DEV_RESET:
+                DC_CORE_TRACE("KB: Reset :)");
+                m_dataBuffer.push_back(CMD_BAT_PASSED);
+                m_dataBuffer.push_back(CMD_DEV_ACK);
+                m_keyboardEnabled = false;
+                return;
+            case CMD_DEV_DISABLE:
+                DC_CORE_TRACE("KB: Disable");
+                m_dataBuffer.push_back(CMD_DEV_ACK);
+                return;
+            case CMD_DEV_ENABLE:
+                DC_CORE_TRACE("KB: Enable");
+                m_dataBuffer.push_back(CMD_DEV_ACK);
+                return;
+            default:
+                TODO();
+                return;
+            }
+
         default:
             break;
         }
@@ -87,6 +143,11 @@ namespace Cepums {
 
     uint8_t KeyboardController::readDataPort()
     {
+        if (m_dataToMouse)
+        {
+            DC_CORE_TRACE("KBC Data Port: Reading mouse port, pretending we're not home");
+            return 0;
+        }
         switch (m_state)
         {
         case KeyboardControllerState::OK:
@@ -105,16 +166,18 @@ namespace Cepums {
             // 0x04 - data line stuck high
             return 0x00;
         case KeyboardControllerState::ReadFirstPort:
-            DC_CORE_TRACE("KBC Data Port: reading first port, no clue what to output, returning 0");
+            DC_CORE_TRACE("KBC Data Port: Reading first port, no clue what to output, returning 0");
             return 0x00;
         case KeyboardControllerState::EnableKeyboard:
-            // Keyboard is enabled, let's return the BAT (Basic Assurance Test)
-            if (!m_keyboardEnabled)
+
+            if (m_dataBuffer.size() > 0)
             {
-                m_keyboardEnabled = true;
-                return 0xFA;
+                uint8_t data = m_dataBuffer.back();
+                m_dataBuffer.pop_back();
+
+                return data;
             }
-            return 0xAA;
+            return 0x00;
         case KeyboardControllerState::DisableKeyboard:
             // Keyboard was disabled, return ACK
             return 0xFA;
@@ -145,6 +208,10 @@ namespace Cepums {
             return 1;
 
         case KeyboardControllerState::EnableKeyboard:
+            if (m_dataToMouse)
+            {
+                return 0x01;
+            }
             return 1;
 
         case KeyboardControllerState::DisableKeyboard:

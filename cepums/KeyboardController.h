@@ -1,5 +1,6 @@
 #pragma once
 
+// Controller commands
 #define CMD_READ_CONFIGURATION_BYTE     0x20
 #define CMD_WRITE_CONFIGURATION_BYTE    0x60
 
@@ -14,6 +15,13 @@
 
 #define CMD_READ_FIRST_PORT             0xC0
 #define CMD_SEND_CMD_AUX_DEVICE         0xD4
+
+// Device commands
+#define CMD_BAT_PASSED                  0xAA
+#define CMD_DEV_ENABLE                  0xF4
+#define CMD_DEV_DISABLE                 0xF5
+#define CMD_DEV_ACK                     0xFA
+#define CMD_DEV_RESET                   0xFF
 
 namespace Cepums {
 
@@ -40,5 +48,7 @@ namespace Cepums {
         KeyboardControllerState m_state = KeyboardControllerState::OK;
         uint8_t m_commandByte = 0;
         bool m_keyboardEnabled = false;
+        std::vector<uint8_t> m_dataBuffer;
+        bool m_dataToMouse = false;
     };
 }
