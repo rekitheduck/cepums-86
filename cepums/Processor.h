@@ -228,6 +228,7 @@ namespace Cepums {
         void ins$SHRmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
         void ins$SHRregisterOnceByte(uint8_t rmBits);
         void ins$SHRregisterOnceWord(uint8_t rmBits);
+        void ins$STOSbyte(MemoryManager& memoryManager);
         void ins$STOSword(MemoryManager& memoryManager);
 
         void ins$SUBimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t immediate);

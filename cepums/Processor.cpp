@@ -1208,8 +1208,7 @@ namespace Cepums {
         }
         case 0xAA: // STOS: 8-bit store byte or word string to DEST-STR8
         {
-            TODO();
-            return;
+            return ins$STOSbyte(memoryManager);
         }
         case 0xAB: // STOS: 16-bit store byte or word string to DEST-STR8
         {
@@ -3681,6 +3680,17 @@ namespace Cepums {
         else
             CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
         updateRegisterFromREG16(rmBits, registerValue);
+    }
+
+    void Processor::ins$STOSbyte(MemoryManager& memoryManager)
+    {
+        INSTRUCTION_TRACE("ins$STOS: Store AL into ES:DI");
+        memoryManager.writeByte(m_extraSegment, m_destinationIndex, AL());
+        // Increment if not set, decrement if set
+        if (IS_BIT_SET(m_flags, DIRECTION_FLAG))
+            m_destinationIndex -= 1;
+        else
+            m_destinationIndex += 1;
     }
 
     void Processor::ins$STOSword(MemoryManager& memoryManager)
