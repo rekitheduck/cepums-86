@@ -1793,7 +1793,7 @@ namespace Cepums {
                 //return ins$NEGmemoryByte(memoryManager, effectiveAddress);
                 TODO();
             case 0b100:
-                //return ins$MULmemoryByte(memoryManager, segment, effectiveAddress);
+                return ins$MULmemoryByte(memoryManager, segment, effectiveAddress);
             case 0b101:
                 //return ins$IMULmemoryByte(memoryManager, effectiveAddress);
             case 0b110:
@@ -3066,6 +3066,23 @@ namespace Cepums {
         {
             m_sourceIndex += 2;
             m_destinationIndex += 2;
+        }
+    }
+
+    void Processor::ins$MULmemoryByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
+    {
+        INSTRUCTION_TRACE("ins$MUL: 8-bit memory");
+        uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
+        AX() = memoryValue * AL();
+        if (AH() > 0)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
         }
     }
 
