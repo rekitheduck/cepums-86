@@ -121,6 +121,20 @@ namespace Cepums {
             return;
         }
 
+        // MDA :)
+        if (physical >= 0xB0000 && physical <= 0xB7FFF)
+        {
+            physical -= 0xB0000;
+
+            // The address repeats for the entire 32k range
+            while (physical >= m_MDA.size())
+            {
+                physical -= (uint32_t)m_MDA.size();
+            }
+            getMDA().at(physical) = value;
+            return;
+        }
+
         TODO();
     }
 
@@ -187,7 +201,7 @@ namespace Cepums {
             // The address repeats for the entire 32k range
             while (physical >= m_MDA.size())
             {
-                physical -= m_MDA.size();
+                physical -= (uint32_t)m_MDA.size();
             }
             getMDA().at(physical) = lower;
             getMDA().at(++physical) = higher;
