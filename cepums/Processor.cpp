@@ -1698,16 +1698,16 @@ namespace Cepums {
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
             return ins$JMPshort(byte);
         }
-        case 0xEC: // IN: AL and AX
+        case 0xEC: // IN: AL and DX
         {
-            TODO();
-            DC_CORE_ERROR("ins$IN is unimplemented so we'll skip over :(");
+            INSTRUCTION_TRACE("ins$IN: 8-bit data from port DX into AL");
+            AL(io.readByte(DX()));
             return;
         }
         case 0xED: // IN: AX and DX
         {
-            TODO();
-            DC_CORE_ERROR("ins$IN is unimplemented so we'll skip over :(");
+            INSTRUCTION_TRACE("ins$IN: 16-bit data from port DX into AX");
+            AX() = io.readWord(DX());
             return;
         }
         case 0xEE: // OUT: AL and DX
