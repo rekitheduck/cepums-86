@@ -151,8 +151,16 @@ namespace Cepums {
         }
         case 0x03: // ADD: 16-bit from register/memory to register
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$ADDregisterToRegisterWord(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$ADDmemoryToRegisterWord(memoryManager, regBits, segment, effectiveAddress);
         }
         case 0x04: // ADD: 8-bit immediate to AL
         {
@@ -2201,6 +2209,37 @@ namespace Cepums {
             CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
 
         updateRegisterFromREG16(destREG, result);
+        setFlagsAfterArithmeticOperation(result);
+    }
+
+    void Processor::ins$ADDmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t regBits, uint16_t segment, uint16_t effectiveAddress)
+    {
+        INSTRUCTION_TRACE("ins$ADD: 16-bit memory to register {0}", getRegisterNameFromREG16(regBits));
+        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
+        uint16_t registerValue = getRegisterFromREG16(regBits);
+
+        // Note: this may be UB :(
+        uint16_t result = registerValue + memoryValue;
+
+        // Carry (unsigned overflow)
+        if (memoryValue > USHRT_MAX - registerValue)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            // Fix UB
+            result = (USHRT_MAX - registerValue) + memoryValue;
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (memoryValue > SHRT_MAX - registerValue)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        updateRegisterFromREG16(regBits, result);
         setFlagsAfterArithmeticOperation(result);
     }
 
