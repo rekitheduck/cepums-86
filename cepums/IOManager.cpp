@@ -78,6 +78,33 @@ namespace Cepums {
             return 0;
         }
 
+        // MDA Status register
+        if (address == 0x3BA)
+        {
+            uint8_t data = 0;
+            /*
+            bit 4-7 always 1
+            bit 3:  Video. This is 1 if a green or bright green pixel is being drawn on the screen at this moment
+            bit 1-2 always 0
+            bit 0   Retrace. This is 1 if the horizontal retrace is active
+            */
+            if (m_pretendRetrace)
+            {
+                SET_BIT(data, 0);
+                m_pretendRetrace = false;
+            }
+            else
+            {
+                m_pretendRetrace = true;
+            }
+            SET_BIT(data, 4);
+            SET_BIT(data, 5);
+            SET_BIT(data, 6);
+            SET_BIT(data, 7);
+
+            return data;
+        }
+
         TODO();
         return 0;
     }

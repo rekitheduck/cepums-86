@@ -26,5 +26,6 @@ namespace Cepums {
 
         // State stuff
         bool m_refreshRequest = false;
+        bool m_pretendRetrace = false;
     };
 }
