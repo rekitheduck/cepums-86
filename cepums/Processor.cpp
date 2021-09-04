@@ -1827,6 +1827,7 @@ namespace Cepums {
                 {
                     LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
                     //return ins$TESTimmediateToRegister(rmBits, immediate);
+                    TODO();
                 }
                 case 0b010:
                     return ins$NOTregisterWord(rmBits);
@@ -1840,6 +1841,7 @@ namespace Cepums {
                     //return ins$DIVregisterWord(rmBits);
                 case 0b111:
                     //return ins$IDIVregisterWord(rmBits);
+                    TODO();
                 default:
                     ILLEGAL_INSTRUCTION();
                     return;
@@ -1855,19 +1857,22 @@ namespace Cepums {
             {
                 LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
                 //return ins$TESTimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                TODO();
             }
             case 0b010:
                 return ins$NOTmemoryWord(memoryManager, segment, effectiveAddress);
             case 0b011:
                 //return ins$NEGmemoryWord(memoryManager, segment, effectiveAddress);
+                TODO();
             case 0b100:
-                //return ins$MULmemoryWord(memoryManager, segment, effectiveAddress);
+                return ins$MULmemoryWord(memoryManager, segment, effectiveAddress);
             case 0b101:
                 //return ins$IMULmemoryWord(memoryManager, segment, effectiveAddress);
             case 0b110:
                 //return ins$DIVmemoryWord(memoryManager, segment, effectiveAddress);
             case 0b111:
                 //return ins$IDIVmemoryWord(memoryManager, segment, effectiveAddress);
+                TODO();
             default:
                 ILLEGAL_INSTRUCTION();
                 return;
@@ -3114,6 +3119,25 @@ namespace Cepums {
         uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
         AX() = memoryValue * AL();
         if (AH() > 0)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        }
+    }
+
+    void Processor::ins$MULmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
+    {
+        INSTRUCTION_TRACE("ins$MUL: 16-bit memory");
+        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
+        uint32_t  result = memoryValue * AX();
+        DX() = result >> 16; // Higher part
+        AX() = result & 0xFFFF; // Lower part
+        if (DX() > 0)
         {
             SET_FLAG_BIT(m_flags, CARRY_FLAG);
             SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);

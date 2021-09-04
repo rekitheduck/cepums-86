@@ -178,6 +178,7 @@ namespace Cepums {
         void ins$MOVSword(MemoryManager& memoryManager);
 
         void ins$MULmemoryByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
+        void ins$MULmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
 
         void ins$NOTmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
         void ins$NOTregisterWord(uint8_t REG);
