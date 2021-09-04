@@ -153,9 +153,11 @@ namespace Cepums {
 
         void ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer);
         void ins$JMPshort(int8_t increment);
+        void ins$JMPshortWord(int16_t increment);
 
         void ins$LEStoRegister(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress);
 
+        void ins$LODSbyte(MemoryManager& memoryManager);
         void ins$LODSword(MemoryManager& memoryManager);
         void ins$LOOP(int8_t offset);
 
@@ -182,8 +184,10 @@ namespace Cepums {
         void ins$ORregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue);
         void ins$ORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
 
+        void ins$POPF(MemoryManager& memoryManager);
         void ins$POPsegmentRegister(MemoryManager& memoryManager, uint8_t srBits);
         void ins$POPregisterWord(MemoryManager& memoryManager, uint8_t REG);
+        void ins$PUSHF(MemoryManager& memoryManager);
         void ins$PUSHregisterByte(MemoryManager& memoryManager, uint8_t REG);
         void ins$PUSHregisterWord(MemoryManager& memoryManager, uint8_t REG);
         void ins$PUSHsegmentRegister(MemoryManager& memoryManager, uint8_t srBits);

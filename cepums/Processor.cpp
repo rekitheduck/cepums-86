@@ -1132,13 +1132,11 @@ namespace Cepums {
         }
         case 0x9C: // PUSHF: Push flags to stack
         {
-            TODO();
-            return;
+            return ins$PUSHF(memoryManager);
         }
         case 0x9D: // POPF: Pop flags from stack
         {
-            TODO();
-            return;
+            return ins$POPF(memoryManager);
         }
         case 0x9E: // SAHF: Store AH into flags
         {
@@ -1211,8 +1209,7 @@ namespace Cepums {
         }
         case 0xAC: // LODS: 8-bit load string to SRC-STR8
         {
-            TODO();
-            return;
+            return ins$LODSbyte(memoryManager);
         }
         case 0xAD: // LODS: 16-bit load string to SRC_STR16
         {
@@ -1678,8 +1675,8 @@ namespace Cepums {
         }
         case 0xE9: // JMP: Jump to NEAR-LABEL
         {
-            TODO();
-            return;
+            LOAD_INCREMENT_WORD(memoryManager, word);
+            return ins$JMPshortWord(word);
         }
         case 0xEA: // JMP: Jump to FAR-LABEL
         {
@@ -1691,8 +1688,6 @@ namespace Cepums {
         case 0xEB: // JMP: Jump to SHORT-LABEL
         {
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
-            //// Sign-extend to word
-            //uint16_t label = signExtendByteToWord(byte);
             return ins$JMPshort(byte);
         }
         case 0xEC: // IN: AL and AX
@@ -1775,6 +1770,7 @@ namespace Cepums {
                     //return ins$DIVregisterByte(rmBits);
                 case 0b111:
                     //return ins$IDIVregisterByte(rmBits);
+                    TODO();
                 default:
                     ILLEGAL_INSTRUCTION();
                     return;
@@ -1795,14 +1791,16 @@ namespace Cepums {
                 //return ins$NOTmemoryByte(memoryManager, effectiveAddress);
             case 0b011:
                 //return ins$NEGmemoryByte(memoryManager, effectiveAddress);
+                TODO();
             case 0b100:
-                //return ins$MULmemoryByte(memoryManager, effectiveAddress);
+                //return ins$MULmemoryByte(memoryManager, segment, effectiveAddress);
             case 0b101:
                 //return ins$IMULmemoryByte(memoryManager, effectiveAddress);
             case 0b110:
                 //return ins$DIVmemoryByte(memoryManager, effectiveAddress);
             case 0b111:
                 //return ins$IDIVmemoryByte(memoryManager, effectiveAddress);
+                TODO();
             default:
                 ILLEGAL_INSTRUCTION();
                 return;
@@ -2745,6 +2743,12 @@ namespace Cepums {
         m_instructionPointer += increment;
     }
 
+    void Processor::ins$JMPshortWord(int16_t increment)
+    {
+        INSTRUCTION_TRACE("ins$JMP: Jumping to short");
+        m_instructionPointer += increment;
+    }
+
     void Processor::ins$LEStoRegister(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
     {
         uint16_t newRegisterValue = memoryManager.readWord(segment, effectiveAddress);
@@ -2773,6 +2777,45 @@ namespace Cepums {
             break;
         }
         updateRegisterFromREG16(destREG, newRegisterValue);
+    }
+
+    void Processor::ins$LODSbyte(MemoryManager & memoryManager)
+    {
+        std::string segRegName = getSegmentRegisterName(REGISTER_DS);
+        switch (m_segmentPrefix)
+        {
+        case REGISTER_ES:
+            segRegName = getSegmentRegisterName(m_segmentPrefix);
+            AL(memoryManager.readByte(EXTRA_SEGMENT, SI()));
+            RESET_SEGMENT_PREFIX();
+            break;
+
+        case REGISTER_CS:
+            segRegName = getSegmentRegisterName(m_segmentPrefix);
+            AL(memoryManager.readByte(CODE_SEGMENT, SI()));
+            RESET_SEGMENT_PREFIX();
+            break;
+
+        case REGISTER_SS:
+            segRegName = getSegmentRegisterName(m_segmentPrefix);
+            AL(memoryManager.readByte(STACK_SEGMENT, SI()));
+            RESET_SEGMENT_PREFIX();
+            break;
+
+        case REGISTER_DS:
+        default:
+            AL(memoryManager.readByte(DATA_SEGMENT, SI()));
+            RESET_SEGMENT_PREFIX();
+            break;
+        }
+
+        // Increment or decrement depending on DF
+        if (IS_BIT_SET(m_flags, DIRECTION_FLAG))
+            SI() -= 2;
+        else
+            SI() += 2;
+
+        INSTRUCTION_TRACE("ins$LODS: Load {0}:SI word into AL", segRegName);
     }
 
     void Processor::ins$LODSword(MemoryManager& memoryManager)
@@ -3071,7 +3114,21 @@ namespace Cepums {
 
     void Processor::ins$ORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
     {
-        TODO();
+        INSTRUCTION_TRACE("ins$OR: 8-bit register to register");
+        uint8_t operand = getRegisterValueFromREG8(destREG);
+        uint8_t operand2 = getRegisterValueFromREG8(sourceREG);
+        uint8_t result = operand | operand2;
+        updateRegisterFromREG8(destREG, result);
+        setFlagsAfterLogicalOperation(result);
+    }
+
+    void Processor::ins$POPF(MemoryManager& memoryManager)
+    {
+        INSTRUCTION_TRACE("ins$POPF: Pop flags");
+        m_flags = memoryManager.readWord(SS(), SP());
+
+        // Increment the Stack Pointer (by size of register)
+        SP() += 2;
     }
 
     void Processor::ins$POPsegmentRegister(MemoryManager& memoryManager, uint8_t srBits)
@@ -3144,6 +3201,14 @@ namespace Cepums {
 
         // Increment the Stack Pointer (by size of register)
         SP() += 2;
+    }
+
+    void Processor::ins$PUSHF(MemoryManager& memoryManager)
+    {
+        INSTRUCTION_TRACE("ins$PUSHF: Push flags");
+        // Decrement the Stack Pointer (by size of register) before doing anything
+        SP() -= 2;
+        memoryManager.writeWord(SS(), SP(), m_flags);
     }
 
     void Processor::ins$PUSHregisterByte(MemoryManager& memoryManager, uint8_t REG)
@@ -4115,10 +4180,6 @@ namespace Cepums {
                 m_instructionPointer++;
                 displacementHighByte = memoryManager.readByte(m_codeSegment, m_instructionPointer);
                 m_instructionPointer++;
-            }
-            else
-            {
-                DC_CORE_WARN("Useless loadDisplacementsFromInstructionStream call - modBits = 0b{0:b}", modBits);
             }
         }
     }
