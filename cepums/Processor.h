@@ -22,7 +22,7 @@
 #define LOAD_INCREMENT_WORD(mm, word) int16_t word = mm.readWord(m_codeSegment, m_instructionPointer); m_instructionPointer += 2
 #define PARSE_MOD_REG_RM_BITS(byte, mod, reg, rm) uint8_t rm = byte; RMBITS(0, rm); uint8_t reg = byte; REGBITS(3, reg); uint8_t mod = byte; MODBITS(6, mod)
 #define LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(mm, modBits, rmBits, displLow, displHigh) uint8_t displLow = 0; uint8_t displHigh = 0; loadDisplacementsFromInstructionStream(mm, modBits, rmBits, displLow, displHigh)
-#define CALCULATE_EFFECTIVE_ADDRESS(ea, rmBits, modBits, isWord, displLow, displHigh) uint16_t ea = getEffectiveAddressFromBits(rmBits, modBits, isWord, displLow, displHigh)
+#define CALCULATE_EFFECTIVE_ADDRESS(ea, rmBits, modBits, isWord, displLow, displHigh, defaultSegmentValue, segment) uint16_t segment; uint16_t ea = getEffectiveAddressFromBits(rmBits, modBits, isWord, displLow, displHigh, defaultSegmentValue, segment)
 #define RESET_SEGMENT_PREFIX() m_segmentPrefix = EMPTY_SEGMENT_OVERRIDE; m_segmentPrefixCounter = 0
 
 #define IS_IN_REGISTER_MODE(mod) mod == 0b11
@@ -89,6 +89,11 @@
 #define REGISTER_SS 0b10
 #define REGISTER_DS 0b11
 
+#define EXTRA_SEGMENT ES()
+#define CODE_SEGMENT CS()
+#define STACK_SEGMENT SS()
+#define DATA_SEGMENT DS()
+
 #define EMPTY_SEGMENT_OVERRIDE 0b111
 
 namespace Cepums {
@@ -115,33 +120,33 @@ namespace Cepums {
         void ins$LOCK();
         void ins$SEGMENT(); // ??
 
-        void ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t immediate);
-        void ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
+        void ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate);
+        void ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate);
         void ins$ADDimmediateToRegister(uint8_t destREG, uint8_t value);
         void ins$ADDimmediateToRegister(uint8_t destREG, uint16_t value);
-        void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue);
-        void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue);
+        void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue);
+        void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue);
         void ins$ADDregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
         void ins$ADDregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
         void ins$ANDimmediateToRegister(uint8_t destREG, uint8_t value);
 
         void ins$CALLnear(MemoryManager& memoryManager, int16_t offset);
-        void ins$CALLnearFromMemory(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$CALLnearFromMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
 
-        void ins$CMPimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
+        void ins$CMPimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate);
         void ins$CMPimmediateToRegister(uint8_t destREG, uint8_t immediate);
         void ins$CMPimmediateToRegister(uint8_t destREG, uint16_t immediate);
         void ins$CMPregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
-        void ins$CMPregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue);
+        void ins$CMPregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue);
 
         void ins$DECregister(uint8_t isWordBit, uint8_t REG);
-        void ins$DECmemoryByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
-        void ins$DECmemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$DECmemoryByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
+        void ins$DECmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
 
         void ins$INCregister(uint8_t isWordBit, uint8_t REG);
-        void ins$INCmemoryByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
-        void ins$INCmemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$INCmemoryByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
+        void ins$INCmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
 
         void ins$INT(MemoryManager& memoryManager, uint16_t immediate);
         void ins$IRET(MemoryManager& memoryManager);
@@ -149,31 +154,33 @@ namespace Cepums {
         void ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer);
         void ins$JMPshort(int8_t increment);
 
-        void ins$LEStoRegister(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress);
+        void ins$LEStoRegister(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress);
 
         void ins$LODSword(MemoryManager& memoryManager);
         void ins$LOOP(int8_t offset);
 
-        void ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
+        void ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate);
         void ins$MOVimmediateToRegisterByte(uint8_t reg, uint8_t immediate);
         void ins$MOVimmediateToRegisterWord(uint8_t reg, uint16_t immediate);
-        void ins$MOVmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress);
-        void ins$MOVmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress);
-        void ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t effectiveAddress);
-        void ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue);
-        void ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue);
+        void ins$MOVmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress);
+        void ins$MOVmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress);
+        void ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t segment, uint16_t effectiveAddress);
+        void ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue);
+        void ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue);
         void ins$MOVregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
         void ins$MOVregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
         void ins$MOVregisterToSegmentRegisterWord(uint8_t srBits, uint16_t value);
-        void ins$MOVsegmentRegisterToMemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t SEGREG);
+        void ins$MOVsegmentRegisterToMemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t SEGREG);
         void ins$MOVsegmentRegisterToRegisterWord(uint8_t REG, uint8_t SEGREG);
         void ins$MOVSword(MemoryManager& memoryManager);
 
-        void ins$NOTmemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$NOTmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
         void ins$NOTregisterWord(uint8_t REG);
 
-        void ins$ORimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
+        void ins$ORimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate);
         void ins$ORimmediateToRegister(uint8_t destREG, uint8_t immediate);
+        void ins$ORregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue);
+        void ins$ORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
 
         void ins$POPsegmentRegister(MemoryManager& memoryManager, uint8_t srBits);
         void ins$POPregisterWord(MemoryManager& memoryManager, uint8_t REG);
@@ -181,35 +188,36 @@ namespace Cepums {
         void ins$PUSHregisterWord(MemoryManager& memoryManager, uint8_t REG);
         void ins$PUSHsegmentRegister(MemoryManager& memoryManager, uint8_t srBits);
 
-        void ins$RCLmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
-        void ins$RCLmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$RCLmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
+        void ins$RCLmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
         void ins$RCLregisterOnceByte(uint8_t REG);
         void ins$RCLregisterOnceWord(uint8_t REG);
-        void ins$RCRmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
-        void ins$RCRmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$RCRmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
+        void ins$RCRmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
         void ins$RCRregisterOnceByte(uint8_t REG);
         void ins$RCRregisterOnceWord(uint8_t REG);
         void ins$REP_STOSword(MemoryManager& memoryManager);
         void ins$RETnear(MemoryManager& memoryManager);
-        void ins$ROLmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
-        void ins$ROLmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$ROLmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
+        void ins$ROLmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
         void ins$ROLregisterOnceByte(uint8_t REG);
         void ins$ROLregisterOnceWord(uint8_t REG);
-        void ins$RORmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
-        void ins$RORmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$RORmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
+        void ins$RORmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
         void ins$RORregisterOnceByte(uint8_t REG);
         void ins$RORregisterOnceWord(uint8_t REG);
 
-        void ins$SALmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
-        void ins$SALmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$SALmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
+        void ins$SALmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
+        void ins$SALregisterByCLByte(uint8_t rmBits);
         void ins$SALregisterOnceByte(uint8_t rmBits);
         void ins$SALregisterOnceWord(uint8_t rmBits);
-        void ins$SARmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
-        void ins$SARmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$SARmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
+        void ins$SARmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
         void ins$SARregisterOnceByte(uint8_t rmBits);
         void ins$SARregisterOnceWord(uint8_t rmBits);
-        void ins$SHRmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress);
-        void ins$SHRmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress);
+        void ins$SHRmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
+        void ins$SHRmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
         void ins$SHRregisterOnceByte(uint8_t rmBits);
         void ins$SHRregisterOnceWord(uint8_t rmBits);
         void ins$STOSword(MemoryManager& memoryManager);
@@ -218,19 +226,19 @@ namespace Cepums {
         void ins$SUBimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
         void ins$SUBimmediateToRegister(uint8_t destREG, uint8_t value);
         void ins$SUBimmediateToRegister(uint8_t destREG, uint16_t value);
-        void ins$SUBregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue);
-        void ins$SUBregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue);
+        void ins$SUBregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue);
+        void ins$SUBregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue);
         void ins$SUBregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
         void ins$SUBregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
         void ins$TESTimmediateToRegister(uint8_t destREG, uint8_t value);
-        void ins$TESTimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t immediate);
+        void ins$TESTimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate);
 
-        void ins$XCHGmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress);
+        void ins$XCHGmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress);
         void ins$XCHGregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
 
-        void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue);
-        void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue);
+        void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue);
+        void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue);
         void ins$XORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
         void ins$XORregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
@@ -277,7 +285,7 @@ namespace Cepums {
         uint8_t getRegisterValueFromREG8(uint8_t REG);
         uint16_t& getRegisterFromREG16(uint8_t REG);
         uint16_t getSegmentRegisterValueAndResetOverride();
-        uint16_t getEffectiveAddressFromBits(uint8_t rmBits, uint8_t modBits, uint8_t isWord, uint8_t displacementLow, uint8_t displacementHigh);
+        uint16_t getEffectiveAddressFromBits(uint8_t rmBits, uint8_t modBits, uint8_t isWord, uint8_t displacementLow, uint8_t displacementHigh, uint16_t defaultSegment, uint16_t& segment);
 
         void loadDisplacementsFromInstructionStream(MemoryManager& memoryManager, uint8_t modBits, uint8_t rmBits, uint8_t& displacementLowByte, uint8_t& displacementHighByte);
         void setFlagsAfterLogicalOperation(uint8_t byte);

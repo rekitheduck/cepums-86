@@ -48,6 +48,21 @@ namespace Cepums {
             {
                 SET_BIT(data, 4);
             }
+            SET_BIT(data, 5);
+            SET_BIT(data, 6);
+
+            return data;
+        }
+
+        // XT: PPI Port C - read only
+        if (address == 0x62)
+        {
+            uint8_t data = 0;
+
+            // Video Switch
+            // MDA
+            SET_BIT(data, 0);
+            SET_BIT(data, 1);
 
             return data;
         }
@@ -219,6 +234,17 @@ namespace Cepums {
             return;
         }
 
+        // XT: 8255 PPI control word register
+        if (address == 0x63)
+        {
+            if (value != 0x99)
+            {
+                DC_CORE_TRACE("[PPI]: Unknown word register value - {0:X}", value);
+                return;
+            }
+            return;
+        }
+
         // Ignore CMOS RAM/RTC calls for now :(
         if (address == 0x70 || address == 0x71)
         {
@@ -240,13 +266,37 @@ namespace Cepums {
             return;
         }
 
+        // MDA Set current CRTC data register (accessable on 0x03B5 then)
+        if (address == 0x03B4)
+            return;
+
+        // MDA Set current CRTC data register (accessable on 0x03B5 then)
+        if (address == 0x03B5)
+            return;
+
         // MDA mode control register
         if (address == 0x03B8)
         {
             // Disable video output and set the high-resolution bit
             if (value == 0x01)
+            {
+                DC_CORE_TRACE("[MDA]: Disable output and set high-res bit");
                 return;
+            }
+
+            // Mode set
+            if (value == 0x29)
+            {
+                DC_CORE_TRACE("[MDA]: Set mode");
+                return;
+            }
+            DC_CORE_ERROR("[MDA]: Unhandled register value {0:X}", value);
+            return;
         }
+
+        // CGA
+        //if (address == 0x03D4 || address == 0x03D5)
+        //    return;
 
         // CGA mode control register
         if (address == 0x03D8)

@@ -18,11 +18,12 @@ namespace Cepums {
 
         static uint32_t addresstoPhysical(const uint16_t& segment, const uint16_t& offset);
         std::pair<uint16_t, uint16_t> addressToLogical(const uint32_t& physicalAddress);
-        const std::vector<uint8_t>& getMDA() { return m_MDA; }
+        std::vector<uint8_t>& getMDA() { std::lock_guard<std::mutex> guard(m_MDAmutex); return m_MDA; }
     private:
         std::vector<uint8_t> m_RAM;
         std::vector<uint8_t> m_BIOS_F0000;
         std::vector<uint8_t> m_BIOS_F8000;
         std::vector<uint8_t> m_MDA;
+        std::mutex m_MDAmutex;
     };
 }

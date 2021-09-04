@@ -166,8 +166,11 @@ namespace Cepums {
             // 0x04 - data line stuck high
             return 0x00;
         case KeyboardControllerState::ReadFirstPort:
-            DC_CORE_TRACE("KBC Data Port: Reading first port, no clue what to output, returning 0");
-            return 0x00;
+            DC_CORE_TRACE("KBC Data Port: Computer equipment somehow is stored here");
+            // MDA
+            return 0;
+            // CGA
+            return 0x40;
         case KeyboardControllerState::EnableKeyboard:
 
             if (m_dataBuffer.size() > 0)

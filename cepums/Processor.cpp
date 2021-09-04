@@ -48,11 +48,13 @@ namespace Cepums {
 
         uint8_t hopefully_an_instruction = memoryManager.readByte(m_codeSegment, m_instructionPointer);
         m_instructionPointer++;
-        //DC_CORE_INFO("{0}: ===== Fetched new instruction: 0x{1:x} =====", m_currentCycleCounter++, hopefully_an_instruction);
-        //DC_CORE_TRACE(" AX: 0x{0:x}   BX: 0x{1:x}   CX: 0x{2:x}   DX: 0x{3:x}", AX(), BX(), CX(), DX());
-        //DC_CORE_TRACE(" DS: 0x{0:x}   CS: 0x{1:x}   SS: 0x{2:x}   ES: 0x{3:x}", DS(), CS(), SS(), ES());
-        //DC_CORE_TRACE(" IP: 0x{0:x}   BP: 0x{1:X}   SI: 0x{2:x}   DI: 0x{3:X}", IP(), BP(), SI(), DI());
-
+        if (s_debugSpam)
+        {
+            DC_CORE_INFO("{0}: ===== Fetched new instruction: 0x{1:x} =====", m_currentCycleCounter++, hopefully_an_instruction);
+            DC_CORE_TRACE(" AX: 0x{0:x}   BX: 0x{1:x}   CX: 0x{2:x}   DX: 0x{3:x}", AX(), BX(), CX(), DX());
+            DC_CORE_TRACE(" DS: 0x{0:x}   CS: 0x{1:x}   SS: 0x{2:x}   ES: 0x{3:x}", DS(), CS(), SS(), ES());
+            DC_CORE_TRACE(" IP: 0x{0:x}   BP: 0x{1:X}   SI: 0x{2:x}   DI: 0x{3:X}", IP(), BP(), SI(), DI());
+        }
 #if 0
         m_AX = 0x1234;
         DC_CORE_WARN("Test02: Testing AH updating ...");
@@ -125,9 +127,9 @@ namespace Cepums {
                 return ins$ADDregisterToRegisterByte(rmBits, regBits);
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$ADDregisterToMemory(memoryManager, effectiveAddress, getRegisterValueFromREG8(regBits));
+            return ins$ADDregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterValueFromREG8(regBits));
         }
         case 0x01: // ADD: 16-bit from register to register/memory
         {
@@ -138,9 +140,9 @@ namespace Cepums {
                 return ins$ADDregisterToRegisterWord(rmBits, regBits);
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits,  displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$ADDregisterToMemory(memoryManager, effectiveAddress, getRegisterFromREG16(regBits));
+            return ins$ADDregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterFromREG16(regBits));
         }
         case 0x02: // ADD: 8-bit from register/memory to register
         {
@@ -180,8 +182,16 @@ namespace Cepums {
         }
         case 0x08: // OR: 8-bit register with register/memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$ORregisterToRegisterByte(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$ORregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterValueFromREG8(regBits));
         }
         case 0x09: // OR: 16-bit register with register/memory
         {
@@ -338,9 +348,9 @@ namespace Cepums {
                 return ins$SUBregisterToRegisterByte(rmBits, regBits);
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$SUBregisterToMemory(memoryManager, effectiveAddress, getRegisterValueFromREG8(regBits));
+            return ins$SUBregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterValueFromREG8(regBits));
         }
         case 0x29: // SUB: 16-bit from register to register/memory
         {
@@ -351,9 +361,9 @@ namespace Cepums {
                 return ins$SUBregisterToRegisterWord(rmBits, regBits);
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$SUBregisterToMemory(memoryManager, effectiveAddress, getRegisterFromREG16(regBits));
+            return ins$SUBregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterFromREG16(regBits));
         }
         case 0x2A: // SUB: 8-bit from register/memory to register
         {
@@ -395,9 +405,9 @@ namespace Cepums {
                 return ins$XORregisterToRegisterByte(rmBits, regBits);
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$XORregisterToMemory(memoryManager, effectiveAddress, getRegisterValueFromREG8(regBits));
+            return ins$XORregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterValueFromREG8(regBits));
         }
         case 0x31: // XOR: 16-bit from register to register/memory
         {
@@ -408,9 +418,9 @@ namespace Cepums {
                 return ins$XORregisterToRegisterWord(rmBits, regBits);
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$XORregisterToMemory(memoryManager, effectiveAddress, getRegisterFromREG16(regBits));
+            return ins$XORregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterFromREG16(regBits));
         }
         case 0x32: // XOR: 8-bit from register/memory to register
         {
@@ -457,9 +467,9 @@ namespace Cepums {
                 return ins$CMPregisterToRegisterWord(rmBits, regBits);
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$CMPregisterToMemory(memoryManager, effectiveAddress, getRegisterFromREG16(regBits));
+            return ins$CMPregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterFromREG16(regBits));
         }
         case 0x3A: // CMP: 8-bit from register/memory to register
         {
@@ -498,38 +508,31 @@ namespace Cepums {
         }
         case 0x41: // INC: CX
         {
-            TODO();
-            return;
+            return ins$INCregister(IS_WORD, REGISTER_CX);
         }
         case 0x42: // INC: DX
         {
-            TODO();
-            return;
+            return ins$INCregister(IS_WORD, REGISTER_DX);
         }
         case 0x43: // INC: BX
         {
-            TODO();
-            return;
+            return ins$INCregister(IS_WORD, REGISTER_BX);
         }
         case 0x44: // INC: SP
         {
-            TODO();
-            return;
+            return ins$INCregister(IS_WORD, REGISTER_SP);
         }
         case 0x45: // INC: BP
         {
-            TODO();
-            return;
+            return ins$INCregister(IS_WORD, REGISTER_BP);
         }
         case 0x46: // INC: SI
         {
-            TODO();
-            return;
+            return ins$INCregister(IS_WORD, REGISTER_SI);
         }
         case 0x47: // INC: DI
         {
-            TODO();
-            return;
+            return ins$INCregister(IS_WORD, REGISTER_DI);
         }
         case 0x48: // DEC: AX
         {
@@ -774,11 +777,12 @@ namespace Cepums {
                 case 0b011:
                     //return ins$SBBimmediateToRegisterByte(rmBits, immediate);
                 case 0b100:
-                    //return ins$ANDimmediateToRegisterByte(rmBits, immediate);
+                    return ins$ANDimmediateToRegister(rmBits, immediate);
                 case 0b101:
                     //return ins$SUBimmediateToRegisterByte(rmBits, immediate);
                 case 0b110:
                     //return ins$XORimmediateToRegisterByte(rmBits, immediate);
+                    TODO();
                 case 0b111:
                     return ins$CMPimmediateToRegister(rmBits, immediate);
                 default:
@@ -788,27 +792,28 @@ namespace Cepums {
             }
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
 
             switch (regBits)
             {
             case 0b000:
-                return ins$ADDimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                return ins$ADDimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b001:
-                //return ins$ORimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                //return ins$ORimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b010:
-                //return ins$ADCimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                //return ins$ADCimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b011:
-                //return ins$SBBimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                //return ins$SBBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b100:
-                //return ins$ANDimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                //return ins$ANDimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b101:
-                //return ins$SUBimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                //return ins$SUBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b110:
-                //return ins$XORimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                //return ins$XORimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b111:
-                //return ins$CMPimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                //return ins$CMPimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
+                TODO();
             default:
                 ILLEGAL_INSTRUCTION();
                 return;
@@ -838,6 +843,7 @@ namespace Cepums {
                     //return ins$SUBimmediateToRegister(rmBits, immediate);
                 case 0b110:
                     //return ins$XORimmediateToRegister(rmBits, immediate);
+                    TODO();
                 case 0b111:
                     return ins$CMPimmediateToRegister(rmBits, immediate);
                 default:
@@ -847,27 +853,28 @@ namespace Cepums {
             }
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
 
             switch (regBits)
             {
             case 0b000:
-                return ins$ADDimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                return ins$ADDimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b001:
-                //return ins$ORimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                //return ins$ORimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b010:
-                //return ins$ADCimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                //return ins$ADCimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b011:
-                //return ins$SBBimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                //return ins$SBBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b100:
-                //return ins$ANDimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                //return ins$ANDimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b101:
-                //return ins$SUBimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                //return ins$SUBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b110:
-                //return ins$XORimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                //return ins$XORimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
+                TODO();
             case 0b111:
-                return ins$CMPimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                return ins$CMPimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             default:
                 ILLEGAL_INSTRUCTION();
                 return;
@@ -907,27 +914,27 @@ namespace Cepums {
             }
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate_byte);
             // Sign-extend to word
             uint16_t immediate = signExtendByteToWord(immediate_byte);
             switch (regBits)
             {
             case 0b000:
-                return ins$ADDimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                return ins$ADDimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b001:
 #ifdef STRICT8086INSTRUCTIONSET
                 ILLEGAL_INSTRUCTION();
 #endif
-                return ins$ORimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                return ins$ORimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b010:
-                //return ins$ADCimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                //return ins$ADCimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b011:
-                //return ins$SBBimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                //return ins$SBBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b101:
-                //return ins$SUBimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                //return ins$SUBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b111:
-                return ins$CMPimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                return ins$CMPimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             default:
                 ILLEGAL_INSTRUCTION();
                 return;
@@ -954,9 +961,9 @@ namespace Cepums {
                 return ins$XCHGregisterToRegisterByte(rmBits, regBits);
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$XCHGmemoryToRegisterByte(memoryManager, getRegisterValueFromREG8(regBits), effectiveAddress);
+            return ins$XCHGmemoryToRegisterByte(memoryManager, getRegisterValueFromREG8(regBits), segment, effectiveAddress);
         }
         case 0x87: // XCHG: 16-bit exchange from register/memory to register
         {
@@ -972,9 +979,9 @@ namespace Cepums {
                 return ins$MOVregisterToRegisterByte(rmBits, regBits);
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$MOVregisterToMemory(memoryManager, effectiveAddress, getRegisterValueFromREG8(regBits));
+            return ins$MOVregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterValueFromREG8(regBits));
         }
         case 0x89: // MOV: 16-bit from register to register/memory
         {
@@ -985,9 +992,9 @@ namespace Cepums {
                 return ins$MOVregisterToRegisterWord(rmBits, regBits);
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$MOVregisterToMemory(memoryManager, effectiveAddress, getRegisterFromREG16(regBits));
+            return ins$MOVregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterFromREG16(regBits));
         }
         case 0x8A: // MOV: 8-bit from register/memory to register
         {
@@ -998,9 +1005,9 @@ namespace Cepums {
                 return ins$MOVregisterToRegisterByte(rmBits, regBits);
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$MOVmemoryToRegisterByte(memoryManager, regBits, effectiveAddress);
+            return ins$MOVmemoryToRegisterByte(memoryManager, regBits, segment, effectiveAddress);
         }
         case 0x8B: // MOV: 16-bit from register/memory to register
         {
@@ -1011,9 +1018,9 @@ namespace Cepums {
                 return ins$MOVregisterToRegisterWord(rmBits, regBits);
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$MOVmemoryToRegisterWord(memoryManager, regBits, effectiveAddress);
+            return ins$MOVmemoryToRegisterWord(memoryManager, regBits, segment, effectiveAddress);
         }
         case 0x8C: // MOV/unused: 16-bit from segment register to register/memory
         {
@@ -1031,9 +1038,9 @@ namespace Cepums {
                 return ins$MOVsegmentRegisterToRegisterWord(rmBits, srBits);
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$MOVsegmentRegisterToMemoryWord(memoryManager, effectiveAddress, srBits);
+            return ins$MOVsegmentRegisterToMemoryWord(memoryManager, segment, effectiveAddress, srBits);
         }
         case 0x8D: // LEA: Load effective address
         {
@@ -1056,9 +1063,9 @@ namespace Cepums {
                 return ins$MOVregisterToSegmentRegisterWord(srBits, getRegisterFromREG16(rmBits));
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$MOVmemoryToSegmentRegisterWord(memoryManager, srBits, effectiveAddress);
+            return ins$MOVmemoryToSegmentRegisterWord(memoryManager, srBits, segment, effectiveAddress);
         }
         case 0x8F: // POP/unused/unused/unused/unused/unused/unused/unused: Pop 16-bit register/memory from stack
         {
@@ -1145,8 +1152,9 @@ namespace Cepums {
         }
         case 0xA0: // MOV: 8-bit from memory to AL
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, word);
+            uint8_t data = memoryManager.readByte(DATA_SEGMENT, word);
+            return ins$MOVmemoryToRegisterByte(memoryManager, REGISTER_AL, data, m_dataSegment);
         }
         case 0xA1: // MOV: 16-bit from memory to AX
         {
@@ -1156,12 +1164,12 @@ namespace Cepums {
         case 0xA2: // MOV: 8-bit from AL to memory
         {
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, address);
-            return ins$MOVregisterToMemory(memoryManager, address, getRegisterValueFromREG8(REGISTER_AL));
+            return ins$MOVregisterToMemory(memoryManager, DATA_SEGMENT, address, getRegisterValueFromREG8(REGISTER_AL));
         }
         case 0xA3: // MOV: 16-bit from AX to memory
         {
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, address);
-            return ins$MOVregisterToMemory(memoryManager, address, getRegisterFromREG16(REGISTER_AX));
+            return ins$MOVregisterToMemory(memoryManager, DATA_SEGMENT, address, getRegisterFromREG16(REGISTER_AX));
         }
         case 0xA4: // MOVS: 8-bit move string from SRC-STR8 to DEST-STR8
         {
@@ -1369,8 +1377,8 @@ namespace Cepums {
             }
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
-            return ins$LEStoRegister(memoryManager, rmBits, effectiveAddress);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, EXTRA_SEGMENT, segment);
+            return ins$LEStoRegister(memoryManager, rmBits, segment, effectiveAddress);
         }
         case 0xC5: // LDS: Load pointer using DS
         {
@@ -1396,11 +1404,11 @@ namespace Cepums {
 
             // We can go through this as no displacements will be loaded if we're in memory mode with no displacement
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, 1, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, 1, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
 
-            return ins$MOVimmediateToMemory(memoryManager, effectiveAddress, immediate);
+            return ins$MOVimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
         }
         case 0xCA: // RET: Return intersegment adding immediate to SP
         {
@@ -1459,24 +1467,24 @@ namespace Cepums {
                 }
             }
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
             switch (regBits)
             {
             case 0b000:
-                return ins$ROLmemoryOnceByte(memoryManager, effectiveAddress);
+                return ins$ROLmemoryOnceByte(memoryManager, segment, effectiveAddress);
             case 0b001:
-                return ins$RORmemoryOnceByte(memoryManager, effectiveAddress);
+                return ins$RORmemoryOnceByte(memoryManager, segment, effectiveAddress);
             case 0b010:
-                return ins$RCLmemoryOnceByte(memoryManager, effectiveAddress);
+                return ins$RCLmemoryOnceByte(memoryManager, segment, effectiveAddress);
             case 0b011:
-                return ins$RCRmemoryOnceByte(memoryManager, effectiveAddress);
+                return ins$RCRmemoryOnceByte(memoryManager, segment, effectiveAddress);
             case 0b100:
-                return ins$SALmemoryOnceByte(memoryManager, effectiveAddress);
+                return ins$SALmemoryOnceByte(memoryManager, segment, effectiveAddress);
             case 0b101:
-                return ins$SHRmemoryOnceByte(memoryManager, effectiveAddress);
+                return ins$SHRmemoryOnceByte(memoryManager, segment, effectiveAddress);
             case 0b111:
-                return ins$SARmemoryOnceByte(memoryManager, effectiveAddress);
+                return ins$SARmemoryOnceByte(memoryManager, segment, effectiveAddress);
             default:
                 ILLEGAL_INSTRUCTION();
                 return;
@@ -1510,24 +1518,24 @@ namespace Cepums {
                 }
             }
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
             switch (regBits)
             {
             case 0b000:
-                return ins$ROLmemoryOnceWord(memoryManager, effectiveAddress);
+                return ins$ROLmemoryOnceWord(memoryManager, segment, effectiveAddress);
             case 0b001:
-                return ins$RORmemoryOnceWord(memoryManager, effectiveAddress);
+                return ins$RORmemoryOnceWord(memoryManager, segment, effectiveAddress);
             case 0b010:
-                return ins$RCLmemoryOnceWord(memoryManager, effectiveAddress);
+                return ins$RCLmemoryOnceWord(memoryManager, segment, effectiveAddress);
             case 0b011:
-                return ins$RCRmemoryOnceWord(memoryManager, effectiveAddress);
+                return ins$RCRmemoryOnceWord(memoryManager, segment, effectiveAddress);
             case 0b100:
-                return ins$SALmemoryOnceWord(memoryManager, effectiveAddress);
+                return ins$SALmemoryOnceWord(memoryManager, segment, effectiveAddress);
             case 0b101:
-                return ins$SHRmemoryOnceWord(memoryManager, effectiveAddress);
+                return ins$SHRmemoryOnceWord(memoryManager, segment, effectiveAddress);
             case 0b111:
-                return ins$SARmemoryOnceWord(memoryManager, effectiveAddress);
+                return ins$SARmemoryOnceWord(memoryManager, segment, effectiveAddress);
             default:
                 ILLEGAL_INSTRUCTION();
                 return;
@@ -1535,8 +1543,57 @@ namespace Cepums {
         }
         case 0xD2: // ROL/ROR/RCL/RCR/(SAL/SHL)/SHR/unused/SAR: 8-bit shift-like register/memory by CL
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+            if (IS_IN_REGISTER_MODE(modBits))
+            {
+                switch (regBits)
+                {
+                case 0b000:
+                    //return ins$ROLregisterByCLByte(rmBits);
+                case 0b001:
+                    //return ins$RORregisterByCLByte(rmBits);
+                case 0b010:
+                    //return ins$RCLregisterByCLByte(rmBits);
+                case 0b011:
+                    //return ins$RCRregisterByCLByte(rmBits);
+                    TODO();
+                case 0b100:
+                    return ins$SALregisterByCLByte(rmBits);
+                case 0b101:
+                    //return ins$SHRregisterByCLByte(rmBits);
+                case 0b111:
+                    //return ins$SARregisterByCLByte(rmBits);
+                    TODO();
+                default:
+                    ILLEGAL_INSTRUCTION();
+                    return;
+                }
+            }
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            switch (regBits)
+            {
+            case 0b000:
+                //return ins$ROLmemoryByCLByte(memoryManager, segment, effectiveAddress);
+            case 0b001:
+                //return ins$RORmemoryByCLByte(memoryManager, segment, effectiveAddress);
+            case 0b010:
+                //return ins$RCLmemoryByCLByte(memoryManager, segment, effectiveAddress);
+            case 0b011:
+                //return ins$RCRmemoryByCLByte(memoryManager, segment, effectiveAddress);
+            case 0b100:
+                //return ins$SALmemoryByCLByte(memoryManager, segment, effectiveAddress);
+            case 0b101:
+                //return ins$SHRmemoryByCLByte(memoryManager, segment, effectiveAddress);
+            case 0b111:
+                //return ins$SARmemoryByCLByte(memoryManager, segment, effectiveAddress);
+                TODO();
+            default:
+                ILLEGAL_INSTRUCTION();
+                return;
+            }
         }
         case 0xD3: // ROL/ROR/RCL/RCR/(SAL/SHL)/SHR/unused/SAR: 16-bit shift-like register-memory by CL
         {
@@ -1725,14 +1782,14 @@ namespace Cepums {
             }
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
             switch (regBits)
             {
             case 0b000:
             {
                 LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
-                return ins$TESTimmediateToMemory(memoryManager, effectiveAddress, immediate);
+                return ins$TESTimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             }
             case 0b010:
                 //return ins$NOTmemoryByte(memoryManager, effectiveAddress);
@@ -1784,7 +1841,7 @@ namespace Cepums {
             }
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
             switch (regBits)
             {
@@ -1794,17 +1851,17 @@ namespace Cepums {
                 //return ins$TESTimmediateToMemory(memoryManager, effectiveAddress, immediate);
             }
             case 0b010:
-                return ins$NOTmemoryWord(memoryManager, effectiveAddress);
+                return ins$NOTmemoryWord(memoryManager, segment, effectiveAddress);
             case 0b011:
-                //return ins$NEGmemoryWord(memoryManager, effectiveAddress);
+                //return ins$NEGmemoryWord(memoryManager, segment, effectiveAddress);
             case 0b100:
-                //return ins$MULmemoryWord(memoryManager, effectiveAddress);
+                //return ins$MULmemoryWord(memoryManager, segment, effectiveAddress);
             case 0b101:
-                //return ins$IMULmemoryWord(memoryManager, effectiveAddress);
+                //return ins$IMULmemoryWord(memoryManager, segment, effectiveAddress);
             case 0b110:
-                //return ins$DIVmemoryWord(memoryManager, effectiveAddress);
+                //return ins$DIVmemoryWord(memoryManager, segment, effectiveAddress);
             case 0b111:
-                //return ins$IDIVmemoryWord(memoryManager, effectiveAddress);
+                //return ins$IDIVmemoryWord(memoryManager, segment, effectiveAddress);
             default:
                 ILLEGAL_INSTRUCTION();
                 return;
@@ -1853,14 +1910,14 @@ namespace Cepums {
                 }
             }
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
             switch (regBits)
             {
             case 0b000:
-                return ins$INCmemoryByte(memoryManager, effectiveAddress);
+                return ins$INCmemoryByte(memoryManager, segment, effectiveAddress);
             case 0b001:
-                return ins$DECmemoryByte(memoryManager, effectiveAddress);
+                return ins$DECmemoryByte(memoryManager, segment, effectiveAddress);
             default:
                 ILLEGAL_INSTRUCTION();
                 return;
@@ -1885,7 +1942,7 @@ namespace Cepums {
                 }
             }
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
             switch (regBits)
             {
@@ -1896,7 +1953,7 @@ namespace Cepums {
                 TODO();
                 return;
             case 0b010: // CALL: Intrasegment
-                return ins$CALLnearFromMemory(memoryManager, effectiveAddress);
+                return ins$CALLnearFromMemory(memoryManager, segment, effectiveAddress);
             case 0b011: // CALL: Intersegment
                 TODO();
                 return;
@@ -1972,7 +2029,15 @@ namespace Cepums {
 
     void Processor::ins$CMC()
     {
-        TODO();
+        INSTRUCTION_TRACE("ins$CMC: Toggle Carry Flag");
+        if (IS_BIT_SET(m_flags, CARRY_FLAG))
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+        else
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
     }
 
     void Processor::ins$STC()
@@ -2021,10 +2086,10 @@ namespace Cepums {
         TODO();
     }
 
-    void Processor::ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t immediate)
+    void Processor::ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate)
     {
         INSTRUCTION_TRACE("ins$ADD: 8-bit imediate to memory");
-        uint8_t memoryValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
+        uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
         
         // Note: this may be UB :(
         uint8_t result = memoryValue + immediate;
@@ -2047,14 +2112,14 @@ namespace Cepums {
         else
             CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
 
-        memoryManager.writeByte(m_dataSegment, effectiveAddress, result);
+        memoryManager.writeByte(segment, effectiveAddress, result);
         setFlagsAfterArithmeticOperation(result);
     }
 
-    void Processor::ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
+    void Processor::ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate)
     {
         INSTRUCTION_TRACE("ins$ADD: 16-bit immediate to memory");
-        uint16_t memoryValue = memoryManager.readWord(m_dataSegment, effectiveAddress);
+        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
 
         // Note: this may be UB :(
         uint16_t result = memoryValue + immediate;
@@ -2077,7 +2142,7 @@ namespace Cepums {
         else
             CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
 
-        memoryManager.writeWord(m_codeSegment, effectiveAddress, result);
+        memoryManager.writeWord(segment, effectiveAddress, result);
         setFlagsAfterArithmeticOperation(result);
     }
 
@@ -2141,10 +2206,10 @@ namespace Cepums {
         setFlagsAfterArithmeticOperation(result);
     }
 
-    void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue)
+    void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue)
     {
         INSTRUCTION_TRACE("ins$ADD: 8-bit register to memory");
-        uint8_t memoryValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
+        uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
 
         // Note: this may be UB :(
         uint8_t result = memoryValue + registerValue;
@@ -2167,14 +2232,14 @@ namespace Cepums {
         else
             CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
 
-        memoryManager.writeByte(m_dataSegment, effectiveAddress, result);
+        memoryManager.writeByte(segment, effectiveAddress, result);
         setFlagsAfterArithmeticOperation(result);
     }
 
-    void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue)
+    void Processor::ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue)
     {
         INSTRUCTION_TRACE("ins$ADD: 16-bit register to memory");
-        uint16_t memoryValue = memoryManager.readWord(m_dataSegment, effectiveAddress);
+        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
 
         // Note: this may be UB :(
         uint16_t result = memoryValue + registerValue;
@@ -2197,7 +2262,7 @@ namespace Cepums {
         else
             CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
 
-        memoryManager.writeWord(m_codeSegment, effectiveAddress, result);
+        memoryManager.writeWord(segment, effectiveAddress, result);
         setFlagsAfterArithmeticOperation(result);
     }
 
@@ -2282,11 +2347,10 @@ namespace Cepums {
         IP() += offset;
     }
 
-    void Processor::ins$CALLnearFromMemory(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$CALLnearFromMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         SP() -= 2;
         memoryManager.writeWord(SS(), SP(), IP());
-        uint16_t segment = m_codeSegment;
         if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
             segment = getSegmentRegisterValueAndResetOverride();
 
@@ -2294,10 +2358,9 @@ namespace Cepums {
         INSTRUCTION_TRACE("ins$CALL: near to {0:X}:{1:X}", segment, IP());
     }
 
-    void Processor::ins$CMPimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
+    void Processor::ins$CMPimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate)
     {
         INSTRUCTION_TRACE("ins$CMP: 16-bit immediate to memory");
-        uint16_t segment = m_dataSegment;
         if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
             segment = getSegmentRegisterValueAndResetOverride();
 
@@ -2407,10 +2470,10 @@ namespace Cepums {
         setFlagsAfterArithmeticOperation(result);
     }
 
-    void Processor::ins$CMPregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue)
+    void Processor::ins$CMPregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue)
     {
         INSTRUCTION_TRACE("ins$CMP: 16-bit register to memory");
-        uint16_t memoryValue = memoryManager.readWord(m_dataSegment, effectiveAddress);
+        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
 
         // Note: this may be UB :(
         uint16_t result = memoryValue - registerValue;
@@ -2496,12 +2559,12 @@ namespace Cepums {
         }
     }
 
-    void Processor::ins$DECmemoryByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$DECmemoryByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
     }
 
-    void Processor::ins$DECmemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$DECmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
     }
@@ -2568,12 +2631,12 @@ namespace Cepums {
         }
     }
 
-    void Processor::ins$INCmemoryByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$INCmemoryByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
-        INSTRUCTION_TRACE("ins$INC: 8-bit memory {0:X}:{1:X}", m_dataSegment, effectiveAddress);
-        uint8_t currentValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
+        INSTRUCTION_TRACE("ins$INC: 8-bit memory {0:X}:{1:X}", segment, effectiveAddress);
+        uint8_t currentValue = memoryManager.readByte(segment, effectiveAddress);
         uint8_t newValue = currentValue + 1;
-        memoryManager.writeByte(m_dataSegment, effectiveAddress, newValue);
+        memoryManager.writeByte(segment, effectiveAddress, newValue);
 
         // We shouldn't touch the CARRY_FLAG
         if (currentValue >= SCHAR_MAX)
@@ -2598,12 +2661,12 @@ namespace Cepums {
             CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
     }
 
-    void Processor::ins$INCmemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$INCmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
-        INSTRUCTION_TRACE("ins$INC: 16-bit memory {0:X}:{1:X}", m_dataSegment, effectiveAddress);
-        uint16_t currentValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
+        INSTRUCTION_TRACE("ins$INC: 16-bit memory {0:X}:{1:X}", segment, effectiveAddress);
+        uint16_t currentValue = memoryManager.readByte(segment, effectiveAddress);
         uint16_t newValue = currentValue + 1;
-        memoryManager.writeWord(m_dataSegment, effectiveAddress, newValue);
+        memoryManager.writeWord(segment, effectiveAddress, newValue);
 
         // We shouldn't touch the CARRY_FLAG
         if (currentValue >= SHRT_MAX)
@@ -2650,14 +2713,14 @@ namespace Cepums {
         CS() = memoryManager.readWord(0, immediate * 4 + 2);
     }
 
-    void Processor::ins$IRET(MemoryManager & memoryManager)
+    void Processor::ins$IRET(MemoryManager& memoryManager)
     {
         INSTRUCTION_TRACE("ins$IRET: Returning from an interrupt service routine");
-        // Pop CS 
-        CS() = memoryManager.readWord(SS(), SP());
-        SP() += 2;
         // Pop IP 
         IP() = memoryManager.readWord(SS(), SP());
+        SP() += 2;
+        // Pop CS 
+        CS() = memoryManager.readWord(SS(), SP());
         SP() += 2;
         // Pop flags
         m_flags = memoryManager.readWord(SS(), SP());
@@ -2682,10 +2745,10 @@ namespace Cepums {
         m_instructionPointer += increment;
     }
 
-    void Processor::ins$LEStoRegister(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress)
+    void Processor::ins$LEStoRegister(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
     {
-        uint16_t newRegisterValue = memoryManager.readWord(m_extraSegment, effectiveAddress);
-        uint16_t newSegmentValue = memoryManager.readWord(m_extraSegment, effectiveAddress + 2);
+        uint16_t newRegisterValue = memoryManager.readWord(segment, effectiveAddress);
+        uint16_t newSegmentValue = memoryManager.readWord(segment, effectiveAddress + 2);
 
         switch (m_segmentPrefix)
         {
@@ -2763,10 +2826,10 @@ namespace Cepums {
         IP() += offset;
     }
 
-    void Processor::ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
+    void Processor::ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate)
     {
         INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to memory");
-        memoryManager.writeWord(m_dataSegment, effectiveAddress, immediate);
+        memoryManager.writeWord(segment, effectiveAddress, immediate);
     }
 
     void Processor::ins$MOVimmediateToRegisterByte(uint8_t reg, uint8_t immediate)
@@ -2781,30 +2844,28 @@ namespace Cepums {
         updateRegisterFromREG16(reg, immediate);
     }
 
-    void Processor::ins$MOVmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress)
+    void Processor::ins$MOVmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
     {
         INSTRUCTION_TRACE("ins$MOV: 8-bit memory to register {0}", getRegisterNameFromREG8(destREG));
-        uint16_t segment = m_dataSegment;
         if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
             segment = getSegmentRegisterValueAndResetOverride();
         uint8_t value = memoryManager.readByte(segment, effectiveAddress);
         updateRegisterFromREG8(destREG, value);
     }
 
-    void Processor::ins$MOVmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress)
+    void Processor::ins$MOVmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
     {
         INSTRUCTION_TRACE("ins$MOV: 16-bit memory to register {0}", getRegisterNameFromREG16(destREG));
-        uint16_t segment = m_dataSegment;
         if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
             segment = getSegmentRegisterValueAndResetOverride();
         uint16_t value = memoryManager.readWord(segment, effectiveAddress);
         updateRegisterFromREG16(destREG, value);
     }
 
-    void Processor::ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t effectiveAddress)
+    void Processor::ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t segment, uint16_t effectiveAddress)
     {
         INSTRUCTION_TRACE("ins$MOV: 16-bit memory to segment register");
-        uint16_t value = memoryManager.readWord(m_dataSegment, effectiveAddress);
+        uint16_t value = memoryManager.readWord(segment, effectiveAddress);
 
         switch (srBits)
         {
@@ -2831,16 +2892,16 @@ namespace Cepums {
         }
     }
 
-    void Processor::ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue)
+    void Processor::ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue)
     {
         INSTRUCTION_TRACE("ins$MOV: 8-bit register to memory");
-        memoryManager.writeByte(m_dataSegment, effectiveAddress, registerValue);
+        memoryManager.writeByte(segment, effectiveAddress, registerValue);
     }
 
-    void Processor::ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue)
+    void Processor::ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue)
     {
         INSTRUCTION_TRACE("ins$MOV: 16-bit register to memory");
-        memoryManager.writeWord(m_dataSegment, effectiveAddress, registerValue);
+        memoryManager.writeWord(segment, effectiveAddress, registerValue);
     }
 
     void Processor::ins$MOVregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
@@ -2885,7 +2946,7 @@ namespace Cepums {
         }
     }
 
-    void Processor::ins$MOVsegmentRegisterToMemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t SEGREG)
+    void Processor::ins$MOVsegmentRegisterToMemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t SEGREG)
     {
         INSTRUCTION_TRACE("ins$MOV: 16-bit segment register to memory");
         uint16_t segRegValue;
@@ -2913,7 +2974,7 @@ namespace Cepums {
             return;
         }
 
-        memoryManager.writeWord(m_dataSegment, effectiveAddress, segRegValue);
+        memoryManager.writeWord(segment, effectiveAddress, segRegValue);
     }
 
     void Processor::ins$MOVsegmentRegisterToRegisterWord(uint8_t REG, uint8_t SEGREG)
@@ -2965,12 +3026,12 @@ namespace Cepums {
         }
     }
 
-    void Processor::ins$NOTmemoryWord(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$NOTmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         INSTRUCTION_TRACE("ins$NOT: 16-bit memory");
-        uint16_t memoryValue = memoryManager.readWord(m_dataSegment, effectiveAddress);
+        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
         memoryValue = ~memoryValue;
-        memoryManager.writeWord(m_dataSegment, effectiveAddress, memoryValue);
+        memoryManager.writeWord(segment, effectiveAddress, memoryValue);
     }
 
     void Processor::ins$NOTregisterWord(uint8_t REG)
@@ -2981,12 +3042,12 @@ namespace Cepums {
         updateRegisterFromREG16(REG, registerValue);
     }
 
-    void Processor::ins$ORimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate)
+    void Processor::ins$ORimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate)
     {
         INSTRUCTION_TRACE("ins$OR: 16-bit immediate to memory");
-        uint16_t memoryValue = memoryManager.readWord(m_dataSegment, effectiveAddress);
+        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
         uint16_t result = memoryValue | immediate;
-        memoryManager.writeWord(m_dataSegment, effectiveAddress, result);
+        memoryManager.writeWord(segment, effectiveAddress, result);
         setFlagsAfterLogicalOperation(result);
     }
 
@@ -2997,6 +3058,20 @@ namespace Cepums {
         uint8_t result = operand | immediate;
         updateRegisterFromREG8(destREG, result);
         setFlagsAfterLogicalOperation(result);
+    }
+
+    void Processor::ins$ORregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue)
+    {
+        INSTRUCTION_TRACE("ins$OR: 8-bit register to memory");
+        uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
+        uint8_t result = memoryValue | registerValue;
+        memoryManager.writeByte(segment, effectiveAddress, result);
+        setFlagsAfterLogicalOperation(result);
+    }
+
+    void Processor::ins$ORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
+    {
+        TODO();
     }
 
     void Processor::ins$POPsegmentRegister(MemoryManager& memoryManager, uint8_t srBits)
@@ -3186,12 +3261,12 @@ namespace Cepums {
         }
     }
 
-    void Processor::ins$RCLmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$RCLmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
     }
 
-    void Processor::ins$RCLmemoryOnceWord(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$RCLmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
     }
@@ -3206,12 +3281,12 @@ namespace Cepums {
         TODO();
     }
 
-    void Processor::ins$RCRmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$RCRmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
     }
 
-    void Processor::ins$RCRmemoryOnceWord(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$RCRmemoryOnceWord(MemoryManager & memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
     }
@@ -3248,12 +3323,12 @@ namespace Cepums {
         SP() += 2;
     }
 
-    void Processor::ins$ROLmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$ROLmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
     }
 
-    void Processor::ins$ROLmemoryOnceWord(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$ROLmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
     }
@@ -3268,12 +3343,12 @@ namespace Cepums {
         TODO();
     }
 
-    void Processor::ins$RORmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$RORmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
     }
 
-    void Processor::ins$RORmemoryOnceWord(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$RORmemoryOnceWord(MemoryManager & memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
     }
@@ -3288,14 +3363,45 @@ namespace Cepums {
         TODO();
     }
 
-    void Processor::ins$SALmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$SALmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
     }
 
-    void Processor::ins$SALmemoryOnceWord(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$SALmemoryOnceWord(MemoryManager & memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
+    }
+
+    void Processor::ins$SALregisterByCLByte(uint8_t rmBits)
+    {
+        INSTRUCTION_TRACE("ins$SAL: {0},{1}", getRegisterNameFromREG8(rmBits), CL());
+        uint8_t registerValue = getRegisterValueFromREG8(rmBits);
+
+        while (CL() != 0)
+        {
+            uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 7);
+            bool setCarry;
+            if (registerValue > SCHAR_MAX)
+                setCarry = true;
+            else
+                setCarry = false;
+
+            registerValue <<= 1;
+            setFlagsAfterLogicalOperation(registerValue);
+            // Set carry flag
+            if (setCarry)
+                SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+            // Set overflow flag
+            if (bitZeroBefore != IS_BIT_SET(registerValue, 7))
+                SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+            updateRegisterFromREG8(rmBits, registerValue);
+
+            // Decrement CL
+            CL(CL() - 1);
+        }
     }
 
     void Processor::ins$SALregisterOnceByte(uint8_t rmBits)
@@ -3350,12 +3456,12 @@ namespace Cepums {
         updateRegisterFromREG16(rmBits, registerValue);
     }
 
-    void Processor::ins$SARmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$SARmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
     }
 
-    void Processor::ins$SARmemoryOnceWord(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$SARmemoryOnceWord(MemoryManager & memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
     }
@@ -3370,12 +3476,12 @@ namespace Cepums {
         TODO();
     }
 
-    void Processor::ins$SHRmemoryOnceByte(MemoryManager& memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$SHRmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
     }
 
-    void Processor::ins$SHRmemoryOnceWord(MemoryManager & memoryManager, uint16_t effectiveAddress)
+    void Processor::ins$SHRmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
     }
@@ -3457,10 +3563,10 @@ namespace Cepums {
         setFlagsAfterArithmeticOperation(result);
     }
 
-    void Processor::ins$SUBregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue)
+    void Processor::ins$SUBregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue)
     {
         INSTRUCTION_TRACE("ins$SUB: 8-bit register to memory");
-        uint8_t memoryValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
+        uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
 
         // Note: this may be UB :(
         uint8_t result = memoryValue - registerValue;
@@ -3481,14 +3587,14 @@ namespace Cepums {
         else
             CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
 
-        memoryManager.writeByte(m_dataSegment, effectiveAddress, result);
+        memoryManager.writeByte(segment, effectiveAddress, result);
         setFlagsAfterArithmeticOperation(result);
     }
 
-    void Processor::ins$SUBregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue)
+    void Processor::ins$SUBregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue)
     {
         INSTRUCTION_TRACE("ins$SUB: 16-bit register to memory");
-        uint16_t memoryValue = memoryManager.readWord(m_dataSegment, effectiveAddress);
+        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
 
         // Note: this may be UB :(
         uint16_t result = memoryValue - registerValue;
@@ -3509,7 +3615,7 @@ namespace Cepums {
         else
             CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
 
-        memoryManager.writeWord(m_codeSegment, effectiveAddress, result);
+        memoryManager.writeWord(segment, effectiveAddress, result);
         setFlagsAfterArithmeticOperation(result);
     }
 
@@ -3579,20 +3685,20 @@ namespace Cepums {
         setFlagsAfterLogicalOperation(result);
     }
 
-    void Processor::ins$TESTimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t immediate)
+    void Processor::ins$TESTimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate)
     {
         INSTRUCTION_TRACE("ins$TEST: 8-bit immediate to memory");
-        uint8_t memoryValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
+        uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
         uint8_t result = memoryValue & immediate;
         setFlagsAfterLogicalOperation(result);
     }
 
-    void Processor::ins$XCHGmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t effectiveAddress)
+    void Processor::ins$XCHGmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
     {
         INSTRUCTION_TRACE("ins$XCHG: Exchange 8-bit memory with register {0}", getRegisterNameFromREG8(destREG));
-        uint8_t memoryValue = memoryManager.readByte(m_dataSegment, effectiveAddress);
+        uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
         uint8_t registerValue = getRegisterValueFromREG8(destREG);
-        memoryManager.writeByte(m_dataSegment, effectiveAddress, registerValue);
+        memoryManager.writeByte(segment, effectiveAddress, registerValue);
         updateRegisterFromREG8(destREG, memoryValue);
     }
 
@@ -3605,21 +3711,21 @@ namespace Cepums {
         updateRegisterFromREG8(sourceREG, registerOneValue);
     }
 
-    void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint8_t registerValue)
+    void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue)
     {
         INSTRUCTION_TRACE("ins$XOR: XOR-ing 8-bit register to memory");
-        auto original = memoryManager.readByte(m_dataSegment, effectiveAddress);
+        auto original = memoryManager.readByte(segment, effectiveAddress);
         uint8_t result = original ^ registerValue;
-        memoryManager.writeByte(m_dataSegment, effectiveAddress, result);
+        memoryManager.writeByte(segment, effectiveAddress, result);
         setFlagsAfterLogicalOperation(result);
     }
 
-    void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t registerValue)
+    void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue)
     {
         INSTRUCTION_TRACE("ins$XOR: XOR-ing 16-bit register to memory");
-        auto original = memoryManager.readWord(m_dataSegment, effectiveAddress);
+        auto original = memoryManager.readWord(segment, effectiveAddress);
         uint16_t result = original ^ registerValue;
-        memoryManager.writeWord(m_dataSegment, effectiveAddress, result);
+        memoryManager.writeWord(segment, effectiveAddress, result);
         setFlagsAfterLogicalOperation(result);
     }
 
@@ -3820,8 +3926,9 @@ namespace Cepums {
         return value;
     }
 
-    uint16_t Processor::getEffectiveAddressFromBits(uint8_t rmBits, uint8_t modBits, uint8_t isWord, uint8_t displacementLow, uint8_t displacementHigh)
+    uint16_t Processor::getEffectiveAddressFromBits(uint8_t rmBits, uint8_t modBits, uint8_t isWord, uint8_t displacementLow, uint8_t displacementHigh, uint16_t defaultSegment, uint16_t& segment)
     {
+        segment = defaultSegment;
         switch (modBits)
         {
         //case 0b11:
@@ -3873,9 +3980,11 @@ namespace Cepums {
                 return m_BX + m_destinationIndex;
 
             case 0b010:
+                segment = SS();
                 return m_basePointer + m_sourceIndex;
 
             case 0b011:
+                segment = SS();
                 return m_basePointer + m_destinationIndex;
 
             case 0b100:
@@ -3884,8 +3993,7 @@ namespace Cepums {
             case 0b101:
                 return m_destinationIndex;
 
-                // We use the "displacement" directly as it acts like a direct address at this point
-            case 0b110:
+            case 0b110: // We use the "displacement" directly as it acts like a direct address at this point
             {
                 uint16_t address = (uint16_t)displacementHigh << 8;
                 address |= displacementLow;
@@ -3902,38 +4010,42 @@ namespace Cepums {
             }
 
         case 0b01:
-            DC_CORE_TRACE("R/M field decoding has entered the 'sign extension' branch. Currently that isn't done. Might cause issues");
+        {
+            uint16_t fullDisplacement = signExtendByteToWord(displacementLow);
             switch (rmBits)
             {
             case 0b000:
-                return m_BX + m_sourceIndex + displacementLow;
+                return m_BX + m_sourceIndex + fullDisplacement;
 
             case 0b001:
-                return m_BX + m_destinationIndex + displacementLow;
+                return m_BX + m_destinationIndex + fullDisplacement;
 
             case 0b010:
-                return m_basePointer + m_sourceIndex + displacementLow;
+                segment = SS();
+                return m_basePointer + m_sourceIndex + fullDisplacement;
 
             case 0b011:
-                return m_basePointer + m_destinationIndex + displacementLow;
+                segment = SS();
+                return m_basePointer + m_destinationIndex + fullDisplacement;
 
             case 0b100:
-                return m_sourceIndex + displacementLow;
+                return m_sourceIndex + fullDisplacement;
 
             case 0b101:
-                return m_destinationIndex + displacementLow;
+                return m_destinationIndex + fullDisplacement;
 
             case 0b110:
-                return m_basePointer + displacementLow;
+                segment = SS();
+                return m_basePointer + fullDisplacement;
 
             case 0b111:
-                return m_BX + displacementLow;
+                return m_BX + fullDisplacement;
 
             default:
                 VERIFY_NOT_REACHED();
                 return 0;
             }
-
+        }
         case 0b10:
         {
             uint16_t fullDisplacement;
@@ -3949,9 +4061,11 @@ namespace Cepums {
                 return m_BX + m_destinationIndex + fullDisplacement;
 
             case 0b010:
+                segment = SS();
                 return m_basePointer + m_sourceIndex + fullDisplacement;
 
             case 0b011:
+                segment = SS();
                 return m_basePointer + m_destinationIndex + fullDisplacement;
 
             case 0b100:
