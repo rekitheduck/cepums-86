@@ -3609,12 +3609,54 @@ namespace Cepums {
 
     void Processor::ins$SHRregisterOnceByte(uint8_t rmBits)
     {
-        TODO();
+        INSTRUCTION_TRACE("ins$SHL: {0},1", getRegisterNameFromREG8(rmBits));
+        uint8_t registerValue = getRegisterValueFromREG8(rmBits);
+        uint8_t MSBbefore = IS_BIT_SET(registerValue, 7);
+        bool setCarry;
+        if (IS_BIT_SET(registerValue, 0))
+            setCarry = true;
+        else
+            setCarry = false;
+
+        registerValue >>= 1;
+        setFlagsAfterLogicalOperation(registerValue);
+        // Set carry flag
+        if (setCarry)
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        // Set overflow flag
+        if (MSBbefore)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        updateRegisterFromREG8(rmBits, registerValue);
     }
 
     void Processor::ins$SHRregisterOnceWord(uint8_t rmBits)
     {
-        TODO();
+        INSTRUCTION_TRACE("ins$SHL: {0},1", getRegisterNameFromREG16(rmBits));
+        uint16_t registerValue = getRegisterFromREG16(rmBits);
+        uint8_t MSBbefore = IS_BIT_SET(registerValue, 15);
+        bool setCarry;
+        if (IS_BIT_SET(registerValue, 0))
+            setCarry = true;
+        else
+            setCarry = false;
+
+        registerValue >>= 1;
+        setFlagsAfterLogicalOperation(registerValue);
+        // Set carry flag
+        if (setCarry)
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        // Set overflow flag
+        if (MSBbefore)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        updateRegisterFromREG16(rmBits, registerValue);
     }
 
     void Processor::ins$STOSword(MemoryManager& memoryManager)
