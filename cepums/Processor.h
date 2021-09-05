@@ -155,6 +155,7 @@ namespace Cepums {
         void ins$IRET(MemoryManager& memoryManager);
 
         void ins$JMPinterSegment(uint16_t newCodeSegment, uint16_t newInstructionPointer);
+        void ins$JMPnearFromMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
         void ins$JMPshort(int8_t increment);
         void ins$JMPshortWord(int16_t increment);
 

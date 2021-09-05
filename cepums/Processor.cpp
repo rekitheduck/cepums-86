@@ -1242,7 +1242,7 @@ namespace Cepums {
         }
         case 0xB0: // MOV: 8-bit from immediate to AL
         {
-            INSTRUCTION_TRACE("$MOV: 8-bit immediate to AL");
+            INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to AL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
             AL(immediate);
 
@@ -1250,7 +1250,7 @@ namespace Cepums {
         }
         case 0xB1: // MOV: 8-bit from immediate to CL
         {
-            INSTRUCTION_TRACE("$MOV: 8-bit immediate to CL");
+            INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to CL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
             CL(immediate);
 
@@ -1258,7 +1258,7 @@ namespace Cepums {
         }
         case 0xB2: // MOV: 8-bit from immediate to DL
         {
-            INSTRUCTION_TRACE("$MOV: 8-bit immediate to DL");
+            INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to DL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
             DL(immediate);
 
@@ -1266,7 +1266,7 @@ namespace Cepums {
         }
         case 0xB3: // MOV: 8-bit from immediate to BL
         {
-            INSTRUCTION_TRACE("$MOV: 8-bit immediate to BL");
+            INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to BL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
             BL(immediate);
 
@@ -1274,7 +1274,7 @@ namespace Cepums {
         }
         case 0xB4: // MOV: 8-bit from immediate to AH
         {
-            INSTRUCTION_TRACE("$MOV: 8-bit immediate to AH");
+            INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to AH");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
             AH(immediate);
 
@@ -1282,7 +1282,7 @@ namespace Cepums {
         }
         case 0xB5: // MOV: 8-bit from immediate to CH
         {
-            INSTRUCTION_TRACE("$MOV: 8-bit immediate to CH");
+            INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to CH");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
             CH(immediate);
 
@@ -1290,7 +1290,7 @@ namespace Cepums {
         }
         case 0xB6: // MOV: 8-bit from immediate to DH
         {
-            INSTRUCTION_TRACE("$MOV: 8-bit immediate to DH");
+            INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to DH");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
             DH(immediate);
 
@@ -1298,7 +1298,7 @@ namespace Cepums {
         }
         case 0xB7: // MOV: 8-bit from immediate to BH
         {
-            INSTRUCTION_TRACE("$MOV: 8-bit immediate to BH");
+            INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to BH");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
             BH(immediate);
 
@@ -1306,7 +1306,7 @@ namespace Cepums {
         }
         case 0xB8: // MOV: 16-bit from immediate to AX
         {
-            INSTRUCTION_TRACE("$MOV: 16-bit immediate to AX");
+            INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to AX");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
             AX() = immediate;
 
@@ -1314,7 +1314,7 @@ namespace Cepums {
         }
         case 0xB9: // MOV: 16-bit from immediate to CX
         {
-            INSTRUCTION_TRACE("$MOV: 16-bit immediate to CX");
+            INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to CX");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
             CX() = immediate;
 
@@ -1322,7 +1322,7 @@ namespace Cepums {
         }
         case 0xBA: // MOV: 16-bit from immediate to DX
         {
-            INSTRUCTION_TRACE("$MOV: 16-bit immediate to DX");
+            INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to DX");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
             DX() = immediate;
 
@@ -1330,7 +1330,7 @@ namespace Cepums {
         }
         case 0xBB: // MOV: 16-bit from immediate to BX
         {
-            INSTRUCTION_TRACE("$MOV: 16-bit immediate to BX");
+            INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to BX");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
             BX() = immediate;
 
@@ -1338,7 +1338,7 @@ namespace Cepums {
         }
         case 0xBC: // MOV: 16-bit from immediate to SP
         {
-            INSTRUCTION_TRACE("$MOV: 16-bit immediate to SP");
+            INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to SP");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
             SP() = immediate;
 
@@ -1346,7 +1346,7 @@ namespace Cepums {
         }
         case 0xBD: // MOV: 16-bit from immediate to BP
         {
-            INSTRUCTION_TRACE("$MOV: 16-bit immediate to BP");
+            INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to BP");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
             BP() = immediate;
 
@@ -1354,7 +1354,7 @@ namespace Cepums {
         }
         case 0xBE: // MOV: 16-bit from immediate to SI
         {
-            INSTRUCTION_TRACE("$MOV: 16-bit immediate to SI");
+            INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to SI");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
             SI() = immediate;
 
@@ -1362,7 +1362,7 @@ namespace Cepums {
         }
         case 0xBF: // MOV: 16-bit from immediate to DI
         {
-            INSTRUCTION_TRACE("$MOV: 16-bit immediate to DI");
+            INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to DI");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
             DI() = immediate;
 
@@ -1975,9 +1975,8 @@ namespace Cepums {
             case 0b011: // CALL: Intersegment
                 TODO();
                 return;
-            case 0b100:
-                TODO();
-                return;
+            case 0b100: // JMP: Intrasegment
+                return ins$JMPnearFromMemory(memoryManager, segment, effectiveAddress);
             case 0b101:
                 TODO();
                 return;
@@ -2821,6 +2820,15 @@ namespace Cepums {
         m_instructionPointer = newInstructionPointer;
     }
 
+    void Processor::ins$JMPnearFromMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
+    {
+        if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
+            segment = getSegmentRegisterValueAndResetOverride();
+
+        IP() = memoryManager.readWord(segment, effectiveAddress);
+        INSTRUCTION_TRACE("ins$JMP: Jumping near to {0:X}:{1:X}", segment, IP());
+    }
+
     void Processor::ins$JMPshort(int8_t increment)
     {
         INSTRUCTION_TRACE("ins$JMP: Jumping to short");
@@ -2863,7 +2871,7 @@ namespace Cepums {
         updateRegisterFromREG16(destREG, newRegisterValue);
     }
 
-    void Processor::ins$LODSbyte(MemoryManager & memoryManager)
+    void Processor::ins$LODSbyte(MemoryManager& memoryManager)
     {
         std::string segRegName = getSegmentRegisterName(REGISTER_DS);
         switch (m_segmentPrefix)
@@ -2895,9 +2903,9 @@ namespace Cepums {
 
         // Increment or decrement depending on DF
         if (IS_BIT_SET(m_flags, DIRECTION_FLAG))
-            SI() -= 2;
+            SI() -= 1;
         else
-            SI() += 2;
+            SI() += 1;
 
         INSTRUCTION_TRACE("ins$LODS: Load {0}:SI word into AL", segRegName);
     }
