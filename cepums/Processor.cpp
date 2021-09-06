@@ -1641,8 +1641,7 @@ namespace Cepums {
                 case 0b011:
                     return ins$RCRregisterByCLWord(rmBits);
                 case 0b100:
-                    //return ins$SALregisterByCLWord(rmBits);
-                    TODO();
+                    return ins$SALregisterByCLWord(rmBits);
                 case 0b101:
                     return ins$SHRregisterByCLWord(rmBits);
                 case 0b111:
@@ -3814,6 +3813,37 @@ namespace Cepums {
             if (bitZeroBefore != IS_BIT_SET(registerValue, 7))
                 SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
             updateRegisterFromREG8(rmBits, registerValue);
+
+            // Decrement CL
+            CL(CL() - 1);
+        }
+    }
+
+    void Processor::ins$SALregisterByCLWord(uint8_t rmBits)
+    {
+        INSTRUCTION_TRACE("ins$SAL: {0},{1}", getRegisterNameFromREG16(rmBits), CL());
+        uint16_t registerValue = getRegisterFromREG16(rmBits);
+
+        while (CL() != 0)
+        {
+            uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 15);
+            bool setCarry;
+            if (registerValue > SHRT_MAX)
+                setCarry = true;
+            else
+                setCarry = false;
+
+            registerValue <<= 1;
+            setFlagsAfterLogicalOperation(registerValue);
+            // Set carry flag
+            if (setCarry)
+                SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+            // Set overflow flag
+            if (bitZeroBefore != IS_BIT_SET(registerValue, 15))
+                SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+            updateRegisterFromREG16(rmBits, registerValue);
 
             // Decrement CL
             CL(CL() - 1);

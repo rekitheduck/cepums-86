@@ -230,6 +230,7 @@ namespace Cepums {
         void ins$SALmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
         void ins$SALmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
         void ins$SALregisterByCLByte(uint8_t rmBits);
+        void ins$SALregisterByCLWord(uint8_t rmBits);
         void ins$SALregisterOnceByte(uint8_t rmBits);
         void ins$SALregisterOnceWord(uint8_t rmBits);
         void ins$SARmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
