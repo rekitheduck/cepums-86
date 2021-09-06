@@ -231,8 +231,8 @@ namespace Cepums {
         }
         case 0x0D: // OR: 16-bit immediate with AX
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
+            return ins$ORimmediateToRegister(REGISTER_AX, immediate);
         }
         case 0x0E: // PUSH: Push CS to stack
         {
@@ -1713,10 +1713,21 @@ namespace Cepums {
             TODO();
             return;
         }
-        case 0xD8: // ESC: Escape to external device
-        case 0xD9: // and variants
+        case 0xD8: // ESC: Escape to external device and variants
+            TODO();
+        case 0xD9: // FNSTCW: Store control word
+        {
+            // I think at least the word variant of this is 3 bytes
+            m_instructionPointer += 3;
+            return;
+        }
         case 0xDA:
-        case 0xDB:
+            TODO();
+        case 0xDB: // FNINIT/FINIT (if WAIT 0x9B in front): Initialize FPU
+        {
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            return;
+        }
         case 0xDC:
         case 0xDD:
         case 0xDE:
@@ -3437,6 +3448,15 @@ namespace Cepums {
         auto operand = getRegisterValueFromREG8(destREG);
         uint8_t result = operand | immediate;
         updateRegisterFromREG8(destREG, result);
+        setFlagsAfterLogicalOperation(result);
+    }
+
+    void Processor::ins$ORimmediateToRegister(uint8_t destREG, uint16_t immediate)
+    {
+        INSTRUCTION_TRACE("ins$OR: 16-bit immediate to register");
+        auto operand = getRegisterFromREG16(destREG);
+        uint16_t result = operand | immediate;
+        updateRegisterFromREG16(destREG, result);
         setFlagsAfterLogicalOperation(result);
     }
 
