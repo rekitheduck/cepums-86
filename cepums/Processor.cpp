@@ -237,8 +237,16 @@ namespace Cepums {
         }
         case 0x11: // ADC: 16-bit from register to register/memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$ADCregisterToRegisterWord(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$ADCregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterFromREG16(regBits));
         }
         case 0x12: // ADC: 8-bit from register/memory to register
         {
@@ -2101,6 +2109,69 @@ namespace Cepums {
     void Processor::ins$SEGMENT()
     {
         TODO();
+    }
+
+    void Processor::ins$ADCregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue)
+    {
+        INSTRUCTION_TRACE("ins$ADC: 16-bit register to memory");
+        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
+        uint16_t carryFlag = IS_BIT_SET(m_flags, CARRY_FLAG);
+
+        // Note: this may be UB :(
+        uint16_t result = memoryValue + registerValue + carryFlag;
+
+        // Carry (unsigned overflow)
+        if (registerValue > USHRT_MAX - memoryValue - carryFlag)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            // Fix UB
+            result = (USHRT_MAX - memoryValue) + registerValue + carryFlag;
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (registerValue > SHRT_MAX - memoryValue - carryFlag)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        memoryManager.writeWord(segment, effectiveAddress, result);
+        setFlagsAfterArithmeticOperation(result);
+    }
+
+    void Processor::ins$ADCregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
+    {
+        INSTRUCTION_TRACE("ins$ADC: 16-bit register to register");
+        uint16_t registerValue = getRegisterFromREG16(destREG);
+        uint16_t sourceValue = getRegisterFromREG16(sourceREG);
+        uint16_t carryFlag = IS_BIT_SET(m_flags, CARRY_FLAG);
+
+        // Note: this may be UB :(
+        uint16_t result = registerValue + sourceValue + carryFlag;
+
+        // Carry (unsigned overflow)
+        if (sourceValue > USHRT_MAX - registerValue - carryFlag)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            // Fix UB
+            result = (USHRT_MAX - registerValue) + sourceValue + carryFlag;
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (sourceValue > SHRT_MAX - registerValue - carryFlag)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        updateRegisterFromREG16(destREG, result);
+        setFlagsAfterArithmeticOperation(result);
     }
 
     void Processor::ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate)
