@@ -154,6 +154,8 @@ namespace Cepums {
         void ins$DECmemoryByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
         void ins$DECmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
 
+        void ins$DIVregisterWord(uint8_t REG);
+
         void ins$INCregister(uint8_t isWordBit, uint8_t REG);
         void ins$INCmemoryByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
         void ins$INCmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);

@@ -1875,6 +1875,7 @@ namespace Cepums {
                     //return ins$NOTregisterByte(rmBits);
                 case 0b011:
                     //return ins$NEGregisterByte(rmBits);
+                    TODO();
                 case 0b100:
                     return ins$MULregisterByte(rmBits);
                 case 0b101:
@@ -1938,12 +1939,14 @@ namespace Cepums {
                     return ins$NOTregisterWord(rmBits);
                 case 0b011:
                     //return ins$NEGregisterWord(rmBits);
+                    TODO();
                 case 0b100:
                     return ins$MULregisterWord(rmBits);
                 case 0b101:
                     //return ins$IMULergisterWord(rmBits);
+                    TODO();
                 case 0b110:
-                    //return ins$DIVregisterWord(rmBits);
+                    return ins$DIVregisterWord(rmBits);
                 case 0b111:
                     //return ins$IDIVregisterWord(rmBits);
                     TODO();
@@ -2836,6 +2839,35 @@ namespace Cepums {
     void Processor::ins$DECmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
+    }
+
+    void Processor::ins$DIVregisterWord(uint8_t REG)
+    {
+        INSTRUCTION_TRACE("ins$DIV: {0}", getRegisterNameFromREG16(REG));
+        // Get divisor value
+        uint16_t divisor = getRegisterFromREG16(REG);
+        if (divisor == 0)
+        {
+            // Cause an interupt and stop
+            TODO();
+        }
+        // Setup the dividend
+        uint32_t dividend = AX();
+        dividend = dividend | uint32_t(DX() << 16);
+
+        uint32_t result = dividend / divisor;
+
+        // If the result is too large to fit in 16-bits
+        if (result > 0xFFFF)
+        {
+            // Interrupt and stop?
+            TODO();
+        }
+        AX() = result;
+        
+        // Remainder
+        uint16_t remainder = dividend % divisor;
+        DX() = remainder;
     }
 
     void Processor::ins$INCregister(uint8_t isWordBit, uint8_t REG)
