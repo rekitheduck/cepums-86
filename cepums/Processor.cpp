@@ -165,20 +165,14 @@ namespace Cepums {
         case 0x04: // ADD: 8-bit immediate to AL
         {
             INSTRUCTION_TRACE("ADD: 8-bit immediate to AL");
-            TODO(); // flags
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
-            AL(byte + AL());
-
-            return;
+            return ins$ADDimmediateToRegister(REGISTER_AL, byte);
         }
         case 0x05: // ADD: 16-bit immediate to AX
         {
             INSTRUCTION_TRACE("ADD: 16-bit immediate to AX");
-            TODO(); // flags
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, word);
-            AX() += word;
-
-            return;
+            return ins$ADDimmediateToRegister(REGISTER_AL, word);
         }
         case 0x06: // PUSH: Push ES to stack
         {
@@ -3734,7 +3728,7 @@ namespace Cepums {
 
     void Processor::ins$RCRregisterByCLWord(uint8_t REG)
     {
-        INSTRUCTION_TRACE("ins$RCR: {0},{1}", getRegisterNameFromREG8(REG), CL());
+        INSTRUCTION_TRACE("ins$RCR: {0},{1}", getRegisterNameFromREG16(REG), CL());
         uint16_t registerValue = getRegisterFromREG16(REG);
 
         while (CL() != 0)
@@ -3815,7 +3809,17 @@ namespace Cepums {
 
     void Processor::ins$ROLregisterOnceByte(uint8_t REG)
     {
-        TODO();
+        INSTRUCTION_TRACE("ins$ROL: {0},1", getRegisterNameFromREG8(REG));
+        uint8_t registerValue = getRegisterValueFromREG8(REG);
+
+        uint8_t lastBit = IS_BIT_SET(registerValue, 7);
+        registerValue <<= 1;
+        // Set MSB
+        if (lastBit)
+            SET_FLAG_BIT(registerValue, 0);
+        else
+            CLEAR_FLAG_BIT(registerValue, 0);
+        updateRegisterFromREG16(REG, registerValue);
     }
 
     void Processor::ins$ROLregisterOnceWord(uint8_t REG)
@@ -3828,7 +3832,7 @@ namespace Cepums {
         TODO();
     }
 
-    void Processor::ins$RORmemoryOnceWord(MemoryManager & memoryManager, uint16_t segment, uint16_t effectiveAddress)
+    void Processor::ins$RORmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
     }
