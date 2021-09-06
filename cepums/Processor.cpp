@@ -995,12 +995,20 @@ namespace Cepums {
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$XCHGmemoryToRegisterByte(memoryManager, getRegisterValueFromREG8(regBits), segment, effectiveAddress);
+            return ins$XCHGmemoryToRegisterByte(memoryManager, regBits, segment, effectiveAddress);
         }
         case 0x87: // XCHG: 16-bit exchange from register/memory to register
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$XCHGregisterToRegisterWord(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$XCHGmemoryToRegisterWord(memoryManager, regBits, segment, effectiveAddress);
         }
         case 0x88: // MOV: 8-bit from register to register/memory
         {
@@ -4306,6 +4314,15 @@ namespace Cepums {
         updateRegisterFromREG8(destREG, memoryValue);
     }
 
+    void Processor::ins$XCHGmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
+    {
+        INSTRUCTION_TRACE("ins$XCHG: Exchange 16-bit memory with register {0}", getRegisterNameFromREG16(destREG));
+        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
+        uint16_t registerValue = getRegisterFromREG16(destREG);
+        memoryManager.writeWord(segment, effectiveAddress, registerValue);
+        updateRegisterFromREG16(destREG, memoryValue);
+    }
+
     void Processor::ins$XCHGregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
     {
         INSTRUCTION_TRACE("ins$XCHG: Exchange 8-bit memory with register {0}", getRegisterNameFromREG8(destREG));
@@ -4313,6 +4330,15 @@ namespace Cepums {
         uint8_t registerTwoValue = getRegisterValueFromREG8(sourceREG);
         updateRegisterFromREG8(destREG, registerTwoValue);
         updateRegisterFromREG8(sourceREG, registerOneValue);
+    }
+
+    void Processor::ins$XCHGregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
+    {
+        INSTRUCTION_TRACE("ins$XCHG: Exchange 16-bit memory with register {0}", getRegisterNameFromREG16(destREG));
+        uint16_t registerOneValue = getRegisterFromREG16(destREG);
+        uint16_t registerTwoValue = getRegisterFromREG16(sourceREG);
+        updateRegisterFromREG16(destREG, registerTwoValue);
+        updateRegisterFromREG16(sourceREG, registerOneValue);
     }
 
     void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue)
