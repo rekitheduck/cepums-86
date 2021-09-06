@@ -2727,7 +2727,7 @@ namespace Cepums {
 
     void Processor::ins$CMPmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t regBits, uint16_t segment, uint16_t effectiveAddress)
     {
-        INSTRUCTION_TRACE("ins$CMP: 16-bit register to memory");
+        INSTRUCTION_TRACE("ins$CMP: 16-bit memory to register");
         uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
         uint16_t registerValue = getRegisterFromREG16(regBits);
 
@@ -3872,8 +3872,8 @@ namespace Cepums {
     {
         INSTRUCTION_TRACE("ins$RCR: {0},{1}", getRegisterNameFromREG16(REG), CL());
         uint16_t registerValue = getRegisterFromREG16(REG);
-
-        while (CL() != 0)
+        auto counter = CL();
+        while (counter != 0)
         {
             uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 0);
             registerValue >>= 1;
@@ -3888,9 +3888,7 @@ namespace Cepums {
             else
                 CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
             updateRegisterFromREG16(REG, registerValue);
-
-            // Decrement CL
-            CL(CL() - 1);
+            counter--;
         }
     }
 
@@ -4013,8 +4011,8 @@ namespace Cepums {
     {
         INSTRUCTION_TRACE("ins$SAL: {0},{1}", getRegisterNameFromREG8(rmBits), CL());
         uint8_t registerValue = getRegisterValueFromREG8(rmBits);
-
-        while (CL() != 0)
+        auto counter = CL();
+        while (counter != 0)
         {
             uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 7);
             bool setCarry;
@@ -4034,9 +4032,7 @@ namespace Cepums {
             if (bitZeroBefore != IS_BIT_SET(registerValue, 7))
                 SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
             updateRegisterFromREG8(rmBits, registerValue);
-
-            // Decrement CL
-            CL(CL() - 1);
+            counter--;
         }
     }
 
@@ -4044,8 +4040,8 @@ namespace Cepums {
     {
         INSTRUCTION_TRACE("ins$SAL: {0},{1}", getRegisterNameFromREG16(rmBits), CL());
         uint16_t registerValue = getRegisterFromREG16(rmBits);
-
-        while (CL() != 0)
+        auto counter = CL();
+        while (counter != 0)
         {
             uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 15);
             bool setCarry;
@@ -4065,9 +4061,7 @@ namespace Cepums {
             if (bitZeroBefore != IS_BIT_SET(registerValue, 15))
                 SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
             updateRegisterFromREG16(rmBits, registerValue);
-
-            // Decrement CL
-            CL(CL() - 1);
+            counter--;
         }
     }
 
@@ -4158,8 +4152,8 @@ namespace Cepums {
         INSTRUCTION_TRACE("ins$SHR: {0},{1}", getRegisterNameFromREG8(rmBits), CL());
         uint8_t registerValue = getRegisterValueFromREG8(rmBits);
         uint8_t MSBbefore = IS_BIT_SET(registerValue, 7);
-
-        while (CL() != 0)
+        auto counter = CL();
+        while (counter != 0)
         {
             uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 7);
             bool setCarry;
@@ -4181,9 +4175,7 @@ namespace Cepums {
             else
                 CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
             updateRegisterFromREG8(rmBits, registerValue);
-
-            // Decrement CL
-            CL(CL() - 1);
+            counter--;
         }
     }
 
@@ -4192,8 +4184,8 @@ namespace Cepums {
         INSTRUCTION_TRACE("ins$SHR: {0},{1}", getRegisterNameFromREG16(rmBits), CL());
         uint16_t registerValue = getRegisterFromREG16(rmBits);
         uint8_t MSBbefore = IS_BIT_SET(registerValue, 15);
-
-        while (CL() != 0)
+        auto counter = CL();
+        while (counter != 0)
         {
             uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 15);
             bool setCarry;
@@ -4215,15 +4207,13 @@ namespace Cepums {
             else
                 CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
             updateRegisterFromREG16(rmBits, registerValue);
-
-            // Decrement CL
-            CL(CL() - 1);
+            counter--;
         }
     }
 
     void Processor::ins$SHRregisterOnceByte(uint8_t rmBits)
     {
-        INSTRUCTION_TRACE("ins$SHL: {0},1", getRegisterNameFromREG8(rmBits));
+        INSTRUCTION_TRACE("ins$SHR: {0},1", getRegisterNameFromREG8(rmBits));
         uint8_t registerValue = getRegisterValueFromREG8(rmBits);
         uint8_t MSBbefore = IS_BIT_SET(registerValue, 7);
         bool setCarry;
@@ -4249,7 +4239,7 @@ namespace Cepums {
 
     void Processor::ins$SHRregisterOnceWord(uint8_t rmBits)
     {
-        INSTRUCTION_TRACE("ins$SHL: {0},1", getRegisterNameFromREG16(rmBits));
+        INSTRUCTION_TRACE("ins$SHR: {0},1", getRegisterNameFromREG16(rmBits));
         uint16_t registerValue = getRegisterFromREG16(rmBits);
         uint8_t MSBbefore = IS_BIT_SET(registerValue, 15);
         bool setCarry;
