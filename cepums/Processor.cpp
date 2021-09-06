@@ -1980,8 +1980,7 @@ namespace Cepums {
             case 0b000:
             {
                 LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
-                //return ins$TESTimmediateToMemory(memoryManager, effectiveAddress, immediate);
-                TODO();
+                return ins$TESTimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             }
             case 0b010:
                 return ins$NOTmemoryWord(memoryManager, segment, effectiveAddress);
@@ -4468,6 +4467,14 @@ namespace Cepums {
         INSTRUCTION_TRACE("ins$TEST: 8-bit immediate to memory");
         uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
         uint8_t result = memoryValue & immediate;
+        setFlagsAfterLogicalOperation(result);
+    }
+
+    void Processor::ins$TESTimmediateToMemory(MemoryManager & memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate)
+    {
+        INSTRUCTION_TRACE("ins$TEST: 16-bit immediate to memory");
+        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
+        uint16_t result = memoryValue & immediate;
         setFlagsAfterLogicalOperation(result);
     }
 
