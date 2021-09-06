@@ -133,6 +133,7 @@ namespace Cepums {
         void ins$ADDregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
         void ins$ADDregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
+        void ins$ANDimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate);
         void ins$ANDimmediateToRegister(uint8_t destREG, uint8_t value);
 
         void ins$CALLnear(MemoryManager& memoryManager, int16_t offset);

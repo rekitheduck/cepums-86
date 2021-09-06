@@ -838,7 +838,7 @@ namespace Cepums {
             case 0b011:
                 //return ins$SBBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b100:
-                //return ins$ANDimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
+                return ins$ANDimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b101:
                 //return ins$SUBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b110:
@@ -2515,6 +2515,15 @@ namespace Cepums {
 
         updateRegisterFromREG16(destREG, result);
         setFlagsAfterArithmeticOperation(result);
+    }
+
+    void Processor::ins$ANDimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate)
+    {
+        INSTRUCTION_TRACE("ins$AND: 8-bit immediate to memory");
+        uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
+        uint8_t result = memoryValue & immediate;
+        memoryManager.writeByte(segment, effectiveAddress, result);
+        setFlagsAfterLogicalOperation(result);
     }
 
     void Processor::ins$ANDimmediateToRegister(uint8_t destREG, uint8_t value)
