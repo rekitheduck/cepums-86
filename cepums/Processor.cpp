@@ -929,6 +929,7 @@ namespace Cepums {
                     //return ins$ADCimmediateToRegisterWord(rmBits, immediate);
                 case 0b011:
                     //return ins$SBBimmediateToRegisterWord(rmBits, immediate);
+                    TODO();
                 case 0b100:
 #ifdef STRICT8086INSTRUCTIONSET
                     ILLEGAL_INSTRUCTION();
@@ -1192,13 +1193,12 @@ namespace Cepums {
         case 0xA0: // MOV: 8-bit from memory to AL
         {
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, word);
-            uint8_t data = memoryManager.readByte(DATA_SEGMENT, word);
-            return ins$MOVmemoryToRegisterByte(memoryManager, REGISTER_AL, data, m_dataSegment);
+            return ins$MOVmemoryToRegisterByte(memoryManager, REGISTER_AL, DATA_SEGMENT, word);
         }
         case 0xA1: // MOV: 16-bit from memory to AX
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, word);
+            return ins$MOVmemoryToRegisterWord(memoryManager, REGISTER_AX, DATA_SEGMENT, word);
         }
         case 0xA2: // MOV: 8-bit from AL to memory
         {
