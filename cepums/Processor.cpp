@@ -931,6 +931,7 @@ namespace Cepums {
                     //return ins$SBBimmediateToRegisterWord(rmBits, immediate);
                 case 0b101:
                     //return ins$SUBimmediateToRegisterWord(rmBits, immediate);
+                    TODO();
                 case 0b111:
                     return ins$CMPimmediateToRegister(rmBits, immediate);
                 default:
@@ -3814,7 +3815,7 @@ namespace Cepums {
 
         uint8_t lastBit = IS_BIT_SET(registerValue, 7);
         registerValue <<= 1;
-        // Set MSB
+        // Set LSB
         if (lastBit)
             SET_FLAG_BIT(registerValue, 0);
         else
@@ -3839,7 +3840,17 @@ namespace Cepums {
 
     void Processor::ins$RORregisterOnceByte(uint8_t REG)
     {
-        TODO();
+        INSTRUCTION_TRACE("ins$ROR: {0},1", getRegisterNameFromREG8(REG));
+        uint8_t registerValue = getRegisterValueFromREG8(REG);
+
+        uint8_t firstBit = IS_BIT_SET(registerValue, 0);
+        registerValue >>= 1;
+        // Set MSB
+        if (firstBit)
+            SET_FLAG_BIT(registerValue, 7);
+        else
+            CLEAR_FLAG_BIT(registerValue, 7);
+        updateRegisterFromREG16(REG, registerValue);
     }
 
     void Processor::ins$RORregisterOnceWord(uint8_t REG)
