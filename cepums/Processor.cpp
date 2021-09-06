@@ -929,6 +929,11 @@ namespace Cepums {
                     //return ins$ADCimmediateToRegisterWord(rmBits, immediate);
                 case 0b011:
                     //return ins$SBBimmediateToRegisterWord(rmBits, immediate);
+                case 0b100:
+#ifdef STRICT8086INSTRUCTIONSET
+                    ILLEGAL_INSTRUCTION();
+#endif
+                    return ins$ANDimmediateToRegister(rmBits, immediate);
                 case 0b101:
                     //return ins$SUBimmediateToRegisterWord(rmBits, immediate);
                     TODO();
@@ -960,6 +965,7 @@ namespace Cepums {
                 //return ins$SBBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b101:
                 //return ins$SUBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
+                TODO();
             case 0b111:
                 return ins$CMPimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             default:
@@ -2555,6 +2561,15 @@ namespace Cepums {
         uint8_t registerValue = getRegisterValueFromREG8(destREG);
         uint8_t result = registerValue & value;
         updateRegisterFromREG8(destREG, result);
+        setFlagsAfterLogicalOperation(result);
+    }
+
+    void Processor::ins$ANDimmediateToRegister(uint8_t destREG, uint16_t value)
+    {
+        INSTRUCTION_TRACE("ins$AND: 16-bit immediate to register {0}", getRegisterNameFromREG16(destREG));
+        uint16_t registerValue = getRegisterFromREG16(destREG);
+        uint16_t result = registerValue & value;
+        updateRegisterFromREG16(destREG, result);
         setFlagsAfterLogicalOperation(result);
     }
 
