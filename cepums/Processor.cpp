@@ -473,8 +473,16 @@ namespace Cepums {
         }
         case 0x38: // CMP: 8-bit from register to register/memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$CMPregisterToRegisterByte(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$CMPregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterValueFromREG8(regBits));
         }
         case 0x39: // CMP: 16-bit from register to register/memory
         {
@@ -504,8 +512,16 @@ namespace Cepums {
         }
         case 0x3B: // CMP: 16-bit from register/memory to register
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$CMPregisterToRegisterWord(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$CMPmemoryToRegisterWord(memoryManager, regBits, segment, effectiveAddress);
         }
         case 0x3C: // CMP: 8-bit immediate with AL
         {
@@ -2683,9 +2699,37 @@ namespace Cepums {
 
     void Processor::ins$CMPmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t regBits, uint16_t segment, uint16_t effectiveAddress)
     {
-        INSTRUCTION_TRACE("ins$CMP: 16-bit register to memory");
+        INSTRUCTION_TRACE("ins$CMP: 8-bit register to memory");
         uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
         uint8_t registerValue = getRegisterValueFromREG8(regBits);
+
+        // Note: this may be UB :(
+        uint8_t result = registerValue - memoryValue;
+
+        // Carry (unsigned overflow)
+        if (registerValue > memoryValue)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (registerValue > SCHAR_MAX - memoryValue)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        setFlagsAfterArithmeticOperation(result);
+    }
+
+    void Processor::ins$CMPmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t regBits, uint16_t segment, uint16_t effectiveAddress)
+    {
+        INSTRUCTION_TRACE("ins$CMP: 16-bit register to memory");
+        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
+        uint16_t registerValue = getRegisterFromREG16(regBits);
 
         // Note: this may be UB :(
         uint16_t result = registerValue - memoryValue;
@@ -2701,7 +2745,35 @@ namespace Cepums {
         }
 
         // Overflow
-        if (registerValue > SCHAR_MAX - memoryValue)
+        if (registerValue > SHRT_MAX - memoryValue)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        setFlagsAfterArithmeticOperation(result);
+    }
+
+    void Processor::ins$CMPregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
+    {
+        INSTRUCTION_TRACE("ins$CMP: 8-bit register {0} to register {1}", getRegisterNameFromREG8(sourceREG), getRegisterNameFromREG8(destREG));
+        uint8_t registerValue = getRegisterValueFromREG8(destREG);
+        uint8_t sourceValue = getRegisterValueFromREG8(sourceREG);
+
+        // Note: this may be UB :(
+        uint8_t result = registerValue - sourceValue;
+
+        // Carry (unsigned overflow)
+        if (sourceValue > registerValue)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (sourceValue > SCHAR_MAX - registerValue)
             SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
         else
             CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
@@ -2737,9 +2809,31 @@ namespace Cepums {
         setFlagsAfterArithmeticOperation(result);
     }
 
-    void Processor::ins$CMPregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
+    void Processor::ins$CMPregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue)
     {
-        TODO();
+        INSTRUCTION_TRACE("ins$CMP: 8-bit register to memory");
+        uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
+
+        // Note: this may be UB :(
+        uint8_t result = memoryValue - registerValue;
+
+        // Carry (unsigned overflow)
+        if (memoryValue > registerValue)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (memoryValue > SCHAR_MAX - registerValue)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        setFlagsAfterArithmeticOperation(result);
     }
 
     void Processor::ins$CMPregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue)

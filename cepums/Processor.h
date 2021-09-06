@@ -146,8 +146,10 @@ namespace Cepums {
         void ins$CMPimmediateToRegister(uint8_t destREG, uint8_t immediate);
         void ins$CMPimmediateToRegister(uint8_t destREG, uint16_t immediate);
         void ins$CMPmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t regBits, uint16_t segment, uint16_t effectiveAddress);
-        void ins$CMPregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
+        void ins$CMPmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t regBits, uint16_t segment, uint16_t effectiveAddress);
         void ins$CMPregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
+        void ins$CMPregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
+        void ins$CMPregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue);
         void ins$CMPregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue);
 
         void ins$DECregister(uint8_t isWordBit, uint8_t REG);
