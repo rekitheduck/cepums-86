@@ -203,8 +203,16 @@ namespace Cepums {
         }
         case 0x09: // OR: 16-bit register with register/memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$ORregisterToRegisterWord(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$ORregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterFromREG16(regBits));
         }
         case 0x0A: // OR: 8-bit register/memory with register
         {
@@ -3397,6 +3405,15 @@ namespace Cepums {
         setFlagsAfterLogicalOperation(result);
     }
 
+    void Processor::ins$ORregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue)
+    {
+        INSTRUCTION_TRACE("ins$OR: 16-bit register to memory");
+        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
+        uint16_t result = memoryValue | registerValue;
+        memoryManager.writeWord(segment, effectiveAddress, result);
+        setFlagsAfterLogicalOperation(result);
+    }
+
     void Processor::ins$ORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
     {
         INSTRUCTION_TRACE("ins$OR: 8-bit register to register");
@@ -3404,6 +3421,16 @@ namespace Cepums {
         uint8_t operand2 = getRegisterValueFromREG8(sourceREG);
         uint8_t result = operand | operand2;
         updateRegisterFromREG8(destREG, result);
+        setFlagsAfterLogicalOperation(result);
+    }
+
+    void Processor::ins$ORregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
+    {
+        INSTRUCTION_TRACE("ins$OR: 16-bit register to register");
+        uint16_t operand = getRegisterFromREG16(destREG);
+        uint16_t operand2 = getRegisterFromREG16(sourceREG);
+        uint16_t result = operand | operand2;
+        updateRegisterFromREG16(destREG, result);
         setFlagsAfterLogicalOperation(result);
     }
 

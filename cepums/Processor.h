@@ -194,7 +194,9 @@ namespace Cepums {
         void ins$ORimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate);
         void ins$ORimmediateToRegister(uint8_t destREG, uint8_t immediate);
         void ins$ORregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue);
+        void ins$ORregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue);
         void ins$ORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
+        void ins$ORregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
         void ins$POPF(MemoryManager& memoryManager);
         void ins$POPsegmentRegister(MemoryManager& memoryManager, uint8_t srBits);
