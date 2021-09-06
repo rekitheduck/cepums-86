@@ -182,6 +182,8 @@ namespace Cepums {
 
         void ins$MULmemoryByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
         void ins$MULmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
+        void ins$MULregisterByte(uint8_t REG);
+        void ins$MULregisterWord(uint8_t REG);
 
         void ins$NOTmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
         void ins$NOTregisterWord(uint8_t REG);
@@ -230,6 +232,7 @@ namespace Cepums {
         void ins$SARregisterOnceWord(uint8_t rmBits);
         void ins$SHRmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
         void ins$SHRmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
+        void ins$SHRregisterByCLByte(uint8_t rmBits);
         void ins$SHRregisterOnceByte(uint8_t rmBits);
         void ins$SHRregisterOnceWord(uint8_t rmBits);
         void ins$STOSbyte(MemoryManager& memoryManager);

@@ -1573,7 +1573,7 @@ namespace Cepums {
                 case 0b100:
                     return ins$SALregisterByCLByte(rmBits);
                 case 0b101:
-                    //return ins$SHRregisterByCLByte(rmBits);
+                    return ins$SHRregisterByCLByte(rmBits);
                 case 0b111:
                     //return ins$SARregisterByCLByte(rmBits);
                     TODO();
@@ -1778,7 +1778,7 @@ namespace Cepums {
                 case 0b011:
                     //return ins$NEGregisterByte(rmBits);
                 case 0b100:
-                    //return ins$MULregisterByte(rmBits);
+                    return ins$MULregisterByte(rmBits);
                 case 0b101:
                     //return ins$IMULergisterByte(rmBits);
                 case 0b110:
@@ -1841,7 +1841,7 @@ namespace Cepums {
                 case 0b011:
                     //return ins$NEGregisterWord(rmBits);
                 case 0b100:
-                    //return ins$MULregisterWord(rmBits);
+                    return ins$MULregisterWord(rmBits);
                 case 0b101:
                     //return ins$IMULergisterWord(rmBits);
                 case 0b110:
@@ -3197,6 +3197,42 @@ namespace Cepums {
         }
     }
 
+    void Processor::ins$MULregisterByte(uint8_t REG)
+    {
+        INSTRUCTION_TRACE("ins$MUL: 8-bit {0}", getRegisterNameFromREG8(REG));
+        uint8_t registerValue = getRegisterValueFromREG8(REG);
+        AX() = registerValue * AL();
+        if (AH() > 0)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        }
+    }
+
+    void Processor::ins$MULregisterWord(uint8_t REG)
+    {
+        INSTRUCTION_TRACE("ins$MUL: 16-bit {}", getRegisterNameFromREG16(REG));
+        uint16_t registerValue = getRegisterFromREG16(REG);
+        uint32_t  result = registerValue * AX();
+        DX() = result >> 16; // Higher part
+        AX() = result & 0xFFFF; // Lower part
+        if (DX() > 0)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        }
+    }
+
     void Processor::ins$NOTmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         INSTRUCTION_TRACE("ins$NOT: 16-bit memory");
@@ -3690,6 +3726,40 @@ namespace Cepums {
     void Processor::ins$SHRmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
+    }
+
+    void Processor::ins$SHRregisterByCLByte(uint8_t rmBits)
+    {
+        INSTRUCTION_TRACE("ins$SHR: {0},{1}", getRegisterNameFromREG8(rmBits), CL());
+        uint8_t registerValue = getRegisterValueFromREG8(rmBits);
+        uint8_t MSBbefore = IS_BIT_SET(registerValue, 7);
+
+        while (CL() != 0)
+        {
+            uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 7);
+            bool setCarry;
+            if (registerValue > SCHAR_MAX)
+                setCarry = true;
+            else
+                setCarry = false;
+
+            registerValue >>= 1;
+            setFlagsAfterLogicalOperation(registerValue);
+            // Set carry flag
+            if (setCarry)
+                SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+            // Set overflow flag
+            if (MSBbefore)
+                SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+            updateRegisterFromREG8(rmBits, registerValue);
+
+            // Decrement CL
+            CL(CL() - 1);
+        }
     }
 
     void Processor::ins$SHRregisterOnceByte(uint8_t rmBits)
