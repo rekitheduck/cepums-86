@@ -78,6 +78,14 @@ namespace Cepums {
             return 0;
         }
 
+        // Serial port stuff? (not in PORTS.LST)
+        if (address == 0x2E9)
+            return 0;
+
+        // Serial port stuff
+        if (address == 0x2F9)
+            return 0;
+
         // MDA Status register
         if (address == 0x3BA)
         {
@@ -105,6 +113,19 @@ namespace Cepums {
             return data;
         }
 
+        // Parallel printer data port
+        if (address == 0x03BC || address == 0x0378 || address == 0x0278)
+            return 0;
+
+        // Serial port stuff? (not in PORTS.LST)
+        if (address == 0x3E9)
+            return 0;
+
+        // Serial port stuff
+        if (address == 0x3F9)
+            return 0;
+
+        DC_CORE_ERROR("IO: Attempt to read at 0x{0:X}", address);
         TODO();
         return 0;
     }
@@ -293,6 +314,18 @@ namespace Cepums {
             return;
         }
 
+        // Used as "Unused register", also 2nd DMA channel 4
+        if (address == 0xC0)
+            return;
+
+        // Serial port stuff? (not in PORTS.LST)
+        if (address == 0x2E9)
+            return;
+
+        // Serial port stuff
+        if (address == 0x2F9)
+            return;
+
         // MDA Set current CRTC data register (accessable on 0x03B5 then)
         if (address == 0x03B4)
             return;
@@ -321,6 +354,10 @@ namespace Cepums {
             return;
         }
 
+        // Parallel printer data port
+        if (address == 0x03BC || address == 0x0378 || address == 0x0278)
+            return;
+
         // CGA
         //if (address == 0x03D4 || address == 0x03D5)
         //    return;
@@ -332,6 +369,14 @@ namespace Cepums {
             if (value == 0)
                 return;
         }
+
+        // Serial port stuff? (not in PORTS.LST)
+        if (address == 0x3E9)
+            return;
+
+        // Serial port stuff
+        if (address == 0x3F9)
+            return;
 
         DC_CORE_ERROR("IO: Attempt to write at 0x{0:X} with data 0x{1:X}", address, value);
         TODO();
