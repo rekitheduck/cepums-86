@@ -1617,8 +1617,58 @@ namespace Cepums {
         }
         case 0xD3: // ROL/ROR/RCL/RCR/(SAL/SHL)/SHR/unused/SAR: 16-bit shift-like register-memory by CL
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+            if (IS_IN_REGISTER_MODE(modBits))
+            {
+                switch (regBits)
+                {
+                case 0b000:
+                    //return ins$ROLregisterByCLWord(rmBits);
+                case 0b001:
+                    //return ins$RORregisterByCLWord(rmBits);
+                case 0b010:
+                    //return ins$RCLregisterByCLWord(rmBits);
+                    TODO();
+                case 0b011:
+                    return ins$RCRregisterByCLWord(rmBits);
+                case 0b100:
+                    //return ins$SALregisterByCLWord(rmBits);
+                    TODO();
+                case 0b101:
+                    return ins$SHRregisterByCLWord(rmBits);
+                case 0b111:
+                    //return ins$SARregisterByCLByte(rmBits);
+                    TODO();
+                default:
+                    ILLEGAL_INSTRUCTION();
+                    return;
+                }
+            }
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            switch (regBits)
+            {
+            case 0b000:
+                //return ins$ROLmemoryByCLWord(memoryManager, segment, effectiveAddress);
+            case 0b001:
+                //return ins$RORmemoryByCLWord(memoryManager, segment, effectiveAddress);
+            case 0b010:
+                //return ins$RCLmemoryByCLWord(memoryManager, segment, effectiveAddress);
+            case 0b011:
+                //return ins$RCRmemoryByCLWord(memoryManager, segment, effectiveAddress);
+            case 0b100:
+                //return ins$SALmemoryByCLWord(memoryManager, segment, effectiveAddress);
+            case 0b101:
+                //return ins$SHRmemoryByCLWord(memoryManager, segment, effectiveAddress);
+            case 0b111:
+                //return ins$SARmemoryByCLWord(memoryManager, segment, effectiveAddress);
+                TODO();
+            default:
+                ILLEGAL_INSTRUCTION();
+                return;
+            }
         }
         case 0xD4: // AAM: ASCII adjust for multiply
         {
@@ -3586,9 +3636,35 @@ namespace Cepums {
         TODO();
     }
 
-    void Processor::ins$RCRmemoryOnceWord(MemoryManager & memoryManager, uint16_t segment, uint16_t effectiveAddress)
+    void Processor::ins$RCRmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
+    }
+
+    void Processor::ins$RCRregisterByCLWord(uint8_t REG)
+    {
+        INSTRUCTION_TRACE("ins$RCR: {0},{1}", getRegisterNameFromREG8(REG), CL());
+        uint16_t registerValue = getRegisterFromREG16(REG);
+
+        while (CL() != 0)
+        {
+            uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 0);
+            registerValue >>= 1;
+            // Set MSB
+            if (IS_BIT_SET(m_flags, CARRY_FLAG))
+                SET_FLAG_BIT(registerValue, 15);
+            else
+                CLEAR_FLAG_BIT(registerValue, 15);
+            // Set Carry flag
+            if (bitZeroBefore)
+                SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+            updateRegisterFromREG16(REG, registerValue);
+
+            // Decrement CL
+            CL(CL() - 1);
+        }
     }
 
     void Processor::ins$RCRregisterOnceByte(uint8_t REG)
@@ -3827,6 +3903,40 @@ namespace Cepums {
             else
                 CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
             updateRegisterFromREG8(rmBits, registerValue);
+
+            // Decrement CL
+            CL(CL() - 1);
+        }
+    }
+
+    void Processor::ins$SHRregisterByCLWord(uint8_t rmBits)
+    {
+        INSTRUCTION_TRACE("ins$SHR: {0},{1}", getRegisterNameFromREG16(rmBits), CL());
+        uint16_t registerValue = getRegisterFromREG16(rmBits);
+        uint8_t MSBbefore = IS_BIT_SET(registerValue, 15);
+
+        while (CL() != 0)
+        {
+            uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 15);
+            bool setCarry;
+            if (registerValue > SHRT_MAX)
+                setCarry = true;
+            else
+                setCarry = false;
+
+            registerValue >>= 1;
+            setFlagsAfterLogicalOperation(registerValue);
+            // Set carry flag
+            if (setCarry)
+                SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+            // Set overflow flag
+            if (MSBbefore)
+                SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+            else
+                CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+            updateRegisterFromREG16(rmBits, registerValue);
 
             // Decrement CL
             CL(CL() - 1);
