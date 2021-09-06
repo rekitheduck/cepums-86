@@ -1415,8 +1415,22 @@ namespace Cepums {
         }
         case 0xC6: // MOV/unused/unused/unused/unused/unused/unused/unused: 8-bit from immediate to memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, mustBeZeroBits, rmBits);
+
+            // Instruction is only defined when these 3 bits are 0
+            if (mustBeZeroBits != 0)
+            {
+                ILLEGAL_INSTRUCTION();
+                return;
+            }
+
+            // We can go through this as no displacements will be loaded if we're in memory mode with no displacement
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
+            return ins$MOVimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
         }
         case 0xC7: // MOV/unused/unused/unused/unused/unused/unused/unused/unused/unused: 16-bit from immediate to memory
         {
@@ -1432,10 +1446,9 @@ namespace Cepums {
 
             // We can go through this as no displacements will be loaded if we're in memory mode with no displacement
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, 1, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
-
             return ins$MOVimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
         }
         case 0xCA: // RET: Return intersegment adding immediate to SP
@@ -3087,6 +3100,12 @@ namespace Cepums {
 
         // Otherwise we keep going
         IP() += offset;
+    }
+
+    void Processor::ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate)
+    {
+        INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to memory");
+        memoryManager.writeByte(segment, effectiveAddress, immediate);
     }
 
     void Processor::ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate)

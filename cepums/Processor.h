@@ -168,6 +168,7 @@ namespace Cepums {
         void ins$LODSword(MemoryManager& memoryManager);
         void ins$LOOP(int8_t offset);
 
+        void ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate);
         void ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate);
         void ins$MOVimmediateToRegisterByte(uint8_t reg, uint8_t immediate);
         void ins$MOVimmediateToRegisterWord(uint8_t reg, uint16_t immediate);
