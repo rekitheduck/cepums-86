@@ -1697,8 +1697,8 @@ namespace Cepums {
         }
         case 0xD5: // AAD: ASCII adjust for division
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            return ins$AAD(byte);
         }
         case 0xD7: // XLAT: Translate SOURCE-TABLE
         {
@@ -2179,6 +2179,15 @@ namespace Cepums {
     void Processor::ins$SEGMENT()
     {
         TODO();
+    }
+
+    void Processor::ins$AAD(uint8_t immediate)
+    {
+        INSTRUCTION_TRACE("ins$AAD: ASCII adjust AX before division");
+        // Intel pulled a sneaky and pretended that immediate could only be 0x0A (10) so NEC V20 only works in that mode and ignored immediate
+        AL(AL() + (immediate * AH()));
+        AH(0);
+        setFlagsAfterArithmeticOperation(AL());
     }
 
     void Processor::ins$ADCregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue)
