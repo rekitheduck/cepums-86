@@ -1424,8 +1424,8 @@ namespace Cepums {
         }
         case 0xCA: // RET: Return intersegment adding immediate to SP
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, word);
+            return ins$RETfarAddImmediateToSP(memoryManager, word);
         }
         case 0xCB: // RET: Return intersegment
         {
@@ -3506,6 +3506,19 @@ namespace Cepums {
                 m_destinationIndex += 2;
             CX()--;
         }
+    }
+
+    void Processor::ins$RETfarAddImmediateToSP(MemoryManager& memoryManager, uint16_t immediate)
+    {
+        INSTRUCTION_TRACE("ins$RET: Return to NEAR");
+        // Pop into IP
+        IP() = memoryManager.readWord(SS(), SP());
+        SP() += 2;
+        // Pop into CS
+        CS() = memoryManager.readWord(SS(), SP());
+        SP() += 2;
+        // POP immediate bytes
+        SP() += immediate;
     }
 
     void Processor::ins$RETnear(MemoryManager& memoryManager)
