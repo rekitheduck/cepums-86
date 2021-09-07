@@ -172,7 +172,7 @@ namespace Cepums {
                 m_counter[counter].current--;
                 break;
 
-            case 2: // I don't know the difference between this and #3 so lets pretend it works the same for now
+            case 2: // Pulsed output when reaching initial
                 if (m_counter[counter].current != 0)
                     m_counter[counter].current--;
                 else
@@ -185,19 +185,25 @@ namespace Cepums {
                     m_counter[counter].output = false;
                 break;
 
-            case 3:
+            case 3: // Mode 2 but square wave
+            {
                 if (m_counter[counter].current != 0)
-                    m_counter[counter].current--;
+                    m_counter[counter].current -= 2;
                 else
-                    m_counter[counter].current = 0xFF;
+                    m_counter[counter].current = 0xFFFF;
 
                 // This should turn on the output every 65536 if initial is set to 0
-                if (m_counter[counter].current == m_counter[counter].initial)
+                // Real initial (to get 65536 if it's set to 0)
+                uint32_t initial = m_counter[counter].initial;
+                if (initial == 0)
+                    initial = 65536;
+
+                if (m_counter[counter].current > (initial / 2))
                     m_counter[counter].output = true;
                 else
                     m_counter[counter].output = false;
                 break;
-
+            }
             case 4:
                 TODO();
                 m_counter[counter].current--;
@@ -240,12 +246,14 @@ namespace Cepums {
         case CounterReadWriteMode::LeastSignificantOnly:
         {
             SET8BITREGISTERLOW(m_counter[counter].initial, value);
+            SET8BITREGISTERHIGH(m_counter[counter].initial, 0x00);
             m_counter[counter].isInitialized = true;
             m_counter[counter].current = 0xFFFF;
             break;
         }
         case CounterReadWriteMode::MostSignificantOnly:
         {
+            SET8BITREGISTERLOW(m_counter[counter].initial, 0x00);
             SET8BITREGISTERHIGH(m_counter[counter].initial, value);
             m_counter[counter].isInitialized = true;
             m_counter[counter].current = 0xFFFF;
