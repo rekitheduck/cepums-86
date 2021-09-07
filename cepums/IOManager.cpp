@@ -374,6 +374,10 @@ namespace Cepums {
         if (address == 0x3E9)
             return;
 
+        // 1st Diskette controller digital output register (DOR)
+        if (address == 0x03F2)
+            return;
+
         // Serial port stuff
         if (address == 0x3F9)
             return;
@@ -396,7 +400,7 @@ namespace Cepums {
     void IOManager::runPIT()
     {
         PITState& state = m_8254PIT.update();
-        if (state.counter0output)
+        if (state.counter1output)
             m_refreshRequest = true;
         else
             m_refreshRequest = false;
