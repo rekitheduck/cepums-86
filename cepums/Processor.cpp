@@ -1171,8 +1171,7 @@ namespace Cepums {
         }
         case 0x98: // CBW: Convert byte to word
         {
-            TODO();
-            return;
+            return ins$CBW();
         }
         case 0x99: // CWD: Convert word to doubleword
         {
@@ -2610,6 +2609,13 @@ namespace Cepums {
 
         IP() = memoryManager.readWord(segment, effectiveAddress);
         INSTRUCTION_TRACE("ins$CALL: near to {0:X}:{1:X}", segment, IP());
+    }
+
+    void Processor::ins$CBW()
+    {
+        INSTRUCTION_TRACE("ins$CBW: Sign-extend AL into AX");
+        uint16_t extended = signExtendByteToWord(AL());
+        AX() = extended;
     }
 
     void Processor::ins$CMPimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate)
