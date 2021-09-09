@@ -418,20 +418,19 @@ namespace Cepums {
         return 9;
     }
 
-    void IOManager::onKeyPress()
+    void IOManager::onKeyPress(SDL_Scancode scancode)
     {
         std::lock_guard<std::mutex> guard(m_keyboardMutex);
-
-        // Tell KBC return a key press
-        m_8042KBC.keyPressed();
+        // Tell KBC to return a key press
+        m_8042KBC.keyPressed(scancode);
 
         m_pendingInterrupt = true;
     }
 
-    void IOManager::onKeyRelease()
+    void IOManager::onKeyRelease(SDL_Scancode scancode)
     {
         std::lock_guard<std::mutex> guard(m_keyboardMutex);
-        m_8042KBC.keyReleased();
+        m_8042KBC.keyReleased(scancode);
 
         m_pendingInterrupt = true;
     }

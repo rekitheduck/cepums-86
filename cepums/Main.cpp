@@ -207,25 +207,11 @@ int main(int argc, char** argv)
         {
             switch (event.type)
             {
-            case SDL_USEREVENT:
-                break;
             case SDL_KEYDOWN:
-            {
-                if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
-                {
-                    ioManager.onKeyPress();
-                }
+                ioManager.onKeyPress(event.key.keysym.scancode);
                 break;
-            }
             case SDL_KEYUP:
-            {
-                if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
-                {
-                    ioManager.onKeyRelease();
-                }
-                break;
-            }
-            case SDL_MOUSEBUTTONDOWN:
+                ioManager.onKeyRelease(event.key.keysym.scancode);
                 break;
             case SDL_QUIT:
                 shouldExecute = false;

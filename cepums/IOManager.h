@@ -2,8 +2,9 @@
 
 #include <utility>
 #include <vector>
-#include "KeyboardController.h"
+
 #include "PIT.h"
+#include "KeyboardController.h"
 
 namespace Cepums {
 
@@ -22,8 +23,8 @@ namespace Cepums {
         bool hasPendingInterrupts();
         uint16_t getPendingInterrupt();
 
-        void onKeyPress();
-        void onKeyRelease();
+        void onKeyPress(SDL_Scancode scancode);
+        void onKeyRelease(SDL_Scancode scancode);
     private:
         uint8_t m_port0x80;
         KeyboardController m_8042KBC;

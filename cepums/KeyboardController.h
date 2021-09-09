@@ -1,5 +1,8 @@
 #pragma once
 
+// Just the SDL scan codes
+#include <SDL_scancode.h>
+
 // Controller commands
 #define CMD_READ_CONFIGURATION_BYTE     0x20
 #define CMD_WRITE_CONFIGURATION_BYTE    0x60
@@ -44,8 +47,10 @@ namespace Cepums {
 
         uint8_t readDataPort();
         uint8_t readStatusRegister();
-        void keyPressed();
-        void keyReleased();
+        void keyPressed(SDL_Scancode scancode);
+        void keyReleased(SDL_Scancode scancode);
+    private:
+        uint8_t getByteFromSimpleScancode(SDL_Scancode scancode);
     private:
         KeyboardControllerState m_state = KeyboardControllerState::OK;
         uint8_t m_commandByte = 0;
