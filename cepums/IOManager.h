@@ -3,8 +3,9 @@
 #include <utility>
 #include <vector>
 
-#include "PIT.h"
 #include "KeyboardController.h"
+#include "PIT.h"
+#include "RTC.h"
 
 namespace Cepums {
 
@@ -29,6 +30,7 @@ namespace Cepums {
         uint8_t m_port0x80;
         KeyboardController m_8042KBC;
         PIT m_8254PIT;
+        RTC m_RTC;
 
         // State stuff
         bool m_refreshRequest = false;

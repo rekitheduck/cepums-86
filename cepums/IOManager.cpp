@@ -71,12 +71,9 @@ namespace Cepums {
         if (address == 0x64)
             return m_8042KBC.readStatusRegister();
 
-        // Dummy read from CMOS RAM/RTC
+        // CMOS RAM/RTC data port
         if (address == 0x71)
-        {
-            DC_CORE_TRACE("Dummy read from CMOS");
-            return 0;
-        }
+            return m_RTC.readDataPort();
 
         // Serial port stuff? (not in PORTS.LST)
         if (address == 0x2E9)
@@ -181,6 +178,14 @@ namespace Cepums {
         // KBC Command Register
         if (address == 0x64)
             return m_8042KBC.writeCommandRegister(value);
+
+        // CMOS RAM/RTC index register
+        if (address == 0x70)
+            return m_RTC.writeIndexRegister(value);
+
+        // CMOS RAM/RTC data port
+        if (address == 0x71)
+            return m_RTC.writeDataPort(value);
 
         // POST register
         if (address == 0x80)
@@ -290,13 +295,6 @@ namespace Cepums {
                 DC_CORE_TRACE("[PPI]: Unknown word register value - {0:X}", value);
                 return;
             }
-            return;
-        }
-
-        // Ignore CMOS RAM/RTC calls for now :(
-        if (address == 0x70 || address == 0x71)
-        {
-            DC_CORE_TRACE("Dummy write to CMOS");
             return;
         }
 
