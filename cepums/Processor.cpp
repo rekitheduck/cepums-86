@@ -46,6 +46,14 @@ namespace Cepums {
             VERIFY_NOT_REACHED();
         }
 
+        // Handle external interrupts
+        if (io.hasPendingInterrupts())
+        {
+            // Use our existing interrupt handler
+            uint16_t interrupt = io.getPendingInterrupt();
+            return ins$INT(memoryManager, interrupt);
+        }
+
         uint8_t hopefully_an_instruction = memoryManager.readByte(m_codeSegment, m_instructionPointer);
         m_instructionPointer++;
         if (s_debugSpam)
@@ -853,9 +861,9 @@ namespace Cepums {
                 //return ins$SUBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b110:
                 //return ins$XORimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
-            case 0b111:
-                //return ins$CMPimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
                 TODO();
+            case 0b111:
+                return ins$CMPimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             default:
                 ILLEGAL_INSTRUCTION();
                 return;
@@ -999,7 +1007,17 @@ namespace Cepums {
         }
         case 0x85: // TEST: 16-bit from register to register/memory
         {
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$TESTregisterToRegisterWord(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
             TODO();
+            //return ins$TESTregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterFromREG16(regBits));
             return;
         }
         case 0x86: // XCHG: 8-bit exchange from register/memory to register
@@ -2079,9 +2097,8 @@ namespace Cepums {
 
             switch (regBits)
             {
-            case 0b00:
-                TODO();
-                return;
+            case 0b000:
+                return ins$INCmemoryWord(memoryManager, segment, effectiveAddress);
             case 0b001:
                 TODO();
                 return;
@@ -2618,6 +2635,36 @@ namespace Cepums {
         AX() = extended;
     }
 
+    void Processor::ins$CMPimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate)
+    {
+        INSTRUCTION_TRACE("ins$CMP: 8-bit immediate to memory");
+        if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
+            segment = getSegmentRegisterValueAndResetOverride();
+
+        uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
+
+        // Note: this may be UB :(
+        uint8_t result = memoryValue - immediate;
+
+        // Carry (unsigned overflow)
+        if (immediate > memoryValue)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (immediate > SCHAR_MAX - memoryValue)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        setFlagsAfterArithmeticOperation(result);
+    }
+
     void Processor::ins$CMPimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate)
     {
         INSTRUCTION_TRACE("ins$CMP: 16-bit immediate to memory");
@@ -3093,7 +3140,7 @@ namespace Cepums {
 
     void Processor::ins$INT(MemoryManager& memoryManager, uint16_t immediate)
     {
-        INSTRUCTION_TRACE("ins$INT: Interrupt {0:x}", immediate);
+        INSTRUCTION_TRACE("ins$INT: Interrupt {0:X}", immediate);
         // Push flags
         SP() -= 2;
         memoryManager.writeWord(SS(), SP(), m_flags);
@@ -4471,16 +4518,27 @@ namespace Cepums {
     void Processor::ins$TESTimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate)
     {
         INSTRUCTION_TRACE("ins$TEST: 8-bit immediate to memory");
+        if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
+            segment = getSegmentRegisterValueAndResetOverride();
         uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
         uint8_t result = memoryValue & immediate;
         setFlagsAfterLogicalOperation(result);
     }
 
-    void Processor::ins$TESTimmediateToMemory(MemoryManager & memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate)
+    void Processor::ins$TESTimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate)
     {
         INSTRUCTION_TRACE("ins$TEST: 16-bit immediate to memory");
         uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
         uint16_t result = memoryValue & immediate;
+        setFlagsAfterLogicalOperation(result);
+    }
+
+    void Processor::ins$TESTregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
+    {
+        INSTRUCTION_TRACE("ins$TEST: 8-bit registerr to register");
+        uint16_t registerValue = getRegisterFromREG16(destREG);
+        uint16_t operand2 = getRegisterFromREG16(sourceREG);
+        uint16_t result = registerValue & operand2;
         setFlagsAfterLogicalOperation(result);
     }
 

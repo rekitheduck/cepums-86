@@ -44,6 +44,8 @@ namespace Cepums {
 
         uint8_t readDataPort();
         uint8_t readStatusRegister();
+        void keyPressed();
+        void keyReleased();
     private:
         KeyboardControllerState m_state = KeyboardControllerState::OK;
         uint8_t m_commandByte = 0;

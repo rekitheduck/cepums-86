@@ -19,6 +19,11 @@ namespace Cepums {
         void writeWord(uint16_t address, uint16_t value);
 
         void runPIT();
+        bool hasPendingInterrupts();
+        uint16_t getPendingInterrupt();
+
+        void onKeyPress();
+        void onKeyRelease();
     private:
         uint8_t m_port0x80;
         KeyboardController m_8042KBC;
@@ -27,5 +32,7 @@ namespace Cepums {
         // State stuff
         bool m_refreshRequest = false;
         bool m_pretendRetrace = false;
+        std::mutex m_keyboardMutex;
+        bool m_pendingInterrupt = false;
     };
 }

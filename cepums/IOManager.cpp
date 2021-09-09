@@ -405,4 +405,34 @@ namespace Cepums {
         else
             m_refreshRequest = false;
     }
+
+    bool IOManager::hasPendingInterrupts()
+    {
+        return m_pendingInterrupt;
+    }
+
+    uint16_t IOManager::getPendingInterrupt()
+    {
+        m_pendingInterrupt = false;
+        // IRQ1 = INT9
+        return 9;
+    }
+
+    void IOManager::onKeyPress()
+    {
+        std::lock_guard<std::mutex> guard(m_keyboardMutex);
+
+        // Tell KBC return a key press
+        m_8042KBC.keyPressed();
+
+        m_pendingInterrupt = true;
+    }
+
+    void IOManager::onKeyRelease()
+    {
+        std::lock_guard<std::mutex> guard(m_keyboardMutex);
+        m_8042KBC.keyReleased();
+
+        m_pendingInterrupt = true;
+    }
 }

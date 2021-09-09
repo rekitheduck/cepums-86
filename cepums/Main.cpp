@@ -210,7 +210,21 @@ int main(int argc, char** argv)
             case SDL_USEREVENT:
                 break;
             case SDL_KEYDOWN:
+            {
+                if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+                {
+                    ioManager.onKeyPress();
+                }
                 break;
+            }
+            case SDL_KEYUP:
+            {
+                if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+                {
+                    ioManager.onKeyRelease();
+                }
+                break;
+            }
             case SDL_MOUSEBUTTONDOWN:
                 break;
             case SDL_QUIT:

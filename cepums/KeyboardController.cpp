@@ -228,4 +228,16 @@ namespace Cepums {
         TODO();
         return 1;
     }
+
+    void KeyboardController::keyPressed()
+    {
+        // TODO: Mutex this somehow
+        m_dataBuffer.push_back(0x01);
+    }
+
+    void KeyboardController::keyReleased()
+    {
+        // TODO: Mutex this somehow
+        m_dataBuffer.push_back(0x81);
+    }
 }

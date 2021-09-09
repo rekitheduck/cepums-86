@@ -144,6 +144,7 @@ namespace Cepums {
 
         void ins$CBW();
 
+        void ins$CMPimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate);
         void ins$CMPimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate);
         void ins$CMPimmediateToRegister(uint8_t destREG, uint8_t immediate);
         void ins$CMPimmediateToRegister(uint8_t destREG, uint16_t immediate);
@@ -270,6 +271,7 @@ namespace Cepums {
         void ins$TESTimmediateToRegister(uint8_t destREG, uint8_t value);
         void ins$TESTimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate);
         void ins$TESTimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate);
+        void ins$TESTregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
         void ins$XCHGmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress);
         void ins$XCHGmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress);
