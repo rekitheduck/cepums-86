@@ -47,7 +47,7 @@ namespace Cepums {
         }
 
         // Handle external interrupts
-        if (io.hasPendingInterrupts())
+        if (IS_BIT_SET(m_flags, INTERRUPT_ENABLE_FLAG) && io.hasPendingInterrupts())
         {
             // Use our existing interrupt handler
             uint16_t interrupt = io.getPendingInterrupt();
