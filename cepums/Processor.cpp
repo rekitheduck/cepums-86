@@ -51,6 +51,12 @@ namespace Cepums {
         {
             // Use our existing interrupt handler
             uint16_t interrupt = io.getPendingInterrupt();
+            if (interrupt == 0xE)
+            {
+                s_debugSpam = true;
+                DC_CORE_TRACE("int0E: AH={0:x} ", AH());
+            }
+
             return ins$INT(memoryManager, interrupt);
         }
 
@@ -821,17 +827,18 @@ namespace Cepums {
                 case 0b000:
                     return ins$ADDimmediateToRegister(rmBits, immediate);
                 case 0b001:
-                    //return ins$ORimmediateToRegisterByte(rmBits, immediate);
+                    return ins$ORimmediateToRegister(rmBits, immediate);
                 case 0b010:
-                    //return ins$ADCimmediateToRegisterByte(rmBits, immediate);
+                    return ins$ADCimmediateToRegister(rmBits, immediate);
                 case 0b011:
-                    //return ins$SBBimmediateToRegisterByte(rmBits, immediate);
+                    //return ins$SBBimmediateToRegister(rmBits, immediate);
+                    TODO();
                 case 0b100:
                     return ins$ANDimmediateToRegister(rmBits, immediate);
                 case 0b101:
-                    //return ins$SUBimmediateToRegisterByte(rmBits, immediate);
+                    //return ins$SUBimmediateToRegister(rmBits, immediate);
                 case 0b110:
-                    //return ins$XORimmediateToRegisterByte(rmBits, immediate);
+                    //return ins$XORimmediateToRegister(rmBits, immediate);
                     TODO();
                 case 0b111:
                     return ins$CMPimmediateToRegister(rmBits, immediate);
@@ -850,11 +857,12 @@ namespace Cepums {
             case 0b000:
                 return ins$ADDimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b001:
-                //return ins$ORimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
+                return ins$ORimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b010:
                 //return ins$ADCimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b011:
                 //return ins$SBBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
+                TODO();
             case 0b100:
                 return ins$ANDimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b101:
@@ -1452,8 +1460,18 @@ namespace Cepums {
         }
         case 0xC5: // LDS: Load pointer using DS
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+            {
+                DC_CORE_WARN("LDS: I don't know what to do in this case");
+                TODO();
+            }
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+            return ins$LEStoRegister(memoryManager, rmBits, segment, effectiveAddress); // Not a problem - just reusing implementation
         }
         case 0xC6: // MOV/unused/unused/unused/unused/unused/unused/unused: 8-bit from immediate to memory
         {
@@ -1511,6 +1529,16 @@ namespace Cepums {
         case 0xCD: // INT: Interrupt based on 8-bit immediate
         {
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
+            if (immediate == 0x15)
+            {
+                s_debugSpam = false;
+            }
+            if (immediate == 0x13)
+            {
+                DC_CORE_TRACE("int13: AH={0:x} ", AH());
+                //TODO();
+                //s_debugSpam = true;
+            }
             return ins$INT(memoryManager, immediate);
         }
         case 0xCE: // INTO: Interrupt if overflow
@@ -2242,6 +2270,37 @@ namespace Cepums {
         AL(AL() + (immediate * AH()));
         AH(0);
         setFlagsAfterArithmeticOperation(AL());
+    }
+
+    void Processor::ins$ADCimmediateToRegister(uint8_t destREG, uint8_t immediate)
+    {
+        INSTRUCTION_TRACE("ins$ADC: 8-bit immediate to register");
+        uint8_t registerValue = getRegisterValueFromREG8(destREG);
+        uint8_t carryFlag = IS_BIT_SET(m_flags, CARRY_FLAG);
+
+        // Note: this may be UB :(
+        uint8_t result = immediate + registerValue + carryFlag;
+
+        // Carry (unsigned overflow)
+        if (registerValue > USHRT_MAX - immediate - carryFlag)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            // Fix UB
+            result = (USHRT_MAX - immediate) + registerValue + carryFlag;
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (registerValue > SHRT_MAX - immediate - carryFlag)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        updateRegisterFromREG8(destREG, result);
+        setFlagsAfterArithmeticOperation(result);
     }
 
     void Processor::ins$ADCregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue)
@@ -3619,6 +3678,15 @@ namespace Cepums {
         uint16_t registerValue = getRegisterFromREG16(REG);
         registerValue = ~registerValue;
         updateRegisterFromREG16(REG, registerValue);
+    }
+
+    void Processor::ins$ORimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate)
+    {
+        INSTRUCTION_TRACE("ins$OR: 8-bit immediate to memory");
+        uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
+        uint8_t result = memoryValue | immediate;
+        memoryManager.writeByte(segment, effectiveAddress, result);
+        setFlagsAfterLogicalOperation(result);
     }
 
     void Processor::ins$ORimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate)
