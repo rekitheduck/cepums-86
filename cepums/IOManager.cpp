@@ -118,6 +118,22 @@ namespace Cepums {
         if (address == 0x3E9)
             return 0;
 
+        // Floppy status register A
+        if (address == 0x3F0)
+            return m_floppy.readStatusRegisterA();
+
+        // Floppy status register B
+        if (address == 0x3F1)
+            return m_floppy.readStatusRegisterB();
+
+        // Floppy main status register
+        if (address == 0x3F4)
+            return m_floppy.readMainStatusRegister();
+
+        // Floppy digital input register
+        if (address == 0x3F7)
+            return m_floppy.readDigitalInputRegister();
+
         // Serial port stuff
         if (address == 0x3F9)
             return 0;
@@ -372,9 +388,18 @@ namespace Cepums {
         if (address == 0x3E9)
             return;
 
-        // 1st Diskette controller digital output register (DOR)
+        // Floppy digital output register (motors, selection and reset)
         if (address == 0x03F2)
+        {
+            // Generate a FDC interrupt after some time
+            m_floppyDelayingForInterrupt = true;
+            m_floppyInterruptCounter = 100;
             return;
+        }
+
+        // Floppy configuration control register
+        if (address == 0x3F7)
+            return m_floppy.writeConfigurationControlRegister(value);
 
         // Serial port stuff
         if (address == 0x3F9)
@@ -397,6 +422,19 @@ namespace Cepums {
 
     void IOManager::runPIT()
     {
+        // Generate a floppy interrupt if we need to do that and the delay counter reaches 0
+        if (m_floppyDelayingForInterrupt)
+        {
+            m_floppyInterruptCounter--;
+            if (m_floppyInterruptCounter == 0)
+            {
+                m_pendingInterrupt = true;
+                m_floppyDelayingForInterrupt = false;
+                m_interrupt = 0xE; // IRQ6
+            }
+        }
+
+        // Update the PIT
         PITState& state = m_8254PIT.update();
         if (state.counter1output)
             m_refreshRequest = true;
@@ -412,8 +450,7 @@ namespace Cepums {
     uint16_t IOManager::getPendingInterrupt()
     {
         m_pendingInterrupt = false;
-        // IRQ1 = INT9
-        return 9;
+        return m_interrupt;
     }
 
     void IOManager::onKeyPress(SDL_Scancode scancode)
@@ -423,6 +460,7 @@ namespace Cepums {
         m_8042KBC.keyPressed(scancode);
 
         m_pendingInterrupt = true;
+        m_interrupt = 9; // IRQ1
     }
 
     void IOManager::onKeyRelease(SDL_Scancode scancode)
@@ -431,5 +469,6 @@ namespace Cepums {
         m_8042KBC.keyReleased(scancode);
 
         m_pendingInterrupt = true;
+        m_interrupt = 9; // IRQ1
     }
 }

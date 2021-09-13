@@ -3,6 +3,7 @@
 #include <utility>
 #include <vector>
 
+#include "FloppyDiskController.h"
 #include "KeyboardController.h"
 #include "PIT.h"
 #include "RTC.h"
@@ -28,6 +29,7 @@ namespace Cepums {
         void onKeyRelease(SDL_Scancode scancode);
     private:
         uint8_t m_port0x80;
+        FloppyDiskController m_floppy;
         KeyboardController m_8042KBC;
         PIT m_8254PIT;
         RTC m_RTC;
@@ -37,5 +39,9 @@ namespace Cepums {
         bool m_pretendRetrace = false;
         std::mutex m_keyboardMutex;
         bool m_pendingInterrupt = false;
+        uint8_t m_interrupt = 0;
+
+        bool m_floppyDelayingForInterrupt = false;
+        unsigned int m_floppyInterruptCounter;
     };
 }
