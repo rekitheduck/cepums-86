@@ -29,10 +29,51 @@ namespace Cepums {
         bit 1 = 1  drive 1 busy(= drive is in seek mode)
         bit 0 = 1  drive 0 busy(= drive is in seek mode)
         */
-        // Hmmm
+        uint8_t byte = 0x80; // bit 7 is set
         DC_CORE_TRACE("FDC: read main status register");
-        //return 0x40;
-        return 0xFF;
+
+        // Set direction bit
+        if (m_direction == TransferDirection::FromControllerToSystem)
+        {
+            SET_BIT(byte, 6);
+        }
+
+        return byte;
+    }
+
+    uint8_t FloppyDiskController::readDataFIFO()
+    {
+        DC_CORE_TRACE("FDC: Read data FIFO register");
+        if (m_outputBuffer.size() > 0)
+        {
+            uint8_t byte = m_outputBuffer.front();
+            m_outputBuffer.pop_back();
+            return byte;
+        }
+        TODO();
+        return 0;
+    }
+
+    void FloppyDiskController::writeDataFIFO(uint8_t data)
+    {
+        // TODO: Figure out when we are writing commands and not data
+        switch (data)
+        {
+        case 0x08: // FDC Sense Interrupt Status command
+            DC_CORE_TRACE("FDC: Write data FIFO register");
+            // Result 1: Present cylinder number
+            m_outputBuffer.push_back(80); // TODO: This needs to come from a mounted disk image
+            // Result 0: Status register 0
+            m_outputBuffer.push_back(0xC0);
+
+            // We are ready to send data back
+            m_direction = TransferDirection::FromControllerToSystem;
+            return;
+
+        default:
+            TODO();
+            break;
+        }
     }
 
     uint8_t FloppyDiskController::readDigitalInputRegister()

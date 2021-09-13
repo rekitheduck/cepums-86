@@ -53,7 +53,7 @@ namespace Cepums {
             uint16_t interrupt = io.getPendingInterrupt();
             if (interrupt == 0xE)
             {
-                s_debugSpam = true;
+                //s_debugSpam = true;
                 DC_CORE_TRACE("int0E: AH={0:x} ", AH());
             }
 
@@ -178,15 +178,15 @@ namespace Cepums {
         }
         case 0x04: // ADD: 8-bit immediate to AL
         {
-            INSTRUCTION_TRACE("ADD: 8-bit immediate to AL");
+            INSTRUCTION_TRACE("ins$ADD: 8-bit immediate to AL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
             return ins$ADDimmediateToRegister(REGISTER_AL, byte);
         }
         case 0x05: // ADD: 16-bit immediate to AX
         {
-            INSTRUCTION_TRACE("ADD: 16-bit immediate to AX");
+            INSTRUCTION_TRACE("ins$ADD: 16-bit immediate to AX");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, word);
-            return ins$ADDimmediateToRegister(REGISTER_AL, word);
+            return ins$ADDimmediateToRegister(REGISTER_AX, word);
         }
         case 0x06: // PUSH: Push ES to stack
         {
@@ -1243,7 +1243,7 @@ namespace Cepums {
         }
         case 0xA2: // MOV: 8-bit from AL to memory
         {
-            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, address);
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, address);
             return ins$MOVregisterToMemory(memoryManager, DATA_SEGMENT, address, getRegisterValueFromREG8(REGISTER_AL));
         }
         case 0xA3: // MOV: 16-bit from AX to memory
@@ -1531,7 +1531,7 @@ namespace Cepums {
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
             if (immediate == 0x15)
             {
-                s_debugSpam = false;
+                //s_debugSpam = false;
             }
             if (immediate == 0x13)
             {
@@ -4603,7 +4603,7 @@ namespace Cepums {
 
     void Processor::ins$TESTregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
     {
-        INSTRUCTION_TRACE("ins$TEST: 8-bit registerr to register");
+        INSTRUCTION_TRACE("ins$TEST: 8-bit register to register");
         uint16_t registerValue = getRegisterFromREG16(destREG);
         uint16_t operand2 = getRegisterFromREG16(sourceREG);
         uint16_t result = registerValue & operand2;

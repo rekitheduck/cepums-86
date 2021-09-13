@@ -4,8 +4,6 @@
 #define KIBIBYTE 1024
 #define MEBIBYTE 1048576
 
-#define SET_BIT(byte, bit) byte |= BIT(bit)
-
 namespace Cepums {
 
     IOManager::IOManager()
@@ -129,6 +127,10 @@ namespace Cepums {
         // Floppy main status register
         if (address == 0x3F4)
             return m_floppy.readMainStatusRegister();
+
+        // Floppy data FIFO
+        if (address == 0x3F5)
+            return m_floppy.readDataFIFO();
 
         // Floppy digital input register
         if (address == 0x3F7)
@@ -368,6 +370,13 @@ namespace Cepums {
             return;
         }
 
+        // CGA color select register
+        if (address == 0x3B9)
+        {
+            DC_CORE_TRACE("[CGA] Dummy color select register write with value {0}", value);
+            return;
+        }
+
         // Parallel printer data port
         if (address == 0x03BC || address == 0x0378 || address == 0x0278)
             return;
@@ -389,13 +398,17 @@ namespace Cepums {
             return;
 
         // Floppy digital output register (motors, selection and reset)
-        if (address == 0x03F2)
+        if (address == 0x3F2)
         {
             // Generate a FDC interrupt after some time
             m_floppyDelayingForInterrupt = true;
             m_floppyInterruptCounter = 100;
             return;
         }
+
+        // Floppy data FIFO
+        if (address == 0x3F5)
+            return m_floppy.writeDataFIFO(value);
 
         // Floppy configuration control register
         if (address == 0x3F7)
