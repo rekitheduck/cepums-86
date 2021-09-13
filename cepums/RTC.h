@@ -20,6 +20,8 @@ namespace Cepums {
         uint8_t m_year = 21;
         uint8_t m_century = 32; // TODO: Figure out if should be doing this
 
+        uint8_t m_floppyDiskTypes = 0x40; // Drive 0: 1.44MB | Drive 1: None
+
         uint8_t m_statusRegisterA = 0;
         uint8_t m_statusRegisterB = 4; // Enable DST and 24hr clock
         uint8_t m_statusRegisterC = 0; // System status

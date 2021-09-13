@@ -56,6 +56,9 @@ namespace Cepums {
         case StatusRegisterC:
             m_statusRegisterC = value;
             break;
+        case FloppyDiskTypes:
+            m_floppyDiskTypes = value;
+            break;
         case RTCMode::Unknown:
             DC_CORE_ERROR("Yikes, RTC has been accessed with no mode specified");
             TODO();
@@ -104,7 +107,7 @@ namespace Cepums {
             byte = 0x80;
             break;
         case FloppyDiskTypes:
-            byte = 0x40; // Drive 0: 1.44MB | Drive 1: None
+            byte = m_floppyDiskTypes; // Drive 0: 1.44MB | Drive 1: None
             break;
         case SystemConfigurationSettings:
             byte = 0x8B; // A bunch of things
@@ -155,7 +158,7 @@ namespace Cepums {
             byte = 0xF3;
             break;
         case ChecksumMSB:
-            byte = 0x00;
+            byte = 0x01;
             break;
 
         case DateCentury:
