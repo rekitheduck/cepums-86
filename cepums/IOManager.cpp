@@ -400,10 +400,13 @@ namespace Cepums {
         // Floppy digital output register (motors, selection and reset)
         if (address == 0x3F2)
         {
-            // Generate a FDC interrupt after some time
-            m_floppyDelayingForInterrupt = true;
-            m_floppyInterruptCounter = 100;
-            return;
+            // Generate a FDC interrupt after some time if bit 3 is set
+            if (IS_BIT_SET(value, 3))
+            {
+                m_floppyDelayingForInterrupt = true;
+                m_floppyInterruptCounter = 100;
+            }
+            return m_floppy.writeDigitalOutputRegister(value);
         }
 
         // Floppy data FIFO
