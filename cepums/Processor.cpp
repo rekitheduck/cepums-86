@@ -1128,8 +1128,19 @@ namespace Cepums {
         }
         case 0x8D: // LEA: Load effective address
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            // I don't know if this is reachable
+            if (IS_IN_REGISTER_MODE(modBits))
+            {
+                VERIFY_NOT_REACHED();
+            }
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$LEA(regBits, effectiveAddress);
         }
         case 0x8E: // MOV/unused: 16-bit from register/memory to segment register
         {
@@ -3264,6 +3275,12 @@ namespace Cepums {
     {
         INSTRUCTION_TRACE("ins$JMP: Jumping to short");
         m_instructionPointer += increment;
+    }
+
+    void Processor::ins$LEA(uint8_t destREG, uint16_t effectiveAddress)
+    {
+        INSTRUCTION_TRACE("ins$LEA: Storing '0x{0:X}' into {1}", effectiveAddress, getRegisterNameFromREG16(destREG));
+        updateRegisterFromREG16(destREG, effectiveAddress);
     }
 
     void Processor::ins$LEStoRegister(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
