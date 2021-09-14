@@ -54,7 +54,7 @@ namespace Cepums {
             if (interrupt == 0xE)
             {
                 //s_debugSpam = true;
-                DC_CORE_TRACE("int0E: AH={0:x} ", AH());
+                DC_CORE_TRACE("int0E: IRQ6 AH={0:x} ", AH());
             }
 
             return ins$INT(memoryManager, interrupt);

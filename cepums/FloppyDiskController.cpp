@@ -43,13 +43,15 @@ namespace Cepums {
 
     uint8_t FloppyDiskController::readDataFIFO()
     {
-        DC_CORE_TRACE("FDC: Read data FIFO register");
         if (m_outputBuffer.size() > 0)
         {
-            uint8_t byte = m_outputBuffer.front();
+            uint8_t byte = m_outputBuffer.back();
+            DC_CORE_TRACE("FDC: Read data FIFO register '0x{0:x}'", byte);
             m_outputBuffer.pop_back();
             return byte;
         }
+        DC_CORE_ERROR("FDC: Attempt to read data FIFO register but buffer is empty!");
+
         TODO();
         return 0;
     }
@@ -60,7 +62,7 @@ namespace Cepums {
         switch (data)
         {
         case 0x08: // FDC Sense Interrupt Status command
-            DC_CORE_TRACE("FDC: Write data FIFO register");
+            DC_CORE_TRACE("FDC: 0x{0:x} Write data FIFO register", data);
             // Result 1: Present cylinder number
             m_outputBuffer.push_back(80); // TODO: This needs to come from a mounted disk image
             // Result 0: Status register 0
