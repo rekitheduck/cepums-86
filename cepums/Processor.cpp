@@ -4156,12 +4156,22 @@ namespace Cepums {
             SET_FLAG_BIT(registerValue, 7);
         else
             CLEAR_FLAG_BIT(registerValue, 7);
-        updateRegisterFromREG16(REG, registerValue);
+        updateRegisterFromREG8(REG, registerValue);
     }
 
     void Processor::ins$RORregisterOnceWord(uint8_t REG)
     {
-        TODO();
+        INSTRUCTION_TRACE("ins$ROR: {0},1", getRegisterNameFromREG16(REG));
+        uint16_t registerValue = getRegisterValueFromREG8(REG);
+
+        uint16_t firstBit = IS_BIT_SET(registerValue, 0);
+        registerValue >>= 1;
+        // Set MSB
+        if (firstBit)
+            SET_FLAG_BIT(registerValue, 15);
+        else
+            CLEAR_FLAG_BIT(registerValue, 15);
+        updateRegisterFromREG16(REG, registerValue);
     }
 
     void Processor::ins$SALmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
