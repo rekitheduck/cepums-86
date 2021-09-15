@@ -266,6 +266,7 @@ namespace Cepums {
         void ins$SUBimmediateToMemory(MemoryManager& memoryManager, uint16_t effectiveAddress, uint16_t immediate);
         void ins$SUBimmediateToRegister(uint8_t destREG, uint8_t value);
         void ins$SUBimmediateToRegister(uint8_t destREG, uint16_t value);
+        void ins$SUBmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress);
         void ins$SUBregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue);
         void ins$SUBregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue);
         void ins$SUBregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);

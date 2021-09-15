@@ -404,8 +404,16 @@ namespace Cepums {
         }
         case 0x2B: // SUB: 16-bit from register/memory to register
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$SUBregisterToRegisterWord(rmBits, regBits);
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$SUBmemoryToRegisterWord(memoryManager, regBits, segment, effectiveAddress);
         }
         case 0x2C: // SUB: 8-bit immediate with AL
         {
@@ -4470,6 +4478,35 @@ namespace Cepums {
 
         // Overflow
         if (value > SHRT_MAX - registerValue)
+            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+
+        updateRegisterFromREG16(destREG, result);
+        setFlagsAfterArithmeticOperation(result);
+    }
+
+    void Processor::ins$SUBmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
+    {
+        INSTRUCTION_TRACE("ins$SUB: 16-bit immediate to register");
+        uint16_t registerValue = getRegisterFromREG16(destREG);
+        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
+
+        // Note: this may be UB :(
+        uint16_t result = registerValue - memoryValue;
+
+        // Carry (unsigned overflow)
+        if (memoryValue > registerValue)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+        else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+        }
+
+        // Overflow
+        if (memoryValue > SHRT_MAX - registerValue)
             SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
         else
             CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
