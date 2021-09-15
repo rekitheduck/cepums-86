@@ -1206,8 +1206,7 @@ namespace Cepums {
         }
         case 0x96: // XCHG: Exchange AX and SI
         {
-            TODO();
-            return;
+            return ins$XCHGregisterToRegisterWord(REGISTER_AX, REGISTER_SI);
         }
         case 0x97: // XCHG: Exchange AX and DI
         {
@@ -1922,6 +1921,8 @@ namespace Cepums {
             // Now find the real instruction :)
             switch (byte)
             {
+            case 0xA5: // MOVS: 16-bit memory to memory
+                return ins$REP_MOVSword(memoryManager);
             case 0xAB: // STOS: 16-bit string
                 return ins$REP_STOSword(memoryManager);
             default:
@@ -4047,6 +4048,27 @@ namespace Cepums {
         TODO();
     }
 
+    void Processor::ins$REP_MOVSword(MemoryManager& memoryManager)
+    {
+        INSTRUCTION_TRACE("ins$REP_MOVS: Repeat move string");
+        while (CX() != 0)
+        {
+            uint16_t source = memoryManager.readWord(m_dataSegment, m_sourceIndex);
+            memoryManager.writeWord(m_extraSegment, m_destinationIndex, source);
+            if (IS_BIT_SET(m_flags, DIRECTION_FLAG))
+            {
+                m_sourceIndex -= 2;
+                m_destinationIndex -= 2;
+            }
+            else
+            {
+                m_sourceIndex += 2;
+                m_destinationIndex += 2;
+            }
+            CX()--;
+        }
+    }
+
     void Processor::ins$REP_STOSword(MemoryManager& memoryManager)
     {
         INSTRUCTION_TRACE("ins$REP_STOS: Repeat fill with string");
@@ -4666,7 +4688,7 @@ namespace Cepums {
 
     void Processor::ins$XCHGmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
     {
-        INSTRUCTION_TRACE("ins$XCHG: Exchange 8-bit memory with register {0}", getRegisterNameFromREG8(destREG));
+        INSTRUCTION_TRACE("ins$XCHG: Exchange 8-bit memory with {0}", getRegisterNameFromREG8(destREG));
         uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
         uint8_t registerValue = getRegisterValueFromREG8(destREG);
         memoryManager.writeByte(segment, effectiveAddress, registerValue);
@@ -4675,7 +4697,7 @@ namespace Cepums {
 
     void Processor::ins$XCHGmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
     {
-        INSTRUCTION_TRACE("ins$XCHG: Exchange 16-bit memory with register {0}", getRegisterNameFromREG16(destREG));
+        INSTRUCTION_TRACE("ins$XCHG: Exchange 16-bit memory with {0}", getRegisterNameFromREG16(destREG));
         uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
         uint16_t registerValue = getRegisterFromREG16(destREG);
         memoryManager.writeWord(segment, effectiveAddress, registerValue);
@@ -4684,7 +4706,7 @@ namespace Cepums {
 
     void Processor::ins$XCHGregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
     {
-        INSTRUCTION_TRACE("ins$XCHG: Exchange 8-bit memory with register {0}", getRegisterNameFromREG8(destREG));
+        INSTRUCTION_TRACE("ins$XCHG: Exchange 8-bit {0} and {1}", getRegisterNameFromREG8(destREG), getRegisterNameFromREG8(sourceREG));
         uint8_t registerOneValue = getRegisterValueFromREG8(destREG);
         uint8_t registerTwoValue = getRegisterValueFromREG8(sourceREG);
         updateRegisterFromREG8(destREG, registerTwoValue);
@@ -4693,7 +4715,7 @@ namespace Cepums {
 
     void Processor::ins$XCHGregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
     {
-        INSTRUCTION_TRACE("ins$XCHG: Exchange 16-bit memory with register {0}", getRegisterNameFromREG16(destREG));
+        INSTRUCTION_TRACE("ins$XCHG: Exchange 16-bit {0} and {1}", getRegisterNameFromREG16(destREG), getRegisterNameFromREG16(sourceREG));
         uint16_t registerOneValue = getRegisterFromREG16(destREG);
         uint16_t registerTwoValue = getRegisterFromREG16(sourceREG);
         updateRegisterFromREG16(destREG, registerTwoValue);
