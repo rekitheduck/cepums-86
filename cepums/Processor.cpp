@@ -1921,10 +1921,21 @@ namespace Cepums {
             // Now find the real instruction :)
             switch (byte)
             {
-            case 0xA5: // MOVS: 16-bit memory to memory
+            case 0xA4: // REP MOVS: 8-bit memory to memory
+                TODO();
+            case 0xA5: // REP MOVS: 16-bit memory to memory
                 return ins$REP_MOVSword(memoryManager);
-            case 0xAB: // STOS: 16-bit string
+            case 0xA6: // CMPS: 8-bit compare string from SRC-STR8 to DEST-STR8
+            case 0xA7: // CMPS: 16-bit compare string from SRC-STR16 to DEST-STR16
+            case 0xAA: // REP STOS: 8-bit string
+                TODO();
+            case 0xAB: // REP STOS: 16-bit string
                 return ins$REP_STOSword(memoryManager);
+            case 0xAC: // REP LODS: 8-bit load string to SRC-STR8
+            case 0xAD: // REP LODS: 16-bit load string to SRC-STR16
+            case 0xAE: // REPE SCAS: 8-bit scan string to DEST-STR8
+            case 0xAF: // REPE SCAS: 16-bit scan string to DEST-STR16
+                TODO();
             default:
                 ILLEGAL_INSTRUCTION();
                 return;
