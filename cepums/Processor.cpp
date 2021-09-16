@@ -4123,9 +4123,15 @@ namespace Cepums {
         registerValue <<= 1;
         // Set LSB
         if (lastBit)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
             SET_FLAG_BIT(registerValue, 0);
+        }
         else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
             CLEAR_FLAG_BIT(registerValue, 0);
+        }
         updateRegisterFromREG16(REG, registerValue);
     }
 
@@ -4153,24 +4159,36 @@ namespace Cepums {
         registerValue >>= 1;
         // Set MSB
         if (firstBit)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
             SET_FLAG_BIT(registerValue, 7);
+        }
         else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
             CLEAR_FLAG_BIT(registerValue, 7);
+        }
         updateRegisterFromREG8(REG, registerValue);
     }
 
     void Processor::ins$RORregisterOnceWord(uint8_t REG)
     {
         INSTRUCTION_TRACE("ins$ROR: {0},1", getRegisterNameFromREG16(REG));
-        uint16_t registerValue = getRegisterValueFromREG8(REG);
+        uint16_t registerValue = getRegisterFromREG16(REG);
 
         uint16_t firstBit = IS_BIT_SET(registerValue, 0);
         registerValue >>= 1;
         // Set MSB
         if (firstBit)
+        {
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
             SET_FLAG_BIT(registerValue, 15);
+        }
         else
+        {
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
             CLEAR_FLAG_BIT(registerValue, 15);
+        }
         updateRegisterFromREG16(REG, registerValue);
     }
 
@@ -4179,7 +4197,7 @@ namespace Cepums {
         TODO();
     }
 
-    void Processor::ins$SALmemoryOnceWord(MemoryManager & memoryManager, uint16_t segment, uint16_t effectiveAddress)
+    void Processor::ins$SALmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
     {
         TODO();
     }
