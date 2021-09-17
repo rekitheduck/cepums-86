@@ -47,6 +47,25 @@ namespace Cepums {
     {
         switch (m_mode)
         {
+        case Seconds:
+            m_seconds = value;
+            break;
+        case Minutes:
+            m_minutes = value;
+            break;
+        case Hours:
+            m_hours = value;
+            break;
+        case DateDay:
+            m_day = value;
+            break;
+        case DateMonth:
+            m_month = value;
+            break;
+        case DateYear:
+            m_year = value;
+            break;
+
         case StatusRegisterA:
             m_statusRegisterA = value;
             break;
@@ -58,6 +77,10 @@ namespace Cepums {
             break;
         case FloppyDiskTypes:
             m_floppyDiskTypes = value;
+            break;
+
+        case DateCentury:
+            m_century = value;
             break;
         case RTCMode::Unknown:
             DC_CORE_ERROR("Yikes, RTC has been accessed with no mode specified");
