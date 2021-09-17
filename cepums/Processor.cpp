@@ -844,7 +844,7 @@ namespace Cepums {
                 case 0b100:
                     return ins$ANDimmediateToRegister(rmBits, immediate);
                 case 0b101:
-                    //return ins$SUBimmediateToRegister(rmBits, immediate);
+                    return ins$SUBimmediateToRegister(rmBits, immediate);
                 case 0b110:
                     //return ins$XORimmediateToRegister(rmBits, immediate);
                     TODO();
@@ -3684,7 +3684,7 @@ namespace Cepums {
 
     void Processor::ins$MULregisterWord(uint8_t REG)
     {
-        INSTRUCTION_TRACE("ins$MUL: 16-bit {}", getRegisterNameFromREG16(REG));
+        INSTRUCTION_TRACE("ins$MUL: 16-bit {0}", getRegisterNameFromREG16(REG));
         uint16_t registerValue = getRegisterFromREG16(REG);
         uint32_t  result = registerValue * AX();
         DX() = result >> 16; // Higher part
