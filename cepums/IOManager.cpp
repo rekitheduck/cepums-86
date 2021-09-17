@@ -112,6 +112,10 @@ namespace Cepums {
         if (address == 0x03BC || address == 0x0378 || address == 0x0278)
             return 0;
 
+        // CGA status register
+        if (address == 0x3DA)
+            DC_CORE_ERROR("Accessing a CGA status register - this shouldn't happen");
+
         // Serial port stuff? (not in PORTS.LST)
         if (address == 0x3E9)
             return 0;
