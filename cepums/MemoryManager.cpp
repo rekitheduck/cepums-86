@@ -76,6 +76,18 @@ namespace Cepums {
         if (physical < 0xA0000)
             return m_RAM.at(physical);
 
+        // MDA :)
+        if (physical >= 0xB0000 && physical <= 0xB7FFF)
+        {
+            physical -= 0xB0000;
+            // The address repeats for the entire 32k range
+            while (physical >= m_MDA.size())
+            {
+                physical -= (uint32_t)m_MDA.size();
+            }
+            return getMDA().at(physical);
+        }
+
         if (physical < 0xF0000)
         {
             TODO();
@@ -125,7 +137,6 @@ namespace Cepums {
         if (physical >= 0xB0000 && physical <= 0xB7FFF)
         {
             physical -= 0xB0000;
-
             // The address repeats for the entire 32k range
             while (physical >= m_MDA.size())
             {
@@ -150,6 +161,21 @@ namespace Cepums {
             return (uint16_t)second << 8 | first;
         }
 
+        // MDA :)
+        if (physical >= 0xB0000 && physical <= 0xB7FFF)
+        {
+            physical -= 0xB0000;
+            // The address repeats for the entire 32k range
+            while (physical >= m_MDA.size())
+            {
+                physical -= (uint32_t)m_MDA.size();
+            }
+            auto first = getMDA().at(physical);
+            auto second = getMDA().at(++physical);
+            return (uint16_t)second << 8 | first;
+        }
+
+        // This is very dangerous and has already caused problems for unimplemented memory access :(
         if (physical < 0xF0000)
             return 0;
 
@@ -197,7 +223,6 @@ namespace Cepums {
         if (physical >= 0xB0000 && physical <= 0xB7FFF)
         {
             physical -= 0xB0000;
-
             // The address repeats for the entire 32k range
             while (physical >= m_MDA.size())
             {
