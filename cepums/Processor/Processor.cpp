@@ -142,12 +142,12 @@ namespace Cepums {
             PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
 
             if (IS_IN_REGISTER_MODE(modBits))
-                return ins$ORregisterToRegisterByte(rmBits, regBits);
+                return ins$OR(memoryManager, createRef<Register8>(rmBits), createRef<Register8>(regBits));
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$ORregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterValueFromREG8(regBits));
+            return ins$OR(memoryManager, createRef<Memory8>(segment, effectiveAddress), createRef<Register8>(regBits));
         }
         case 0x09: // OR: 16-bit register with register/memory
         {
@@ -155,12 +155,12 @@ namespace Cepums {
             PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
 
             if (IS_IN_REGISTER_MODE(modBits))
-                return ins$ORregisterToRegisterWord(rmBits, regBits);
+                return ins$OR(memoryManager, createRef<Register16>(rmBits), createRef<Register16>(regBits));
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$ORregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterFromREG16(regBits));
+            return ins$OR(memoryManager, createRef<Memory16>(segment, effectiveAddress), createRef<Register16>(regBits));
         }
         case 0x0A: // OR: 8-bit register/memory with register
         {
@@ -175,12 +175,12 @@ namespace Cepums {
         case 0x0C: // OR: 8-bit immediate with AL
         {
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
-            return ins$ORimmediateToRegister(REGISTER_AL, immediate);
+            return ins$OR(memoryManager, createRef<Register8>(REGISTER_AL), createRef<Immediate8>(immediate));
         }
         case 0x0D: // OR: 16-bit immediate with AX
         {
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
-            return ins$ORimmediateToRegister(REGISTER_AX, immediate);
+            return ins$OR(memoryManager, createRef<Register16>(REGISTER_AX), createRef<Immediate16>(immediate));
         }
         case 0x0E: // PUSH: Push CS to stack
         {
@@ -776,7 +776,7 @@ namespace Cepums {
                 case 0b000:
                     return ins$ADDimmediateToRegister(rmBits, immediate);
                 case 0b001:
-                    return ins$ORimmediateToRegister(rmBits, immediate);
+                    return ins$OR(memoryManager, createRef<Register8>(rmBits), createRef<Immediate8>(immediate));
                 case 0b010:
                     return ins$ADCimmediateToRegister(rmBits, immediate);
                 case 0b011:
@@ -806,7 +806,7 @@ namespace Cepums {
             case 0b000:
                 return ins$ADDimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b001:
-                return ins$ORimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
+                return ins$OR(memoryManager, createRef<Memory8>(segment, effectiveAddress), createRef<Immediate8>(immediate));
             case 0b010:
                 //return ins$ADCimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b011:
@@ -940,7 +940,7 @@ namespace Cepums {
 #ifdef STRICT8086INSTRUCTIONSET
                 ILLEGAL_INSTRUCTION();
 #endif
-                return ins$ORimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
+                return ins$OR(memoryManager, createRef<Memory16>(segment, effectiveAddress), createRef<Immediate16>(immediate));
             case 0b010:
                 //return ins$ADCimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b011:
@@ -3440,78 +3440,23 @@ namespace Cepums {
         updateRegisterFromREG16(REG, registerValue);
     }
 
-    void Processor::ins$ORimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate)
+    void Processor::ins$OR(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
     {
-        INSTRUCTION_TRACE("ins$OR: 8-bit immediate to memory");
-        uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
-        uint8_t result = memoryValue | immediate;
-        memoryManager.writeByte(segment, effectiveAddress, result);
-        setFlagsAfterLogicalOperation(result);
-    }
+        destination->handleSegmentOverridePrefix(this);
+        source->handleSegmentOverridePrefix(this);
 
-    void Processor::ins$ORimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate)
-    {
-        INSTRUCTION_TRACE("ins$OR: 16-bit immediate to memory");
-        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
-        uint16_t result = memoryValue | immediate;
-        memoryManager.writeWord(segment, effectiveAddress, result);
-        setFlagsAfterLogicalOperation(result);
-    }
-
-    void Processor::ins$ORimmediateToRegister(uint8_t destREG, uint8_t immediate)
-    {
-        INSTRUCTION_TRACE("ins$OR: 8-bit immediate to register");
-        auto operand = getRegisterValueFromREG8(destREG);
-        uint8_t result = operand | immediate;
-        updateRegisterFromREG8(destREG, result);
-        setFlagsAfterLogicalOperation(result);
-    }
-
-    void Processor::ins$ORimmediateToRegister(uint8_t destREG, uint16_t immediate)
-    {
-        INSTRUCTION_TRACE("ins$OR: 16-bit immediate to register");
-        auto operand = getRegisterFromREG16(destREG);
-        uint16_t result = operand | immediate;
-        updateRegisterFromREG16(destREG, result);
-        setFlagsAfterLogicalOperation(result);
-    }
-
-    void Processor::ins$ORregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue)
-    {
-        INSTRUCTION_TRACE("ins$OR: 8-bit register to memory");
-        uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
-        uint8_t result = memoryValue | registerValue;
-        memoryManager.writeByte(segment, effectiveAddress, result);
-        setFlagsAfterLogicalOperation(result);
-    }
-
-    void Processor::ins$ORregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue)
-    {
-        INSTRUCTION_TRACE("ins$OR: 16-bit register to memory");
-        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
-        uint16_t result = memoryValue | registerValue;
-        memoryManager.writeWord(segment, effectiveAddress, result);
-        setFlagsAfterLogicalOperation(result);
-    }
-
-    void Processor::ins$ORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
-    {
-        INSTRUCTION_TRACE("ins$OR: 8-bit register to register");
-        uint8_t operand = getRegisterValueFromREG8(destREG);
-        uint8_t operand2 = getRegisterValueFromREG8(sourceREG);
-        uint8_t result = operand | operand2;
-        updateRegisterFromREG8(destREG, result);
-        setFlagsAfterLogicalOperation(result);
-    }
-
-    void Processor::ins$ORregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
-    {
-        INSTRUCTION_TRACE("ins$OR: 16-bit register to register");
-        uint16_t operand = getRegisterFromREG16(destREG);
-        uint16_t operand2 = getRegisterFromREG16(sourceREG);
-        uint16_t result = operand | operand2;
-        updateRegisterFromREG16(destREG, result);
-        setFlagsAfterLogicalOperation(result);
+        if (destination->size() == OperandSize::Byte)
+        {
+            uint8_t result = destination->valueByte(this, mm) | source->valueByte(this, mm);
+            destination->updateByte(this, mm, result);
+            setFlagsAfterLogicalOperation(result);
+        }
+        else
+        {
+            uint16_t result = destination->valueWord(this, mm) | source->valueWord(this, mm);
+            destination->updateWord(this, mm, result);
+            setFlagsAfterLogicalOperation(result);
+        }
     }
 
     void Processor::ins$POPF(MemoryManager& memoryManager)
