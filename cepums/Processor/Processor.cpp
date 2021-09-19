@@ -1269,131 +1269,83 @@ namespace Cepums {
         }
         case 0xB0: // MOV: 8-bit from immediate to AL
         {
-            INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to AL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
-            AL(immediate);
-
-            return;
+            return ins$MOV(memoryManager, createRef<Register8>(REGISTER_AL), createRef<Immediate8>(immediate));
         }
         case 0xB1: // MOV: 8-bit from immediate to CL
         {
-            INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to CL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
-            CL(immediate);
-
-            return;
+            return ins$MOV(memoryManager, createRef<Register8>(REGISTER_CL), createRef<Immediate8>(immediate));
         }
         case 0xB2: // MOV: 8-bit from immediate to DL
         {
-            INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to DL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
-            DL(immediate);
-
-            return;
+            return ins$MOV(memoryManager, createRef<Register8>(REGISTER_DL), createRef<Immediate8>(immediate));
         }
         case 0xB3: // MOV: 8-bit from immediate to BL
         {
-            INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to BL");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
-            BL(immediate);
-
-            return;
+            return ins$MOV(memoryManager, createRef<Register8>(REGISTER_BL), createRef<Immediate8>(immediate));
         }
         case 0xB4: // MOV: 8-bit from immediate to AH
         {
-            INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to AH");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
-            AH(immediate);
-
-            return;
+            return ins$MOV(memoryManager, createRef<Register8>(REGISTER_AH), createRef<Immediate8>(immediate));
         }
         case 0xB5: // MOV: 8-bit from immediate to CH
         {
-            INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to CH");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
-            CH(immediate);
-
-            return;
+            return ins$MOV(memoryManager, createRef<Register8>(REGISTER_CH), createRef<Immediate8>(immediate));
         }
         case 0xB6: // MOV: 8-bit from immediate to DH
         {
-            INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to DH");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
-            DH(immediate);
-
-            return;
+            return ins$MOV(memoryManager, createRef<Register8>(REGISTER_DH), createRef<Immediate8>(immediate));
         }
         case 0xB7: // MOV: 8-bit from immediate to BH
         {
-            INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to BH");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
-            BH(immediate);
-
-            return;
+            return ins$MOV(memoryManager, createRef<Register8>(REGISTER_BH), createRef<Immediate8>(immediate));
         }
         case 0xB8: // MOV: 16-bit from immediate to AX
         {
-            INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to AX");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
-            AX() = immediate;
-
-            return;
+            return ins$MOV(memoryManager, createRef<Register16>(REGISTER_AX), createRef<Immediate16>(immediate));
         }
         case 0xB9: // MOV: 16-bit from immediate to CX
         {
-            INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to CX");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
-            CX() = immediate;
-
-            return;
+            return ins$MOV(memoryManager, createRef<Register16>(REGISTER_CX), createRef<Immediate16>(immediate));
         }
         case 0xBA: // MOV: 16-bit from immediate to DX
         {
-            INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to DX");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
-            DX() = immediate;
-
-            return;
+            return ins$MOV(memoryManager, createRef<Register16>(REGISTER_DX), createRef<Immediate16>(immediate));
         }
         case 0xBB: // MOV: 16-bit from immediate to BX
         {
-            INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to BX");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
-            BX() = immediate;
-
-            return;
+            return ins$MOV(memoryManager, createRef<Register16>(REGISTER_BX), createRef<Immediate16>(immediate));
         }
         case 0xBC: // MOV: 16-bit from immediate to SP
         {
-            INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to SP");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
-            SP() = immediate;
-
-            return;
+            return ins$MOV(memoryManager, createRef<Register16>(REGISTER_SP), createRef<Immediate16>(immediate));
         }
         case 0xBD: // MOV: 16-bit from immediate to BP
         {
-            INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to BP");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
-            BP() = immediate;
-
-            return;
+            return ins$MOV(memoryManager, createRef<Register16>(REGISTER_BP), createRef<Immediate16>(immediate));
         }
         case 0xBE: // MOV: 16-bit from immediate to SI
         {
-            INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to SI");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
-            SI() = immediate;
-
-            return;
+            return ins$MOV(memoryManager, createRef<Register16>(REGISTER_SI), createRef<Immediate16>(immediate));
         }
         case 0xBF: // MOV: 16-bit from immediate to DI
         {
-            INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to DI");
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
-            DI() = immediate;
-
-            return;
+            return ins$MOV(memoryManager, createRef<Register16>(REGISTER_DI), createRef<Immediate16>(immediate));
         }
         case 0xC2: // RET: Return within segment adding immediate to SP
         {
