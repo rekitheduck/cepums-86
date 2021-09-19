@@ -1068,12 +1068,12 @@ namespace Cepums {
             }
 
             if (IS_IN_REGISTER_MODE(modBits))
-                return ins$MOVsegmentRegisterToRegisterWord(rmBits, srBits);
+                return ins$MOV(memoryManager, createRef<Register16>(rmBits), createRef<SegmentRegister>(srBits));
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$MOVsegmentRegisterToMemoryWord(memoryManager, segment, effectiveAddress, srBits);
+            return ins$MOV(memoryManager, createRef<Memory16>(segment, effectiveAddress), createRef<SegmentRegister>(srBits));
         }
         case 0x8D: // LEA: Load effective address
         {
@@ -1104,12 +1104,12 @@ namespace Cepums {
             }
 
             if (IS_IN_REGISTER_MODE(modBits))
-                return ins$MOVregisterToSegmentRegisterWord(srBits, getRegisterFromREG16(rmBits));
+                return ins$MOV(memoryManager, createRef<SegmentRegister>(srBits), createRef<Register16>(rmBits));
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$MOVmemoryToSegmentRegisterWord(memoryManager, srBits, segment, effectiveAddress);
+            return ins$MOV(memoryManager, createRef<SegmentRegister>(srBits), createRef<Memory16>(segment, effectiveAddress));
         }
         case 0x8F: // POP/unused/unused/unused/unused/unused/unused/unused: Pop 16-bit register/memory from stack
         {
@@ -1451,7 +1451,7 @@ namespace Cepums {
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
-            return ins$MOVimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
+            return ins$MOV(memoryManager, createRef<Memory8>(segment, effectiveAddress), createRef<Immediate8>(immediate));
         }
         case 0xC7: // MOV/unused/unused/unused/unused/unused/unused/unused/unused/unused: 16-bit from immediate to memory
         {
@@ -1470,7 +1470,7 @@ namespace Cepums {
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
-            return ins$MOVimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
+            return ins$MOV(memoryManager, createRef<Memory16>(segment, effectiveAddress), createRef<Immediate16>(immediate));
         }
         case 0xCA: // RET: Return intersegment adding immediate to SP
         {
@@ -3380,150 +3380,6 @@ namespace Cepums {
             destination->updateByte(this, mm, source->valueByte(this, mm));
         else
             destination->updateWord(this, mm, source->valueWord(this, mm));
-    }
-
-    void Processor::ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate)
-    {
-        INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to memory");
-        memoryManager.writeByte(segment, effectiveAddress, immediate);
-    }
-
-    void Processor::ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate)
-    {
-        INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to memory");
-        memoryManager.writeWord(segment, effectiveAddress, immediate);
-    }
-
-    void Processor::ins$MOVimmediateToRegisterByte(uint8_t reg, uint8_t immediate)
-    {
-        INSTRUCTION_TRACE("ins$MOV: 8-bit immediate to register");
-        updateRegisterFromREG8(reg, immediate);
-    }
-
-    void Processor::ins$MOVimmediateToRegisterWord(uint8_t reg, uint16_t immediate)
-    {
-        INSTRUCTION_TRACE("ins$MOV: 16-bit immediate to register");
-        updateRegisterFromREG16(reg, immediate);
-    }
-
-    void Processor::ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t segment, uint16_t effectiveAddress)
-    {
-        INSTRUCTION_TRACE("ins$MOV: 16-bit memory to segment register");
-        uint16_t value = memoryManager.readWord(segment, effectiveAddress);
-
-        switch (srBits)
-        {
-        case 0b00:
-            m_extraSegment = value;
-            return;
-
-        case 0b01:
-            m_codeSegment = value;
-            return;
-
-        case 0b10:
-            m_stackSegment = value;
-            return;
-
-        case 0b11:
-            m_dataSegment = value;
-            return;
-
-        default:
-            DC_CORE_ERROR("Malformed segment register bits : 0b{0:b}", srBits);
-            VERIFY_NOT_REACHED();
-            return;
-        }
-    }
-
-    void Processor::ins$MOVregisterToSegmentRegisterWord(uint8_t srBits, uint16_t value)
-    {
-        INSTRUCTION_TRACE("ins$MOV: 16-bit register to segment register");
-        switch (srBits)
-        {
-        case 0b00:
-            m_extraSegment = value;
-            return;
-
-        case 0b01:
-            m_codeSegment = value;
-            return;
-
-        case 0b10:
-            m_stackSegment = value;
-            return;
-
-        case 0b11:
-            m_dataSegment = value;
-            return;
-
-        default:
-            DC_CORE_ERROR("Malformed segment register bits : 0b{0:b}", srBits);
-            VERIFY_NOT_REACHED();
-            return;
-        }
-    }
-
-    void Processor::ins$MOVsegmentRegisterToMemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t SEGREG)
-    {
-        INSTRUCTION_TRACE("ins$MOV: 16-bit segment register to memory");
-        uint16_t segRegValue;
-        switch (SEGREG)
-        {
-        case 0b00:
-            segRegValue = m_extraSegment;
-            break;
-
-        case 0b01:
-            segRegValue = m_codeSegment;
-            break;
-
-        case 0b10:
-            segRegValue = m_stackSegment;
-            break;
-
-        case 0b11:
-            segRegValue = m_dataSegment ;
-            break;
-
-        default:
-            DC_CORE_ERROR("Malformed segment register bits : 0b{0:b}", SEGREG);
-            VERIFY_NOT_REACHED();
-            return;
-        }
-
-        memoryManager.writeWord(segment, effectiveAddress, segRegValue);
-    }
-
-    void Processor::ins$MOVsegmentRegisterToRegisterWord(uint8_t REG, uint8_t SEGREG)
-    {
-        INSTRUCTION_TRACE("ins$MOV: 16-bit segment register to register");
-        uint16_t segRegValue;
-        switch (SEGREG)
-        {
-        case 0b00:
-            segRegValue = m_extraSegment;
-            break;
-
-        case 0b01:
-            segRegValue = m_codeSegment;
-            break;
-
-        case 0b10:
-            segRegValue = m_stackSegment;
-            break;
-
-        case 0b11:
-            segRegValue = m_dataSegment;
-            break;
-
-        default:
-            DC_CORE_ERROR("Malformed segment register bits : 0b{0:b}", SEGREG);
-            VERIFY_NOT_REACHED();
-            return;
-        }
-
-        updateRegisterFromREG16(REG, segRegValue);
     }
 
     void Processor::ins$MOVSword(MemoryManager& memoryManager)

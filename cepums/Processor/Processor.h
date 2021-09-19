@@ -169,15 +169,6 @@ namespace Cepums {
         void ins$LOOP(int8_t offset);
 
         void ins$MOV(MemoryManager&, Ref<Operand> destination, Ref<Operand> source);
-
-        void ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate);
-        void ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate);
-        void ins$MOVimmediateToRegisterByte(uint8_t reg, uint8_t immediate);
-        void ins$MOVimmediateToRegisterWord(uint8_t reg, uint16_t immediate);
-        void ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t segment, uint16_t effectiveAddress);
-        void ins$MOVregisterToSegmentRegisterWord(uint8_t srBits, uint16_t value);
-        void ins$MOVsegmentRegisterToMemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t SEGREG);
-        void ins$MOVsegmentRegisterToRegisterWord(uint8_t REG, uint8_t SEGREG);
         void ins$MOVSword(MemoryManager& memoryManager);
 
         void ins$MULmemoryByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
