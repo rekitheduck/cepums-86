@@ -12,6 +12,9 @@ namespace Cepums {
         virtual uint8_t valueByte(Processor*, MemoryManager&) override;
         virtual void updateByte(Processor*, MemoryManager&, uint8_t newValue) override;
 
+        virtual void handleSegmentOverridePrefix(Processor*) override;
+
+        virtual const char* name() override;
         virtual OperandType type() override { return OperandType::Memory; }
         virtual OperandSize size() override { return OperandSize::Byte; }
     private:
@@ -27,6 +30,9 @@ namespace Cepums {
         virtual uint16_t valueWord(Processor*, MemoryManager&) override;
         virtual void updateWord(Processor*, MemoryManager&, uint16_t newValue) override;
 
+        virtual void handleSegmentOverridePrefix(Processor*) override;
+
+        virtual const char* name() override;
         virtual OperandType type() override { return OperandType::Memory; }
         virtual OperandSize size() override { return OperandSize::Word; }
     private:

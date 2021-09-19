@@ -66,25 +66,6 @@
 #define REGISTER_SI 0b110
 #define REGISTER_DI 0b111
 
-// Register names for printing
-#define REGISTER_AL_NAME "AL"
-#define REGISTER_CL_NAME "CL"
-#define REGISTER_DL_NAME "DL"
-#define REGISTER_BL_NAME "BL"
-#define REGISTER_AH_NAME "AH"
-#define REGISTER_CH_NAME "CH"
-#define REGISTER_DH_NAME "DH"
-#define REGISTER_BH_NAME "BH"
-
-#define REGISTER_AX_NAME "AX"
-#define REGISTER_CX_NAME "CX"
-#define REGISTER_DX_NAME "DX"
-#define REGISTER_BX_NAME "BX"
-#define REGISTER_SP_NAME "SP"
-#define REGISTER_BP_NAME "BP"
-#define REGISTER_SI_NAME "SI"
-#define REGISTER_DI_NAME "DI"
-
 // Segment Registers
 #define REGISTER_ES 0b00
 #define REGISTER_CS 0b01
@@ -191,13 +172,7 @@ namespace Cepums {
         void ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate);
         void ins$MOVimmediateToRegisterByte(uint8_t reg, uint8_t immediate);
         void ins$MOVimmediateToRegisterWord(uint8_t reg, uint16_t immediate);
-        void ins$MOVmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress);
-        void ins$MOVmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress);
         void ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t segment, uint16_t effectiveAddress);
-        void ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue);
-        void ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue);
-        void ins$MOVregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
-        void ins$MOVregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
         void ins$MOVregisterToSegmentRegisterWord(uint8_t srBits, uint16_t value);
         void ins$MOVsegmentRegisterToMemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t SEGREG);
         void ins$MOVsegmentRegisterToRegisterWord(uint8_t REG, uint8_t SEGREG);
@@ -346,9 +321,9 @@ namespace Cepums {
         void setFlagsAfterLogicalOperation(uint16_t word);
         void setFlagsAfterArithmeticOperation(uint8_t byte);
         void setFlagsAfterArithmeticOperation(uint16_t word);
-        const char* getRegisterNameFromREG8(uint8_t REG);
-        const char* getRegisterNameFromREG16(uint8_t REG);
         const char* getSegmentRegisterName(uint8_t REG);
+
+        bool hasSegmentOverridePrefix();
     private:
         int m_cyclesToWait = 0;
         int m_currentCycleCounter = 0;

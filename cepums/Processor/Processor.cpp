@@ -1082,12 +1082,12 @@ namespace Cepums {
             PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
 
             if (IS_IN_REGISTER_MODE(modBits))
-                return ins$MOVregisterToRegisterWord(rmBits, regBits);
+                return ins$MOV(memoryManager, createRef<Register16>(rmBits), createRef<Register16>(regBits));
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$MOVregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterFromREG16(regBits));
+            return ins$MOV(memoryManager, createRef<Memory16>(segment, effectiveAddress), createRef<Register16>(regBits));
         }
         case 0x8A: // MOV: 8-bit from register/memory to register
         {
@@ -1095,12 +1095,12 @@ namespace Cepums {
             PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
 
             if (IS_IN_REGISTER_MODE(modBits))
-                return ins$MOVregisterToRegisterByte(rmBits, regBits);
+                return ins$MOV(memoryManager, createRef<Register8>(rmBits), createRef<Register8>(regBits));
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$MOVmemoryToRegisterByte(memoryManager, regBits, segment, effectiveAddress);
+            return ins$MOV(memoryManager, createRef<Register8>(regBits), createRef<Memory8>(segment, effectiveAddress));
         }
         case 0x8B: // MOV: 16-bit from register/memory to register
         {
@@ -1108,12 +1108,12 @@ namespace Cepums {
             PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
 
             if (IS_IN_REGISTER_MODE(modBits))
-                return ins$MOVregisterToRegisterWord(rmBits, regBits);
+                return ins$MOV(memoryManager, createRef<Register8>(rmBits), createRef<Register8>(regBits));
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$MOVmemoryToRegisterWord(memoryManager, regBits, segment, effectiveAddress);
+            return ins$MOV(memoryManager, createRef<Register16>(regBits), createRef<Memory16>(segment, effectiveAddress));
         }
         case 0x8C: // MOV/unused: 16-bit from segment register to register/memory
         {
@@ -1252,23 +1252,25 @@ namespace Cepums {
         }
         case 0xA0: // MOV: 8-bit from memory to AL
         {
-            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, word);
-            return ins$MOVmemoryToRegisterByte(memoryManager, REGISTER_AL, DATA_SEGMENT, word);
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, address);
+            return ins$MOV(memoryManager, createRef<Register8>(REGISTER_AL), createRef<Memory8>(DATA_SEGMENT, address));
         }
         case 0xA1: // MOV: 16-bit from memory to AX
         {
-            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, word);
-            return ins$MOVmemoryToRegisterWord(memoryManager, REGISTER_AX, DATA_SEGMENT, word);
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, address);
+            return ins$MOV(memoryManager, createRef<Register16>(REGISTER_AX), createRef<Memory16>(DATA_SEGMENT, address));
+
         }
         case 0xA2: // MOV: 8-bit from AL to memory
         {
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, address);
-            return ins$MOVregisterToMemory(memoryManager, DATA_SEGMENT, address, getRegisterValueFromREG8(REGISTER_AL));
+            return ins$MOV(memoryManager, createRef<Memory8>(DATA_SEGMENT, address), createRef<Register8>(REGISTER_AL));
         }
         case 0xA3: // MOV: 16-bit from AX to memory
         {
             LOAD_NEXT_INSTRUCTION_WORD(memoryManager, address);
-            return ins$MOVregisterToMemory(memoryManager, DATA_SEGMENT, address, getRegisterFromREG16(REGISTER_AX));
+            return ins$MOV(memoryManager, createRef<Memory16>(DATA_SEGMENT, address), createRef<Register16>(REGISTER_AX));
+
         }
         case 0xA4: // MOVS: 8-bit move string from SRC-STR8 to DEST-STR8
         {
@@ -2520,7 +2522,7 @@ namespace Cepums {
 
     void Processor::ins$ADDmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t regBits, uint16_t segment, uint16_t effectiveAddress)
     {
-        INSTRUCTION_TRACE("ins$ADD: 16-bit memory to register {0}", getRegisterNameFromREG16(regBits));
+        INSTRUCTION_TRACE("ins$ADD: 16-bit memory to register {0}", Register16::nameFromREG16(regBits));
         uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
         uint16_t registerValue = getRegisterFromREG16(regBits);
 
@@ -2682,7 +2684,7 @@ namespace Cepums {
 
     void Processor::ins$ANDimmediateToRegister(uint8_t destREG, uint8_t value)
     {
-        INSTRUCTION_TRACE("ins$AND: 8-bit immediate to register {0}", getRegisterNameFromREG8(destREG));
+        INSTRUCTION_TRACE("ins$AND: 8-bit immediate to register {0}", Register8::nameFromREG8(destREG));
         uint8_t registerValue = getRegisterValueFromREG8(destREG);
         uint8_t result = registerValue & value;
         updateRegisterFromREG8(destREG, result);
@@ -2691,7 +2693,7 @@ namespace Cepums {
 
     void Processor::ins$ANDimmediateToRegister(uint8_t destREG, uint16_t value)
     {
-        INSTRUCTION_TRACE("ins$AND: 16-bit immediate to register {0}", getRegisterNameFromREG16(destREG));
+        INSTRUCTION_TRACE("ins$AND: 16-bit immediate to register {0}", Register16::nameFromREG16(destREG));
         uint16_t registerValue = getRegisterFromREG16(destREG);
         uint16_t result = registerValue & value;
         updateRegisterFromREG16(destREG, result);
@@ -2788,7 +2790,7 @@ namespace Cepums {
 
     void Processor::ins$CMPimmediateToRegister(uint8_t destREG, uint8_t immediate)
     {
-        INSTRUCTION_TRACE("ins$CMP: 8-bit immediate to register {0}", getRegisterNameFromREG8(destREG));
+        INSTRUCTION_TRACE("ins$CMP: 8-bit immediate to register {0}", Register8::nameFromREG8(destREG));
         uint8_t registerValue = getRegisterValueFromREG8(destREG);
 
         // Note: this may be UB :(
@@ -2815,7 +2817,7 @@ namespace Cepums {
 
     void Processor::ins$CMPimmediateToRegister(uint8_t destREG, uint16_t immediate)
     {
-        INSTRUCTION_TRACE("ins$CMP: 16-bit immediate to register {0}", getRegisterNameFromREG16(destREG));
+        INSTRUCTION_TRACE("ins$CMP: 16-bit immediate to register {0}", Register16::nameFromREG16(destREG));
         uint16_t registerValue = getRegisterFromREG16(destREG);
 
         // Note: this may be UB :(
@@ -2898,7 +2900,7 @@ namespace Cepums {
 
     void Processor::ins$CMPregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
     {
-        INSTRUCTION_TRACE("ins$CMP: 8-bit register {0} to register {1}", getRegisterNameFromREG8(sourceREG), getRegisterNameFromREG8(destREG));
+        INSTRUCTION_TRACE("ins$CMP: 8-bit register {0} to register {1}", Register8::nameFromREG8(sourceREG), Register8::nameFromREG8(destREG));
         uint8_t registerValue = getRegisterValueFromREG8(destREG);
         uint8_t sourceValue = getRegisterValueFromREG8(sourceREG);
 
@@ -2926,7 +2928,7 @@ namespace Cepums {
 
     void Processor::ins$CMPregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
     {
-        INSTRUCTION_TRACE("ins$CMP: 16-bit register {0} to register {1}", getRegisterNameFromREG16(sourceREG), getRegisterNameFromREG16(destREG));
+        INSTRUCTION_TRACE("ins$CMP: 16-bit register {0} to register {1}", Register16::nameFromREG16(sourceREG), Register16::nameFromREG16(destREG));
         uint16_t registerValue = getRegisterFromREG16(destREG);
         uint16_t sourceValue = getRegisterFromREG16(sourceREG);
 
@@ -3010,7 +3012,7 @@ namespace Cepums {
     {
         if (isWordBit)
         {
-            INSTRUCTION_TRACE("ins$DEC: DEC {0}", getRegisterNameFromREG16(REG));
+            INSTRUCTION_TRACE("ins$DEC: DEC {0}", Register16::nameFromREG16(REG));
             uint16_t currentValue = getRegisterFromREG16(REG);
             uint16_t newValue = currentValue - 1;
             updateRegisterFromREG16(REG, newValue);
@@ -3039,7 +3041,7 @@ namespace Cepums {
         }
         else
         {
-            INSTRUCTION_TRACE("ins$DEC: DEC {0}", getRegisterNameFromREG8(REG));
+            INSTRUCTION_TRACE("ins$DEC: DEC {0}", Register8::nameFromREG8(REG));
             uint8_t currentValue = getRegisterValueFromREG8(REG);
             uint8_t newValue = currentValue - 1;
             updateRegisterFromREG8(REG, newValue);
@@ -3080,7 +3082,7 @@ namespace Cepums {
 
     void Processor::ins$DIVregisterWord(uint8_t REG)
     {
-        INSTRUCTION_TRACE("ins$DIV: {0}", getRegisterNameFromREG16(REG));
+        INSTRUCTION_TRACE("ins$DIV: {0}", Register16::nameFromREG16(REG));
         // Get divisor value
         uint16_t divisor = getRegisterFromREG16(REG);
         if (divisor == 0)
@@ -3111,7 +3113,7 @@ namespace Cepums {
     {
         if (isWordBit)
         {
-            INSTRUCTION_TRACE("ins$INC: INC {0}", getRegisterNameFromREG16(REG));
+            INSTRUCTION_TRACE("ins$INC: INC {0}", Register16::nameFromREG16(REG));
             uint16_t currentValue = getRegisterFromREG16(REG);
             uint16_t newValue = currentValue + 1;
             updateRegisterFromREG16(REG, newValue);
@@ -3140,7 +3142,7 @@ namespace Cepums {
         }
         else
         {
-            INSTRUCTION_TRACE("ins$INC: INC {0}", getRegisterNameFromREG8(REG));
+            INSTRUCTION_TRACE("ins$INC: INC {0}", Register8::nameFromREG8(REG));
             uint8_t currentValue = getRegisterValueFromREG8(REG);
             uint8_t newValue = currentValue + 1;
             updateRegisterFromREG8(REG, newValue);
@@ -3300,7 +3302,7 @@ namespace Cepums {
 
     void Processor::ins$LEA(uint8_t destREG, uint16_t effectiveAddress)
     {
-        INSTRUCTION_TRACE("ins$LEA: Storing '0x{0:X}' into {1}", effectiveAddress, getRegisterNameFromREG16(destREG));
+        INSTRUCTION_TRACE("ins$LEA: Storing '0x{0:X}' into {1}", effectiveAddress, Register16::nameFromREG16(destREG));
         updateRegisterFromREG16(destREG, effectiveAddress);
     }
 
@@ -3426,6 +3428,14 @@ namespace Cepums {
 
     void Processor::ins$MOV(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
     {
+        //DC_CORE_TRACE("ins$MOV: {0}, {1}", destination->name(), source->name());
+        // There is no memory<->memory MOV
+        if (destination->type() == OperandType::Memory && source->type() == OperandType::Memory)
+            ILLEGAL_INSTRUCTION();
+
+        destination->handleSegmentOverridePrefix(this);
+        source->handleSegmentOverridePrefix(this);
+
         if (destination->size() == OperandSize::Byte)
             destination->updateByte(this, mm, source->valueByte(this, mm));
         else
@@ -3456,24 +3466,6 @@ namespace Cepums {
         updateRegisterFromREG16(reg, immediate);
     }
 
-    void Processor::ins$MOVmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
-    {
-        INSTRUCTION_TRACE("ins$MOV: 8-bit memory to register {0}", getRegisterNameFromREG8(destREG));
-        if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
-            segment = getSegmentRegisterValueAndResetOverride();
-        uint8_t value = memoryManager.readByte(segment, effectiveAddress);
-        updateRegisterFromREG8(destREG, value);
-    }
-
-    void Processor::ins$MOVmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
-    {
-        INSTRUCTION_TRACE("ins$MOV: 16-bit memory to register {0}", getRegisterNameFromREG16(destREG));
-        if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
-            segment = getSegmentRegisterValueAndResetOverride();
-        uint16_t value = memoryManager.readWord(segment, effectiveAddress);
-        updateRegisterFromREG16(destREG, value);
-    }
-
     void Processor::ins$MOVmemoryToSegmentRegisterWord(MemoryManager& memoryManager, uint8_t srBits, uint16_t segment, uint16_t effectiveAddress)
     {
         INSTRUCTION_TRACE("ins$MOV: 16-bit memory to segment register");
@@ -3502,32 +3494,6 @@ namespace Cepums {
             VERIFY_NOT_REACHED();
             return;
         }
-    }
-
-    void Processor::ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue)
-    {
-        INSTRUCTION_TRACE("ins$MOV: 8-bit register to memory");
-        memoryManager.writeByte(segment, effectiveAddress, registerValue);
-    }
-
-    void Processor::ins$MOVregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue)
-    {
-        INSTRUCTION_TRACE("ins$MOV: 16-bit register to memory");
-        memoryManager.writeWord(segment, effectiveAddress, registerValue);
-    }
-
-    void Processor::ins$MOVregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
-    {
-        INSTRUCTION_TRACE("ins$MOV: 8-bit register to register");
-        uint8_t sourceValue = getRegisterValueFromREG8(sourceREG);
-        updateRegisterFromREG8(destREG, sourceValue);
-    }
-
-    void Processor::ins$MOVregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
-    {
-        INSTRUCTION_TRACE("ins$MOV: 16-bit register to register");
-        uint16_t sourceValue = getRegisterFromREG16(sourceREG);
-        updateRegisterFromREG16(destREG, sourceValue);
     }
 
     void Processor::ins$MOVregisterToSegmentRegisterWord(uint8_t srBits, uint16_t value)
@@ -3676,7 +3642,7 @@ namespace Cepums {
 
     void Processor::ins$MULregisterByte(uint8_t REG)
     {
-        INSTRUCTION_TRACE("ins$MUL: 8-bit {0}", getRegisterNameFromREG8(REG));
+        INSTRUCTION_TRACE("ins$MUL: 8-bit {0}", Register8::nameFromREG8(REG));
         uint8_t registerValue = getRegisterValueFromREG8(REG);
         AX() = registerValue * AL();
         if (AH() > 0)
@@ -3693,7 +3659,7 @@ namespace Cepums {
 
     void Processor::ins$MULregisterWord(uint8_t REG)
     {
-        INSTRUCTION_TRACE("ins$MUL: 16-bit {0}", getRegisterNameFromREG16(REG));
+        INSTRUCTION_TRACE("ins$MUL: 16-bit {0}", Register16::nameFromREG16(REG));
         uint16_t registerValue = getRegisterFromREG16(REG);
         uint32_t  result = registerValue * AX();
         DX() = result >> 16; // Higher part
@@ -3837,7 +3803,7 @@ namespace Cepums {
 
     void Processor::ins$POPregisterWord(MemoryManager& memoryManager, uint8_t REG)
     {
-        INSTRUCTION_TRACE("ins$POP: register {0}", getRegisterNameFromREG16(REG));
+        INSTRUCTION_TRACE("ins$POP: register {0}", Register16::nameFromREG16(REG));
         switch (REG)
         {
         case REGISTER_AX:
@@ -3891,7 +3857,7 @@ namespace Cepums {
 
     void Processor::ins$PUSHregisterByte(MemoryManager& memoryManager, uint8_t REG)
     {
-        INSTRUCTION_TRACE("ins$PUSH: register {0}", getRegisterNameFromREG8(REG));
+        INSTRUCTION_TRACE("ins$PUSH: register {0}", Register8::nameFromREG8(REG));
         // Decrement the Stack Pointer (by size of register) before doing anything
         SP() -= 1;
         switch (REG)
@@ -4036,7 +4002,7 @@ namespace Cepums {
 
     void Processor::ins$RCRregisterByCLWord(uint8_t REG)
     {
-        INSTRUCTION_TRACE("ins$RCR: {0},{1}", getRegisterNameFromREG16(REG), CL());
+        INSTRUCTION_TRACE("ins$RCR: {0},{1}", Register16::nameFromREG16(REG), CL());
         uint16_t registerValue = getRegisterFromREG16(REG);
         auto counter = CL();
         while (counter != 0)
@@ -4136,7 +4102,7 @@ namespace Cepums {
 
     void Processor::ins$ROLregisterOnceByte(uint8_t REG)
     {
-        INSTRUCTION_TRACE("ins$ROL: {0},1", getRegisterNameFromREG8(REG));
+        INSTRUCTION_TRACE("ins$ROL: {0},1", Register8::nameFromREG8(REG));
         uint8_t registerValue = getRegisterValueFromREG8(REG);
 
         uint8_t lastBit = IS_BIT_SET(registerValue, 7);
@@ -4172,7 +4138,7 @@ namespace Cepums {
 
     void Processor::ins$RORregisterOnceByte(uint8_t REG)
     {
-        INSTRUCTION_TRACE("ins$ROR: {0},1", getRegisterNameFromREG8(REG));
+        INSTRUCTION_TRACE("ins$ROR: {0},1", Register8::nameFromREG8(REG));
         uint8_t registerValue = getRegisterValueFromREG8(REG);
 
         uint8_t firstBit = IS_BIT_SET(registerValue, 0);
@@ -4193,7 +4159,7 @@ namespace Cepums {
 
     void Processor::ins$RORregisterOnceWord(uint8_t REG)
     {
-        INSTRUCTION_TRACE("ins$ROR: {0},1", getRegisterNameFromREG16(REG));
+        INSTRUCTION_TRACE("ins$ROR: {0},1", Register16::nameFromREG16(REG));
         uint16_t registerValue = getRegisterFromREG16(REG);
 
         uint16_t firstBit = IS_BIT_SET(registerValue, 0);
@@ -4224,7 +4190,7 @@ namespace Cepums {
 
     void Processor::ins$SALregisterByCLByte(uint8_t rmBits)
     {
-        INSTRUCTION_TRACE("ins$SAL: {0},{1}", getRegisterNameFromREG8(rmBits), CL());
+        INSTRUCTION_TRACE("ins$SAL: {0},{1}", Register8::nameFromREG8(rmBits), CL());
         uint8_t registerValue = getRegisterValueFromREG8(rmBits);
         auto counter = CL();
         while (counter != 0)
@@ -4253,7 +4219,7 @@ namespace Cepums {
 
     void Processor::ins$SALregisterByCLWord(uint8_t rmBits)
     {
-        INSTRUCTION_TRACE("ins$SAL: {0},{1}", getRegisterNameFromREG16(rmBits), CL());
+        INSTRUCTION_TRACE("ins$SAL: {0},{1}", Register16::nameFromREG16(rmBits), CL());
         uint16_t registerValue = getRegisterFromREG16(rmBits);
         auto counter = CL();
         while (counter != 0)
@@ -4282,7 +4248,7 @@ namespace Cepums {
 
     void Processor::ins$SALregisterOnceByte(uint8_t rmBits)
     {
-        INSTRUCTION_TRACE("ins$SAL: {0},1", getRegisterNameFromREG8(rmBits));
+        INSTRUCTION_TRACE("ins$SAL: {0},1", Register8::nameFromREG8(rmBits));
         uint8_t registerValue = getRegisterValueFromREG8(rmBits);
         uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 7);
         bool setCarry;
@@ -4308,7 +4274,7 @@ namespace Cepums {
 
     void Processor::ins$SALregisterOnceWord(uint8_t rmBits)
     {
-        INSTRUCTION_TRACE("ins$SAL: {0},1", getRegisterNameFromREG16(rmBits));
+        INSTRUCTION_TRACE("ins$SAL: {0},1", Register16::nameFromREG16(rmBits));
         uint16_t registerValue = getRegisterFromREG16(rmBits);
         uint8_t bitZeroBefore = IS_BIT_SET(registerValue, 15);
         bool setCarry;
@@ -4364,7 +4330,7 @@ namespace Cepums {
 
     void Processor::ins$SHRregisterByCLByte(uint8_t rmBits)
     {
-        INSTRUCTION_TRACE("ins$SHR: {0},{1}", getRegisterNameFromREG8(rmBits), CL());
+        INSTRUCTION_TRACE("ins$SHR: {0},{1}", Register8::nameFromREG8(rmBits), CL());
         uint8_t registerValue = getRegisterValueFromREG8(rmBits);
         uint8_t MSBbefore = IS_BIT_SET(registerValue, 7);
         auto counter = CL();
@@ -4396,7 +4362,7 @@ namespace Cepums {
 
     void Processor::ins$SHRregisterByCLWord(uint8_t rmBits)
     {
-        INSTRUCTION_TRACE("ins$SHR: {0},{1}", getRegisterNameFromREG16(rmBits), CL());
+        INSTRUCTION_TRACE("ins$SHR: {0},{1}", Register16::nameFromREG16(rmBits), CL());
         uint16_t registerValue = getRegisterFromREG16(rmBits);
         uint8_t MSBbefore = IS_BIT_SET(registerValue, 15);
         auto counter = CL();
@@ -4428,7 +4394,7 @@ namespace Cepums {
 
     void Processor::ins$SHRregisterOnceByte(uint8_t rmBits)
     {
-        INSTRUCTION_TRACE("ins$SHR: {0},1", getRegisterNameFromREG8(rmBits));
+        INSTRUCTION_TRACE("ins$SHR: {0},1", Register8::nameFromREG8(rmBits));
         uint8_t registerValue = getRegisterValueFromREG8(rmBits);
         uint8_t MSBbefore = IS_BIT_SET(registerValue, 7);
         bool setCarry;
@@ -4454,7 +4420,7 @@ namespace Cepums {
 
     void Processor::ins$SHRregisterOnceWord(uint8_t rmBits)
     {
-        INSTRUCTION_TRACE("ins$SHR: {0},1", getRegisterNameFromREG16(rmBits));
+        INSTRUCTION_TRACE("ins$SHR: {0},1", Register16::nameFromREG16(rmBits));
         uint16_t registerValue = getRegisterFromREG16(rmBits);
         uint8_t MSBbefore = IS_BIT_SET(registerValue, 15);
         bool setCarry;
@@ -4736,7 +4702,7 @@ namespace Cepums {
 
     void Processor::ins$XCHGmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
     {
-        INSTRUCTION_TRACE("ins$XCHG: Exchange 8-bit memory with {0}", getRegisterNameFromREG8(destREG));
+        INSTRUCTION_TRACE("ins$XCHG: Exchange 8-bit memory with {0}", Register8::nameFromREG8(destREG));
         uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
         uint8_t registerValue = getRegisterValueFromREG8(destREG);
         memoryManager.writeByte(segment, effectiveAddress, registerValue);
@@ -4745,7 +4711,7 @@ namespace Cepums {
 
     void Processor::ins$XCHGmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
     {
-        INSTRUCTION_TRACE("ins$XCHG: Exchange 16-bit memory with {0}", getRegisterNameFromREG16(destREG));
+        INSTRUCTION_TRACE("ins$XCHG: Exchange 16-bit memory with {0}", Register16::nameFromREG16(destREG));
         uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
         uint16_t registerValue = getRegisterFromREG16(destREG);
         memoryManager.writeWord(segment, effectiveAddress, registerValue);
@@ -4754,7 +4720,7 @@ namespace Cepums {
 
     void Processor::ins$XCHGregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
     {
-        INSTRUCTION_TRACE("ins$XCHG: Exchange 8-bit {0} and {1}", getRegisterNameFromREG8(destREG), getRegisterNameFromREG8(sourceREG));
+        INSTRUCTION_TRACE("ins$XCHG: Exchange 8-bit {0} and {1}", Register8::nameFromREG8(destREG), Register8::nameFromREG8(sourceREG));
         uint8_t registerOneValue = getRegisterValueFromREG8(destREG);
         uint8_t registerTwoValue = getRegisterValueFromREG8(sourceREG);
         updateRegisterFromREG8(destREG, registerTwoValue);
@@ -4763,7 +4729,7 @@ namespace Cepums {
 
     void Processor::ins$XCHGregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
     {
-        INSTRUCTION_TRACE("ins$XCHG: Exchange 16-bit {0} and {1}", getRegisterNameFromREG16(destREG), getRegisterNameFromREG16(sourceREG));
+        INSTRUCTION_TRACE("ins$XCHG: Exchange 16-bit {0} and {1}", Register16::nameFromREG16(destREG), Register16::nameFromREG16(sourceREG));
         uint16_t registerOneValue = getRegisterFromREG16(destREG);
         uint16_t registerTwoValue = getRegisterFromREG16(sourceREG);
         updateRegisterFromREG16(destREG, registerTwoValue);
@@ -5259,74 +5225,6 @@ namespace Cepums {
         else
             CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
     }
-    const char* Processor::getRegisterNameFromREG8(uint8_t REG)
-    {
-        switch (REG)
-        {
-        case 0x0:
-            return REGISTER_AL_NAME;
-
-        case 0x1:
-            return REGISTER_CL_NAME;
-
-        case 0x2:
-            return REGISTER_DL_NAME;
-
-        case 0x3:
-            return REGISTER_BL_NAME;
-
-        case 0x4:
-            return REGISTER_AH_NAME;
-
-        case 0x5:
-            return REGISTER_CH_NAME;
-
-        case 0x6:
-            return REGISTER_DH_NAME;
-
-        case 0x7:
-            return REGISTER_BH_NAME;
-
-        default:
-            DC_CORE_ERROR("Malformed REG bits : 0b{0:b}", REG);
-            VERIFY_NOT_REACHED();
-            return "ERROR";
-        }
-    }
-    const char* Processor::getRegisterNameFromREG16(uint8_t REG)
-    {
-        switch (REG)
-        {
-        case 0x0:
-            return REGISTER_AX_NAME;
-
-        case 0x1:
-            return REGISTER_CX_NAME;
-
-        case 0x2:
-            return REGISTER_DX_NAME;
-
-        case 0x3:
-            return REGISTER_BX_NAME;
-
-        case 0x4:
-            return REGISTER_SP_NAME;
-
-        case 0x5:
-            return REGISTER_BP_NAME;
-
-        case 0x6:
-            return REGISTER_SI_NAME;
-
-        case 0x7:
-            return REGISTER_DI_NAME;
-
-        default:
-            DC_CORE_ERROR("Malformed REG bits : 0b{0:b}", REG);
-            VERIFY_NOT_REACHED();
-            return "ERROR";
-        }
-    }
 
     const char* Processor::getSegmentRegisterName(uint8_t REG)
     {
@@ -5345,5 +5243,12 @@ namespace Cepums {
             VERIFY_NOT_REACHED();
             return "ERROR";
         }
+    }
+
+    bool Processor::hasSegmentOverridePrefix()
+    {
+        if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
+            return true;
+        return false;
     }
 }
