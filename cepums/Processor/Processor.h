@@ -4,6 +4,7 @@
 #include "Memory.h"
 #include "MemoryManager.h"
 #include "Register.h"
+#include "SegmentRegister.h"
 
 #define HIGHER(word) (uint8_t)(word >> 8)
 #define LOWER(word) word & 0xFF
@@ -311,8 +312,12 @@ namespace Cepums {
 
         void updateRegisterFromREG8(uint8_t REG, uint8_t data);
         void updateRegisterFromREG16(uint8_t REG, uint16_t data);
+        void updateSegmentRegister(uint8_t SEGREG, uint16_t data);
+
         uint8_t getRegisterValueFromREG8(uint8_t REG);
         uint16_t& getRegisterFromREG16(uint8_t REG);
+        uint16_t getSegmentRegisterValue(uint8_t SEGREG);
+
         uint16_t getSegmentRegisterValueAndResetOverride();
         uint16_t getEffectiveAddressFromBits(uint8_t rmBits, uint8_t modBits, uint8_t isWord, uint8_t displacementLow, uint8_t displacementHigh, uint16_t defaultSegment, uint16_t& segment);
 
@@ -321,7 +326,6 @@ namespace Cepums {
         void setFlagsAfterLogicalOperation(uint16_t word);
         void setFlagsAfterArithmeticOperation(uint8_t byte);
         void setFlagsAfterArithmeticOperation(uint16_t word);
-        const char* getSegmentRegisterName(uint8_t REG);
 
         bool hasSegmentOverridePrefix();
     private:

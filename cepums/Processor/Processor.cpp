@@ -3338,23 +3338,23 @@ namespace Cepums {
 
     void Processor::ins$LODSbyte(MemoryManager& memoryManager)
     {
-        std::string segRegName = getSegmentRegisterName(REGISTER_DS);
+        std::string segRegName = SegmentRegister::nameFromSEGREG(REGISTER_DS);
         switch (m_segmentPrefix)
         {
         case REGISTER_ES:
-            segRegName = getSegmentRegisterName(m_segmentPrefix);
+            segRegName = SegmentRegister::nameFromSEGREG(m_segmentPrefix);
             AL(memoryManager.readByte(EXTRA_SEGMENT, SI()));
             RESET_SEGMENT_PREFIX();
             break;
 
         case REGISTER_CS:
-            segRegName = getSegmentRegisterName(m_segmentPrefix);
+            segRegName = SegmentRegister::nameFromSEGREG(m_segmentPrefix);
             AL(memoryManager.readByte(CODE_SEGMENT, SI()));
             RESET_SEGMENT_PREFIX();
             break;
 
         case REGISTER_SS:
-            segRegName = getSegmentRegisterName(m_segmentPrefix);
+            segRegName = SegmentRegister::nameFromSEGREG(m_segmentPrefix);
             AL(memoryManager.readByte(STACK_SEGMENT, SI()));
             RESET_SEGMENT_PREFIX();
             break;
@@ -3377,23 +3377,23 @@ namespace Cepums {
 
     void Processor::ins$LODSword(MemoryManager& memoryManager)
     {
-        std::string segRegName = getSegmentRegisterName(REGISTER_DS);
+        std::string segRegName = SegmentRegister::nameFromSEGREG(REGISTER_DS);
         switch (m_segmentPrefix)
         {
         case REGISTER_ES:
-            segRegName = getSegmentRegisterName(m_segmentPrefix);
+            segRegName = SegmentRegister::nameFromSEGREG(m_segmentPrefix);
             AX() = memoryManager.readWord(ES(), SI());
             RESET_SEGMENT_PREFIX();
             break;
 
         case REGISTER_CS:
-            segRegName = getSegmentRegisterName(m_segmentPrefix);
+            segRegName = SegmentRegister::nameFromSEGREG(m_segmentPrefix);
             AX() = memoryManager.readWord(CS(), SI());
             RESET_SEGMENT_PREFIX();
             break;
 
         case REGISTER_SS:
-            segRegName = getSegmentRegisterName(m_segmentPrefix);
+            segRegName = SegmentRegister::nameFromSEGREG(m_segmentPrefix);
             AX() = memoryManager.readWord(SS(), SI());
             RESET_SEGMENT_PREFIX();
             break;
@@ -4852,6 +4852,33 @@ namespace Cepums {
         }
     }
 
+    void Processor::updateSegmentRegister(uint8_t SEGREG, uint16_t data)
+    {
+        switch (SEGREG)
+        {
+        case REGISTER_ES:
+            m_extraSegment = data;
+            return;
+
+        case REGISTER_CS:
+            m_codeSegment = data;
+            return;
+
+        case REGISTER_SS:
+            m_stackSegment = data;
+            return;
+
+        case REGISTER_DS:
+            m_dataSegment = data;
+            return;
+
+        default:
+            DC_CORE_ERROR("Malformed segment register bits : 0b{0:b}", SEGREG);
+            VERIFY_NOT_REACHED();
+            return;
+        }
+    }
+
     uint8_t Processor::getRegisterValueFromREG8(uint8_t REG)
     {
         switch (REG)
@@ -4922,31 +4949,28 @@ namespace Cepums {
         }
     }
 
-    uint16_t Processor::getSegmentRegisterValueAndResetOverride()
+    uint16_t Processor::getSegmentRegisterValue(uint8_t SEGREG)
     {
-        uint16_t value = 0;
-        switch (m_segmentPrefix)
+        switch (SEGREG)
         {
         case REGISTER_ES:
-            value = ES();
-            break;
-
+            return ES();
         case REGISTER_CS:
-            value = CS();
-            break;
-
+            return CS();
         case REGISTER_SS:
-            value = SS();
-            break;
-
+            return SS();
         case REGISTER_DS:
-            value = DS();
-            break;
+            return DS();
         default:
-            DC_CORE_ERROR("Segment override not set");
+            DC_CORE_ERROR("Malformed SEGREG bits : 0b{0:b}", SEGREG);
             VERIFY_NOT_REACHED();
-            break;
+            return CS();
         }
+    }
+
+    uint16_t Processor::getSegmentRegisterValueAndResetOverride()
+    {
+        uint16_t value = getSegmentRegisterValue(m_segmentPrefix);
         RESET_SEGMENT_PREFIX();
         return value;
     }
@@ -5224,25 +5248,6 @@ namespace Cepums {
             SET_FLAG_BIT(m_flags, PARITY_FLAG);
         else
             CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
-    }
-
-    const char* Processor::getSegmentRegisterName(uint8_t REG)
-    {
-        switch (REG)
-        {
-        case REGISTER_ES:
-            return "ES";
-        case REGISTER_CS:
-            return "CS";
-        case REGISTER_SS:
-            return "SS";
-        case REGISTER_DS:
-            return "DS";
-        default:
-            DC_CORE_ERROR("Malformed SegReg bits : 0b{0:b}", REG);
-            VERIFY_NOT_REACHED();
-            return "ERROR";
-        }
     }
 
     bool Processor::hasSegmentOverridePrefix()
