@@ -4,7 +4,7 @@
 #include "IOManager.h"
 #include "Log.h"
 #include "MemoryManager.h"
-#include "Processor.h"
+#include "Processor/Processor.h"
 
 #include <thread>
 

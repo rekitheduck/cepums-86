@@ -354,6 +354,7 @@ namespace Cepums {
         {
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
             return ins$ANDimmediateToRegister(REGISTER_AL, byte);
+            //return ins$AND(memoryManager, createRef<Register8>(REGISTER_AL), createRef<Immediate8>(byte));
         }
         case 0x25: // AND: 16-bit immediate with AX
         {
@@ -1068,12 +1069,12 @@ namespace Cepums {
             PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
 
             if (IS_IN_REGISTER_MODE(modBits))
-                return ins$MOVregisterToRegisterByte(rmBits, regBits);
+                return ins$MOV(memoryManager, createRef<Register8>(rmBits), createRef<Register8>(regBits));
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$MOVregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterValueFromREG8(regBits));
+            return ins$MOV(memoryManager, createRef<Memory8>(segment, effectiveAddress), createRef<Register8>(regBits));
         }
         case 0x89: // MOV: 16-bit from register to register/memory
         {
@@ -3421,6 +3422,14 @@ namespace Cepums {
 
         // Otherwise we keep going
         IP() += offset;
+    }
+
+    void Processor::ins$MOV(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
+    {
+        if (destination->size() == OperandSize::Byte)
+            destination->updateByte(this, mm, source->valueByte(this, mm));
+        else
+            destination->updateWord(this, mm, source->valueWord(this, mm));
     }
 
     void Processor::ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate)

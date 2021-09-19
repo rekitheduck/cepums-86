@@ -1,7 +1,9 @@
 #pragma once
 
 #include "IOManager.h"
+#include "Memory.h"
 #include "MemoryManager.h"
+#include "Register.h"
 
 #define HIGHER(word) (uint8_t)(word >> 8)
 #define LOWER(word) word & 0xFF
@@ -136,6 +138,8 @@ namespace Cepums {
         void ins$ADDregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
         void ins$ADDregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
+        void ins$AND(MemoryManager&, Ref<Operand> destination, Ref<Operand> source);
+
         void ins$ANDimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate);
         void ins$ANDimmediateToRegister(uint8_t destREG, uint8_t value);
         void ins$ANDimmediateToRegister(uint8_t destREG, uint16_t value);
@@ -180,6 +184,8 @@ namespace Cepums {
         void ins$LODSbyte(MemoryManager& memoryManager);
         void ins$LODSword(MemoryManager& memoryManager);
         void ins$LOOP(int8_t offset);
+
+        void ins$MOV(MemoryManager&, Ref<Operand> destination, Ref<Operand> source);
 
         void ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate);
         void ins$MOVimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate);
