@@ -69,66 +69,6 @@ namespace Cepums {
             DC_CORE_TRACE(" DS: 0x{0:x}   CS: 0x{1:x}   SS: 0x{2:x}   ES: 0x{3:x}", DS(), CS(), SS(), ES());
             DC_CORE_TRACE(" IP: 0x{0:x}   BP: 0x{1:X}   SI: 0x{2:x}   DI: 0x{3:X}", IP(), BP(), SI(), DI());
         }
-#if 0
-        m_AX = 0x1234;
-        DC_CORE_WARN("Test02: Testing AH updating ...");
-        DC_CORE_TRACE("AX: 0x{0:x}  AH: 0x{1:x},  AL 0x{2:x}", m_AX, AH(), AL());
-        AH(0xEF);
-        DC_CORE_TRACE("AX: 0x{0:x}  AH: 0x{1:x},  AL 0x{2:x}", m_AX, AH(), AL());
-        if (m_AX == 0xEF34)
-            DC_CORE_INFO("Test passed :)");
-        else
-            DC_CORE_ERROR("Test failed");
-
-        DC_CORE_WARN("Test03: Testing AL updating ...");
-        DC_CORE_TRACE("AX: 0x{0:x}  AH: 0x{1:x},  AL 0x{2:x}", m_AX, AH(), AL());
-        AL(0x42);
-        DC_CORE_TRACE("AX: 0x{0:x}  AH: 0x{1:x},  AL 0x{2:x}", m_AX, AH(), AL());
-        if (m_AX == 0xEF42)
-            DC_CORE_INFO("Test passed :)");
-        else
-            DC_CORE_ERROR("Test failed");
-
-        // Don't forget to clean up after ourselves
-        m_AX = 0;
-
-        DC_CORE_INFO("CPU will now execute 0x{0:x}", hopefully_an_instruction);
-
-        // Let's do some MOV instructions before the switch
-        if (HIGHER_HALFBYTE(hopefully_an_instruction) == 0xB)
-        {
-            DC_CORE_INFO("Hit immediate MOV :)");
-
-            // Decode the W-bit
-            uint8_t isWord = (hopefully_an_instruction & BIT(3)) >> 3;
-
-            // Get the 3 REG bits
-            uint8_t regBits = hopefully_an_instruction & 0x7;
-
-            if (isWord)
-            {
-                // Fetch a word of data
-                uint16_t word = memoryManager.readWord(m_codeSegment, m_instructionPointer);
-                m_instructionPointer += 2;
-
-                // Get the actual register
-                uint16_t& reg = getRegisterFromREG16(regBits);
-
-                // And put the data where it belongs
-                reg = word;
-            }
-            else
-            {
-                // Fetch a byte of data
-                uint8_t byte = memoryManager.readByte(m_codeSegment, m_instructionPointer);
-                m_instructionPointer++;
-
-                updateRegisterFromREG8(regBits, byte);
-            }
-
-            return;
-        }
-#endif
 
         switch (hopefully_an_instruction)
         {
