@@ -400,12 +400,12 @@ namespace Cepums {
             PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
 
             if (IS_IN_REGISTER_MODE(modBits))
-                return ins$XORregisterToRegisterByte(rmBits, regBits);
+                return ins$XOR(memoryManager, createRef<Register8>(rmBits), createRef<Register8>(regBits));
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$XORregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterValueFromREG8(regBits));
+            return ins$XOR(memoryManager, createRef<Memory8>(segment, effectiveAddress), createRef<Register8>(regBits));
         }
         case 0x31: // XOR: 16-bit from register to register/memory
         {
@@ -413,32 +413,48 @@ namespace Cepums {
             PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
 
             if (IS_IN_REGISTER_MODE(modBits))
-                return ins$XORregisterToRegisterWord(rmBits, regBits);
+                return ins$XOR(memoryManager, createRef<Register16>(rmBits), createRef<Register16>(regBits));
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$XORregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterFromREG16(regBits));
+            return ins$XOR(memoryManager, createRef<Memory16>(segment, effectiveAddress), createRef<Register16>(regBits));
         }
         case 0x32: // XOR: 8-bit from register/memory to register
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$XOR(memoryManager, createRef<Register8>(regBits), createRef<Register8>(rmBits));
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$XOR(memoryManager, createRef<Register8>(regBits), createRef<Memory8>(segment, effectiveAddress));
         }
         case 0x33: // XOR: 16-bit from register/memory to register
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$XOR(memoryManager, createRef<Register16>(regBits), createRef<Register16>(rmBits));
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$XOR(memoryManager, createRef<Register16>(regBits), createRef<Memory16>(segment, effectiveAddress));
         }
         case 0x34: // XOR: 8-bit immediate with AL
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            return ins$XOR(memoryManager, createRef<Register8>(REGISTER_AL), createRef<Immediate8>(byte));
         }
         case 0x35: // XOR: 16-bit immediate with AX
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, word);
+            return ins$XOR(memoryManager, createRef<Register16>(REGISTER_AX), createRef<Immediate16>(word));
         }
         case 0x36: // SS: Segment override prefix
         {
@@ -804,8 +820,7 @@ namespace Cepums {
                 case 0b101:
                     return ins$SUBimmediateToRegister(rmBits, immediate);
                 case 0b110:
-                    //return ins$XORimmediateToRegister(rmBits, immediate);
-                    TODO();
+                    return ins$XOR(memoryManager, createRef<Register8>(rmBits), createRef<Immediate8>(immediate));
                 case 0b111:
                     return ins$CMP(memoryManager, createRef<Register8>(rmBits), createRef<Immediate8>(immediate));
                 default:
@@ -833,9 +848,9 @@ namespace Cepums {
                 return ins$AND(memoryManager, createRef<Memory8>(segment, effectiveAddress), createRef<Immediate8>(immediate));
             case 0b101:
                 //return ins$SUBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
-            case 0b110:
-                //return ins$XORimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
                 TODO();
+            case 0b110:
+                return ins$XOR(memoryManager, createRef<Memory8>(segment, effectiveAddress), createRef<Immediate8>(immediate));
             case 0b111:
                 return ins$CMP(memoryManager, createRef<Memory8>(segment, effectiveAddress), createRef<Immediate8>(immediate));
             default:
@@ -865,9 +880,9 @@ namespace Cepums {
                     //return ins$ANDimmediateToRegister(rmBits, immediate);
                 case 0b101:
                     //return ins$SUBimmediateToRegister(rmBits, immediate);
-                case 0b110:
-                    //return ins$XORimmediateToRegister(rmBits, immediate);
                     TODO();
+                case 0b110:
+                    return ins$XOR(memoryManager, createRef<Register16>(rmBits), createRef<Immediate16>(immediate));
                 case 0b111:
                     return ins$CMP(memoryManager, createRef<Register16>(rmBits), createRef<Immediate16>(immediate));
                 default:
@@ -894,9 +909,9 @@ namespace Cepums {
                 //return ins$ANDimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b101:
                 //return ins$SUBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
-            case 0b110:
-                //return ins$XORimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
                 TODO();
+            case 0b110:
+                return ins$XOR(memoryManager, createRef<Memory16>(segment, effectiveAddress), createRef<Immediate16>(immediate));
             case 0b111:
                 return ins$CMP(memoryManager, createRef<Memory16>(segment, effectiveAddress), createRef<Immediate16>(immediate));
             default:
@@ -941,6 +956,11 @@ namespace Cepums {
                 case 0b101:
                     //return ins$SUBimmediateToRegisterWord(rmBits, immediate);
                     TODO();
+                case 0b110:
+#ifdef STRICT8086INSTRUCTIONSET
+                    ILLEGAL_INSTRUCTION();
+#endif
+                    return ins$XOR(memoryManager, createRef<Register16>(rmBits), createRef<Immediate16>(immediate));
                 case 0b111:
                     return ins$CMP(memoryManager, createRef<Register16>(rmBits), createRef<Immediate16>(immediate));
                 default:
@@ -970,6 +990,11 @@ namespace Cepums {
             case 0b101:
                 //return ins$SUBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
                 TODO();
+            case 0b110:
+#ifdef STRICT8086INSTRUCTIONSET
+                ILLEGAL_INSTRUCTION();
+#endif
+                return ins$XOR(memoryManager, createRef<Memory16>(segment, effectiveAddress), createRef<Immediate16>(immediate));
             case 0b111:
                 return ins$CMP(memoryManager, createRef<Memory16>(segment, effectiveAddress), createRef<Immediate16>(immediate));
             default:
@@ -3892,42 +3917,23 @@ namespace Cepums {
         updateRegisterFromREG16(sourceREG, registerOneValue);
     }
 
-    void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue)
+    void Processor::ins$XOR(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
     {
-        INSTRUCTION_TRACE("ins$XOR: XOR-ing 8-bit register to memory");
-        auto original = memoryManager.readByte(segment, effectiveAddress);
-        uint8_t result = original ^ registerValue;
-        memoryManager.writeByte(segment, effectiveAddress, result);
-        setFlagsAfterLogicalOperation(result);
-    }
+        destination->handleSegmentOverridePrefix(this);
+        source->handleSegmentOverridePrefix(this);
 
-    void Processor::ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue)
-    {
-        INSTRUCTION_TRACE("ins$XOR: XOR-ing 16-bit register to memory");
-        auto original = memoryManager.readWord(segment, effectiveAddress);
-        uint16_t result = original ^ registerValue;
-        memoryManager.writeWord(segment, effectiveAddress, result);
-        setFlagsAfterLogicalOperation(result);
-    }
-
-    void Processor::ins$XORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
-    {
-        INSTRUCTION_TRACE("ins$XOR: 8-bit register to register");
-        auto operand = getRegisterValueFromREG8(sourceREG);
-        auto operand2 = getRegisterValueFromREG8(destREG);
-        uint8_t result = operand ^ operand2;
-        updateRegisterFromREG8(destREG, result);
-        setFlagsAfterLogicalOperation(result);
-    }
-
-    void Processor::ins$XORregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
-    {
-        INSTRUCTION_TRACE("ins$XOR: 16-bit register to register");
-        auto operand = getRegisterFromREG16(sourceREG);
-        auto operand2 = getRegisterFromREG16(destREG);
-        uint8_t result = operand ^ operand2;
-        updateRegisterFromREG16(destREG, result);
-        setFlagsAfterLogicalOperation(result);
+        if (destination->size() == OperandSize::Byte)
+        {
+            uint8_t result = destination->valueByte(this, mm) ^ source->valueByte(this, mm);
+            destination->updateByte(this, mm, result);
+            setFlagsAfterLogicalOperation(result);
+        }
+        else
+        {
+            uint16_t result = destination->valueWord(this, mm) ^ source->valueWord(this, mm);
+            destination->updateWord(this, mm, result);
+            setFlagsAfterLogicalOperation(result);
+        }
     }
 
     void Processor::updateRegisterFromREG8(uint8_t REG, uint8_t data)

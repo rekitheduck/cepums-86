@@ -205,10 +205,7 @@ namespace Cepums {
         void ins$XCHGregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
         void ins$XCHGregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
-        void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue);
-        void ins$XORregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue);
-        void ins$XORregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
-        void ins$XORregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
+        void ins$XOR(MemoryManager&, Ref<Operand> destination, Ref<Operand> source);
 
         uint16_t& DS() { return m_dataSegment; }
         uint16_t& CS() { return m_codeSegment; }
