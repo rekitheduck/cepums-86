@@ -121,10 +121,6 @@ namespace Cepums {
 
         void ins$AND(MemoryManager&, Ref<Operand> destination, Ref<Operand> source);
 
-        void ins$ANDimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate);
-        void ins$ANDimmediateToRegister(uint8_t destREG, uint8_t value);
-        void ins$ANDimmediateToRegister(uint8_t destREG, uint16_t value);
-
         void ins$CALLnear(MemoryManager& memoryManager, int16_t offset);
         void ins$CALLnearFromMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
 

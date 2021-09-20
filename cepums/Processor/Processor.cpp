@@ -287,8 +287,7 @@ namespace Cepums {
         case 0x24: // AND: 8-bit immediate with AL
         {
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
-            return ins$ANDimmediateToRegister(REGISTER_AL, byte);
-            //return ins$AND(memoryManager, createRef<Register8>(REGISTER_AL), createRef<Immediate8>(byte));
+            return ins$AND(memoryManager, createRef<Register8>(REGISTER_AL), createRef<Immediate8>(byte));
         }
         case 0x25: // AND: 16-bit immediate with AX
         {
@@ -777,7 +776,7 @@ namespace Cepums {
                     //return ins$SBBimmediateToRegister(rmBits, immediate);
                     TODO();
                 case 0b100:
-                    return ins$ANDimmediateToRegister(rmBits, immediate);
+                    return ins$AND(memoryManager, createRef<Register8>(rmBits), createRef<Immediate8>(immediate));
                 case 0b101:
                     return ins$SUBimmediateToRegister(rmBits, immediate);
                 case 0b110:
@@ -807,7 +806,7 @@ namespace Cepums {
                 //return ins$SBBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
                 TODO();
             case 0b100:
-                return ins$ANDimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
+                return ins$AND(memoryManager, createRef<Memory8>(segment, effectiveAddress), createRef<Immediate8>(immediate));
             case 0b101:
                 //return ins$SUBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b110:
@@ -909,7 +908,7 @@ namespace Cepums {
 #ifdef STRICT8086INSTRUCTIONSET
                     ILLEGAL_INSTRUCTION();
 #endif
-                    return ins$ANDimmediateToRegister(rmBits, immediate);
+                    return ins$AND(memoryManager, createRef<Register16>(rmBits), createRef<Immediate16>(immediate));
                 case 0b101:
                     //return ins$SUBimmediateToRegisterWord(rmBits, immediate);
                     TODO();
@@ -2568,31 +2567,23 @@ namespace Cepums {
         setFlagsAfterArithmeticOperation(result);
     }
 
-    void Processor::ins$ANDimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate)
+    void Processor::ins$AND(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
     {
-        INSTRUCTION_TRACE("ins$AND: 8-bit immediate to memory");
-        uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
-        uint8_t result = memoryValue & immediate;
-        memoryManager.writeByte(segment, effectiveAddress, result);
-        setFlagsAfterLogicalOperation(result);
-    }
+        destination->handleSegmentOverridePrefix(this);
+        source->handleSegmentOverridePrefix(this);
 
-    void Processor::ins$ANDimmediateToRegister(uint8_t destREG, uint8_t value)
-    {
-        INSTRUCTION_TRACE("ins$AND: 8-bit immediate to register {0}", Register8::nameFromREG8(destREG));
-        uint8_t registerValue = getRegisterValueFromREG8(destREG);
-        uint8_t result = registerValue & value;
-        updateRegisterFromREG8(destREG, result);
-        setFlagsAfterLogicalOperation(result);
-    }
-
-    void Processor::ins$ANDimmediateToRegister(uint8_t destREG, uint16_t value)
-    {
-        INSTRUCTION_TRACE("ins$AND: 16-bit immediate to register {0}", Register16::nameFromREG16(destREG));
-        uint16_t registerValue = getRegisterFromREG16(destREG);
-        uint16_t result = registerValue & value;
-        updateRegisterFromREG16(destREG, result);
-        setFlagsAfterLogicalOperation(result);
+        if (destination->size() == OperandSize::Byte)
+        {
+            uint8_t result = destination->valueByte(this, mm) & source->valueByte(this, mm);
+            destination->updateByte(this, mm, result);
+            setFlagsAfterLogicalOperation(result);
+        }
+        else
+        {
+            uint16_t result = destination->valueWord(this, mm) & source->valueWord(this, mm);
+            destination->updateWord(this, mm, result);
+            setFlagsAfterLogicalOperation(result);
+        }
     }
 
     void Processor::ins$CALLnear(MemoryManager& memoryManager, int16_t offset)
