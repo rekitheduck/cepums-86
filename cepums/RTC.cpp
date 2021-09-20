@@ -75,8 +75,56 @@ namespace Cepums {
         case StatusRegisterC:
             m_statusRegisterC = value;
             break;
+
         case FloppyDiskTypes:
             m_floppyDiskTypes = value;
+            break;
+        case SystemConfigurationSettings:
+            m_systemConfigurationSettings = value;
+            break;
+        case HardDiskTypes:
+            m_hardDiskTypes = value;
+            break;
+        case TypematicParameters:
+            m_typematicParameters = value;
+            break;
+        case InstalledEquipment:
+            m_installedEquipment = value;
+            break;
+
+        case BaseMemoryLSB:
+            m_baseMemoryLSB = value;
+            break;
+        case BaseMemoryMSB:
+            m_baseMemoryMSB = value;
+            break;
+        case ExtendedMemoryLSB:
+            m_extendedMemoryLSB = value;
+            break;
+        case ExtendedMemoryMSB:
+            m_extendedMemoryMSB = value;
+            break;
+        case HardDisk0Type:
+            m_hardDisk0Type = value;
+            break;
+        case HardDisk1Type:
+            m_hardDisk1Type = value;
+            break;
+        case ChecksumLSB:
+            DC_CORE_WARN("[RTC]: New checksum LSB: {0}", value);
+            m_checksumLSB = value;
+            break;
+        case ChecksumMSB:
+            DC_CORE_WARN("[RTC]: New checksum MSB: {0}", value);
+            m_checksumMSB = value;
+            break;
+
+        case Unused0:
+        case Unused1:
+        case Unused2:
+        case Unused3:
+        case Unused4:
+        case Unused5:
             break;
 
         case DateCentury:
@@ -133,35 +181,37 @@ namespace Cepums {
             byte = m_floppyDiskTypes; // Drive 0: 1.44MB | Drive 1: None
             break;
         case SystemConfigurationSettings:
-            byte = 0x8B; // A bunch of things
+            byte = m_systemConfigurationSettings;
             break;
         case HardDiskTypes:
-            byte = 0x00; // No hard disks
+            byte = m_hardDiskTypes;
             break;
         case TypematicParameters:
-            byte = 0x00; // No typematic stuff
+            byte = m_typematicParameters;
             break;
         case InstalledEquipment:
-            byte = 0x3D; // A bunch of things (including display adapter)
+            byte = m_installedEquipment;
             break;
 
         case BaseMemoryLSB:
-            byte = 0x80; // 640KB base memory
+            byte = m_baseMemoryLSB;
             break;
         case BaseMemoryMSB:
-            byte = 0x02; // 640KB base memory
+            byte = m_baseMemoryMSB;
             break;
 
         case ExtendedMemoryLSB:
-            byte = 0x00; // 0KB extended memory
+            byte = m_extendedMemoryLSB;
             break;
         case ExtendedMemoryMSB:
-            byte = 0x00; // 0KB extended memory
+            byte = m_extendedMemoryMSB;
             break;
 
         case HardDisk0Type:
+            byte = m_hardDisk0Type;
+            break;
         case HardDisk1Type:
-            byte = 0x00; // No hard disks
+            byte = m_hardDisk1Type;
             break;
 
         case Unused0:
@@ -178,10 +228,10 @@ namespace Cepums {
             break;
 
         case ChecksumLSB:
-            byte = 0xF3;
+            byte = m_checksumLSB;
             break;
         case ChecksumMSB:
-            byte = 0x01;
+            byte = m_checksumMSB;
             break;
 
         case DateCentury:
