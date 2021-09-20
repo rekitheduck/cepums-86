@@ -166,13 +166,29 @@ namespace Cepums {
         }
         case 0x0A: // OR: 8-bit register/memory with register
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$OR(memoryManager, createRef<Register8>(regBits), createRef<Register8>(rmBits));
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$OR(memoryManager, createRef<Register8>(regBits), createRef<Memory8>(segment, effectiveAddress));
         }
         case 0x0B: // OR: 16-bit register/memory with register
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$OR(memoryManager, createRef<Register16>(regBits), createRef<Register16>(rmBits));
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$OR(memoryManager, createRef<Register16>(regBits), createRef<Memory16>(segment, effectiveAddress));
         }
         case 0x0C: // OR: 8-bit immediate with AL
         {
@@ -840,7 +856,7 @@ namespace Cepums {
                 case 0b000:
                     return ins$ADD(memoryManager, createRef<Register16>(rmBits), createRef<Immediate16>(immediate));
                 case 0b001:
-                    //return ins$ORimmediateToRegister(rmBits, immediate);
+                    return ins$OR(memoryManager, createRef<Register16>(rmBits), createRef<Immediate16>(immediate));
                 case 0b010:
                     //return ins$ADCimmediateToRegister(rmBits, immediate);
                 case 0b011:
@@ -869,7 +885,7 @@ namespace Cepums {
             case 0b000:
                 return ins$ADD(memoryManager, createRef<Memory16>(segment, effectiveAddress), createRef<Immediate16>(immediate));
             case 0b001:
-                //return ins$ORimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
+                return ins$OR(memoryManager, createRef<Memory16>(segment, effectiveAddress), createRef<Immediate16>(immediate));
             case 0b010:
                 //return ins$ADCimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b011:
@@ -907,6 +923,11 @@ namespace Cepums {
                 {
                 case 0b000:
                     return ins$ADD(memoryManager, createRef<Register16>(rmBits), createRef<Immediate16>(immediate));
+                case 0b001:
+#ifdef STRICT8086INSTRUCTIONSET
+                    ILLEGAL_INSTRUCTION();
+#endif
+                    return ins$OR(memoryManager, createRef<Register16>(rmBits), createRef<Immediate16>(immediate));
                 case 0b010:
                     //return ins$ADCimmediateToRegisterWord(rmBits, immediate);
                 case 0b011:
