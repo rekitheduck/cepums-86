@@ -109,15 +109,7 @@ namespace Cepums {
         void ins$ADCregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue);
         void ins$ADCregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
 
-        void ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate);
-        void ins$ADDimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate);
-        void ins$ADDimmediateToRegister(uint8_t destREG, uint8_t value);
-        void ins$ADDimmediateToRegister(uint8_t destREG, uint16_t value);
-        void ins$ADDmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t regBits, uint16_t segment, uint16_t effectiveAddress);
-        void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t registerValue);
-        void ins$ADDregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue);
-        void ins$ADDregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG);
-        void ins$ADDregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
+        void ins$ADD(MemoryManager&, Ref<Operand> destination, Ref<Operand> source);
 
         void ins$AND(MemoryManager&, Ref<Operand> destination, Ref<Operand> source);
 
