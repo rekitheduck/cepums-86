@@ -12,11 +12,6 @@ namespace Cepums {
 
     static bool s_debugSpam = false;
 
-    Processor::Processor()
-    {
-        reset();
-    }
-
     void Processor::reset()
     {
         m_flags = 0;
@@ -25,7 +20,6 @@ namespace Cepums {
         m_dataSegment = 0;
         m_stackSegment = 0;
         m_extraSegment = 0;
-        // TODO: Empty the queue here as well once that's implemented
     }
 
     void Processor::execute(MemoryManager& memoryManager, IOManager& io)
@@ -1476,15 +1470,18 @@ namespace Cepums {
                 case 0b001:
                     return ins$RORregisterOnceByte(rmBits);
                 case 0b010:
-                    return ins$RCLregisterOnceByte(rmBits);
+                    TODO();
+                    //return ins$RCLregisterOnceByte(rmBits);
                 case 0b011:
-                    return ins$RCRregisterOnceByte(rmBits);
+                    TODO();
+                    //return ins$RCRregisterOnceByte(rmBits);
                 case 0b100:
                     return ins$SALregisterOnceByte(rmBits);
                 case 0b101:
                     return ins$SHRregisterOnceByte(rmBits);
                 case 0b111:
-                    return ins$SARregisterOnceByte(rmBits);
+                    TODO();
+                    //return ins$SARregisterOnceByte(rmBits);
                 default:
                     ILLEGAL_INSTRUCTION();
                     return;
@@ -1496,19 +1493,26 @@ namespace Cepums {
             switch (regBits)
             {
             case 0b000:
-                return ins$ROLmemoryOnceByte(memoryManager, segment, effectiveAddress);
+                TODO();
+                //return ins$ROLmemoryOnceByte(memoryManager, segment, effectiveAddress);
             case 0b001:
-                return ins$RORmemoryOnceByte(memoryManager, segment, effectiveAddress);
+                TODO();
+                //return ins$RORmemoryOnceByte(memoryManager, segment, effectiveAddress);
             case 0b010:
-                return ins$RCLmemoryOnceByte(memoryManager, segment, effectiveAddress);
+                TODO();
+                //return ins$RCLmemoryOnceByte(memoryManager, segment, effectiveAddress);
             case 0b011:
-                return ins$RCRmemoryOnceByte(memoryManager, segment, effectiveAddress);
+                TODO();
+                //return ins$RCRmemoryOnceByte(memoryManager, segment, effectiveAddress);
             case 0b100:
-                return ins$SALmemoryOnceByte(memoryManager, segment, effectiveAddress);
+                TODO();
+                //return ins$SALmemoryOnceByte(memoryManager, segment, effectiveAddress);
             case 0b101:
-                return ins$SHRmemoryOnceByte(memoryManager, segment, effectiveAddress);
+                TODO();
+                //return ins$SHRmemoryOnceByte(memoryManager, segment, effectiveAddress);
             case 0b111:
-                return ins$SARmemoryOnceByte(memoryManager, segment, effectiveAddress);
+                TODO();
+                //return ins$SARmemoryOnceByte(memoryManager, segment, effectiveAddress);
             default:
                 ILLEGAL_INSTRUCTION();
                 return;
@@ -1523,19 +1527,23 @@ namespace Cepums {
                 switch (regBits)
                 {
                 case 0b000:
-                    return ins$ROLregisterOnceWord(rmBits);
+                    TODO();
+                    //return ins$ROLregisterOnceWord(rmBits);
                 case 0b001:
                     return ins$RORregisterOnceWord(rmBits);
                 case 0b010:
-                    return ins$RCLregisterOnceWord(rmBits);
+                    TODO();
+                    //return ins$RCLregisterOnceWord(rmBits);
                 case 0b011:
-                    return ins$RCRregisterOnceWord(rmBits);
+                    TODO();
+                    //return ins$RCRregisterOnceWord(rmBits);
                 case 0b100:
                     return ins$SALregisterOnceWord(rmBits);
                 case 0b101:
                     return ins$SHRregisterOnceWord(rmBits);
                 case 0b111:
-                    return ins$SARregisterOnceWord(rmBits);
+                    TODO();
+                    //return ins$SARregisterOnceWord(rmBits);
                 default:
                     ILLEGAL_INSTRUCTION();
                     return;
@@ -1547,19 +1555,26 @@ namespace Cepums {
             switch (regBits)
             {
             case 0b000:
-                return ins$ROLmemoryOnceWord(memoryManager, segment, effectiveAddress);
+                TODO();
+                //return ins$ROLmemoryOnceWord(memoryManager, segment, effectiveAddress);
             case 0b001:
-                return ins$RORmemoryOnceWord(memoryManager, segment, effectiveAddress);
+                TODO();
+                //return ins$RORmemoryOnceWord(memoryManager, segment, effectiveAddress);
             case 0b010:
-                return ins$RCLmemoryOnceWord(memoryManager, segment, effectiveAddress);
+                TODO();
+                //return ins$RCLmemoryOnceWord(memoryManager, segment, effectiveAddress);
             case 0b011:
-                return ins$RCRmemoryOnceWord(memoryManager, segment, effectiveAddress);
+                TODO();
+                //return ins$RCRmemoryOnceWord(memoryManager, segment, effectiveAddress);
             case 0b100:
-                return ins$SALmemoryOnceWord(memoryManager, segment, effectiveAddress);
+                TODO();
+                //return ins$SALmemoryOnceWord(memoryManager, segment, effectiveAddress);
             case 0b101:
-                return ins$SHRmemoryOnceWord(memoryManager, segment, effectiveAddress);
+                TODO();
+                //return ins$SHRmemoryOnceWord(memoryManager, segment, effectiveAddress);
             case 0b111:
-                return ins$SARmemoryOnceWord(memoryManager, segment, effectiveAddress);
+                TODO();
+                //return ins$SARmemoryOnceWord(memoryManager, segment, effectiveAddress);
             default:
                 ILLEGAL_INSTRUCTION();
                 return;
@@ -2022,7 +2037,8 @@ namespace Cepums {
             case 0b000:
                 return ins$INCmemoryByte(memoryManager, segment, effectiveAddress);
             case 0b001:
-                return ins$DECmemoryByte(memoryManager, segment, effectiveAddress);
+                TODO();
+                //return ins$DECmemoryByte(memoryManager, segment, effectiveAddress);
             default:
                 ILLEGAL_INSTRUCTION();
                 return;
@@ -2104,18 +2120,10 @@ namespace Cepums {
             UNKNOWN_INSTRUCTION();
             return;
         }
-
         default:
-            UNKNOWN_INSTRUCTION();
+            VERIFY_NOT_REACHED();
             break;
         }
-        
-        // TODO: Figure out what instruction we need to call
-        TODO();
-
-        m_cyclesToWait =+ 4; // This instruction takes 4 clock cycles to do its job
-
-        // TODO: Add 4 clock cycles if accessing uneven address for operand
     }
 
     void Processor::ins$HLT()
@@ -2180,11 +2188,6 @@ namespace Cepums {
     }
 
     void Processor::ins$LOCK()
-    {
-        TODO();
-    }
-
-    void Processor::ins$SEGMENT()
     {
         TODO();
     }
@@ -2729,16 +2732,6 @@ namespace Cepums {
             else
                 CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
         }
-    }
-
-    void Processor::ins$DECmemoryByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        TODO();
-    }
-
-    void Processor::ins$DECmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        TODO();
     }
 
     void Processor::ins$DIVregisterWord(uint8_t REG)
@@ -3432,36 +3425,6 @@ namespace Cepums {
         }
     }
 
-    void Processor::ins$RCLmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        TODO();
-    }
-
-    void Processor::ins$RCLmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        TODO();
-    }
-
-    void Processor::ins$RCLregisterOnceByte(uint8_t REG)
-    {
-        TODO();
-    }
-
-    void Processor::ins$RCLregisterOnceWord(uint8_t REG)
-    {
-        TODO();
-    }
-
-    void Processor::ins$RCRmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        TODO();
-    }
-
-    void Processor::ins$RCRmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        TODO();
-    }
-
     void Processor::ins$RCRregisterByCLWord(uint8_t REG)
     {
         INSTRUCTION_TRACE("ins$RCR: {0},{1}", Register16::nameFromREG16(REG), CL());
@@ -3484,16 +3447,6 @@ namespace Cepums {
             updateRegisterFromREG16(REG, registerValue);
             counter--;
         }
-    }
-
-    void Processor::ins$RCRregisterOnceByte(uint8_t REG)
-    {
-        TODO();
-    }
-
-    void Processor::ins$RCRregisterOnceWord(uint8_t REG)
-    {
-        TODO();
     }
 
     void Processor::ins$REP_MOVSword(MemoryManager& memoryManager)
@@ -3552,16 +3505,6 @@ namespace Cepums {
         SP() += 2;
     }
 
-    void Processor::ins$ROLmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        TODO();
-    }
-
-    void Processor::ins$ROLmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        TODO();
-    }
-
     void Processor::ins$ROLregisterOnceByte(uint8_t REG)
     {
         INSTRUCTION_TRACE("ins$ROL: {0},1", Register8::nameFromREG8(REG));
@@ -3581,21 +3524,6 @@ namespace Cepums {
             CLEAR_FLAG_BIT(registerValue, 0);
         }
         updateRegisterFromREG16(REG, registerValue);
-    }
-
-    void Processor::ins$ROLregisterOnceWord(uint8_t REG)
-    {
-        TODO();
-    }
-
-    void Processor::ins$RORmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        TODO();
-    }
-
-    void Processor::ins$RORmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        TODO();
     }
 
     void Processor::ins$RORregisterOnceByte(uint8_t REG)
@@ -3638,16 +3566,6 @@ namespace Cepums {
             CLEAR_FLAG_BIT(registerValue, 15);
         }
         updateRegisterFromREG16(REG, registerValue);
-    }
-
-    void Processor::ins$SALmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        TODO();
-    }
-
-    void Processor::ins$SALmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        TODO();
     }
 
     void Processor::ins$SALregisterByCLByte(uint8_t rmBits)
@@ -3758,36 +3676,6 @@ namespace Cepums {
         else
             SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
         updateRegisterFromREG16(rmBits, registerValue);
-    }
-
-    void Processor::ins$SARmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        TODO();
-    }
-
-    void Processor::ins$SARmemoryOnceWord(MemoryManager & memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        TODO();
-    }
-
-    void Processor::ins$SARregisterOnceByte(uint8_t rmBits)
-    {
-        TODO();
-    }
-
-    void Processor::ins$SARregisterOnceWord(uint8_t rmBits)
-    {
-        TODO();
-    }
-
-    void Processor::ins$SHRmemoryOnceByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        TODO();
-    }
-
-    void Processor::ins$SHRmemoryOnceWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        TODO();
     }
 
     void Processor::ins$SHRregisterByCLByte(uint8_t rmBits)
