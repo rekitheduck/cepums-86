@@ -105,9 +105,7 @@ namespace Cepums {
 
         void ins$AAD(uint8_t immediate);
 
-        void ins$ADCimmediateToRegister(uint8_t destREG, uint8_t immediate);
-        void ins$ADCregisterToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t registerValue);
-        void ins$ADCregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG);
+        void ins$ADC(MemoryManager&, Ref<Operand> destination, Ref<Operand> source);
 
         void ins$ADD(MemoryManager&, Ref<Operand> destination, Ref<Operand> source);
 
