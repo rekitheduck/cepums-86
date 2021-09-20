@@ -186,7 +186,7 @@ namespace Cepums {
                 return ins$OR(memoryManager, createRef<Register16>(regBits), createRef<Register16>(rmBits));
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
             return ins$OR(memoryManager, createRef<Register16>(regBits), createRef<Memory16>(segment, effectiveAddress));
         }
@@ -290,23 +290,55 @@ namespace Cepums {
         }
         case 0x20: // AND: 8-bit from register to register/memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$AND(memoryManager, createRef<Register8>(rmBits), createRef<Register8>(regBits));
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$AND(memoryManager, createRef<Memory8>(segment, effectiveAddress), createRef<Register8>(regBits));
         }
         case 0x21: // AND: 16-bit from register to register/memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$AND(memoryManager, createRef<Register16>(rmBits), createRef<Register16>(regBits));
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$AND(memoryManager, createRef<Memory16>(segment, effectiveAddress), createRef<Register16>(regBits));
         }
         case 0x22: // AND: 8-bit from register/memory to register
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$AND(memoryManager, createRef<Register8>(regBits), createRef<Register8>(rmBits));
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$AND(memoryManager, createRef<Register8>(regBits), createRef<Memory8>(segment, effectiveAddress));
         }
         case 0x23: // AND: 16-bit from register/memory to register
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$AND(memoryManager, createRef<Register16>(regBits), createRef<Register16>(rmBits));
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$AND(memoryManager, createRef<Register16>(regBits), createRef<Memory16>(segment, effectiveAddress));
         }
         case 0x24: // AND: 8-bit immediate with AL
         {
@@ -315,8 +347,8 @@ namespace Cepums {
         }
         case 0x25: // AND: 16-bit immediate with AX
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, word);
+            return ins$AND(memoryManager, createRef<Register16>(REGISTER_AX), createRef<Immediate16>(word));
         }
         case 0x26: // ES: Segment override prefix
         {
@@ -876,8 +908,9 @@ namespace Cepums {
                     //return ins$ADCimmediateToRegister(rmBits, immediate);
                 case 0b011:
                     //return ins$SBBimmediateToRegister(rmBits, immediate);
+                    TODO();
                 case 0b100:
-                    //return ins$ANDimmediateToRegister(rmBits, immediate);
+                    return ins$AND(memoryManager, createRef<Register16>(rmBits), createRef<Immediate16>(immediate));
                 case 0b101:
                     //return ins$SUBimmediateToRegister(rmBits, immediate);
                     TODO();
@@ -905,8 +938,9 @@ namespace Cepums {
                 //return ins$ADCimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b011:
                 //return ins$SBBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
+                TODO();
             case 0b100:
-                //return ins$ANDimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
+                return ins$AND(memoryManager, createRef<Memory16>(segment, effectiveAddress), createRef<Immediate16>(immediate));
             case 0b101:
                 //return ins$SUBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
                 TODO();
@@ -987,6 +1021,12 @@ namespace Cepums {
                 //return ins$ADCimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
             case 0b011:
                 //return ins$SBBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
+                TODO();
+            case 0b100:
+#ifdef STRICT8086INSTRUCTIONSET
+                ILLEGAL_INSTRUCTION();
+#endif
+                return ins$AND(memoryManager, createRef<Memory16>(segment, effectiveAddress), createRef<Immediate16>(immediate));
             case 0b101:
                 //return ins$SUBimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
                 TODO();
