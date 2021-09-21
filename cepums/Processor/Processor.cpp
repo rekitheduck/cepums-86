@@ -1073,8 +1073,16 @@ namespace Cepums {
         }
         case 0x84: // TEST: 8-bit from register to register/memory
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
+
+            if (IS_IN_REGISTER_MODE(modBits))
+                return ins$TEST(memoryManager, createRef<Register8>(rmBits), createRef<Register8>(regBits));
+
+            LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
+
+            return ins$TEST(memoryManager, createRef<Memory8>(segment, effectiveAddress), createRef<Register8>(regBits));
         }
         case 0x85: // TEST: 16-bit from register to register/memory
         {
@@ -1082,14 +1090,12 @@ namespace Cepums {
             PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
 
             if (IS_IN_REGISTER_MODE(modBits))
-                return ins$TESTregisterToRegisterWord(rmBits, regBits);
+                return ins$TEST(memoryManager, createRef<Register16>(rmBits), createRef<Register16>(regBits));
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            TODO();
-            //return ins$TESTregisterToMemory(memoryManager, segment, effectiveAddress, getRegisterFromREG16(regBits));
-            return;
+            return ins$TEST(memoryManager, createRef<Memory16>(segment, effectiveAddress), createRef<Register16>(regBits));
         }
         case 0x86: // XCHG: 8-bit exchange from register/memory to register
         {
@@ -1340,20 +1346,20 @@ namespace Cepums {
             TODO();
             return;
         }
-        case 0xA7: // 16-bit compare string from SRC-STR16 to DEST-STR16
+        case 0xA7: // CMPS: 16-bit compare string from SRC-STR16 to DEST-STR16
         {
             TODO();
             return;
         }
         case 0xA8: // TEST: 8-bit from immediate to AL
         {
-            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
-            return ins$TESTimmediateToRegister(REGISTER_AL, immediate);
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, byte);
+            return ins$TEST(memoryManager, createRef<Register8>(REGISTER_AL), createRef<Immediate8>(byte));
         }
         case 0xA9: // TEST: 16-bit from immediate to AX
         {
-            TODO();
-            return;
+            LOAD_NEXT_INSTRUCTION_WORD(memoryManager, word);
+            return ins$TEST(memoryManager, createRef<Register16>(REGISTER_AX), createRef<Immediate16>(word));
         }
         case 0xAA: // STOS: 8-bit store byte or word string to DEST-STR8
         {
@@ -1991,7 +1997,7 @@ namespace Cepums {
                 case 0b000:
                 {
                     LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
-                    return ins$TESTimmediateToRegister(rmBits, immediate);
+                    return ins$TEST(memoryManager, createRef<Register8>(rmBits), createRef<Immediate8>(immediate));
                 }
                 case 0b010:
                     //return ins$NOTregisterByte(rmBits);
@@ -2021,7 +2027,7 @@ namespace Cepums {
             case 0b000:
             {
                 LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, immediate);
-                return ins$TESTimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
+                return ins$TEST(memoryManager, createRef<Memory8>(segment, effectiveAddress), createRef<Immediate8>(immediate));
             }
             case 0b010:
                 //return ins$NOTmemoryByte(memoryManager, effectiveAddress);
@@ -2054,8 +2060,7 @@ namespace Cepums {
                 case 0b000:
                 {
                     LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
-                    //return ins$TESTimmediateToRegister(rmBits, immediate);
-                    TODO();
+                    return ins$TEST(memoryManager, createRef<Register16>(rmBits), createRef<Immediate16>(immediate));
                 }
                 case 0b010:
                     return ins$NOTregisterWord(rmBits);
@@ -2086,7 +2091,7 @@ namespace Cepums {
             case 0b000:
             {
                 LOAD_NEXT_INSTRUCTION_WORD(memoryManager, immediate);
-                return ins$TESTimmediateToMemory(memoryManager, segment, effectiveAddress, immediate);
+                return ins$TEST(memoryManager, createRef<Memory16>(segment, effectiveAddress), createRef<Immediate16>(immediate));
             }
             case 0b010:
                 return ins$NOTmemoryWord(memoryManager, segment, effectiveAddress);
@@ -3663,39 +3668,21 @@ namespace Cepums {
         }
     }
 
-    void Processor::ins$TESTimmediateToRegister(uint8_t destREG, uint8_t value)
+    void Processor::ins$TEST(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
     {
-        INSTRUCTION_TRACE("ins$TEST: 8-bit immediate to register");
-        uint8_t registerValue = getRegisterValueFromREG8(destREG);
-        uint8_t result = registerValue & value;
-        setFlagsAfterLogicalOperation(result);
-    }
+        destination->handleSegmentOverridePrefix(this);
+        source->handleSegmentOverridePrefix(this);
 
-    void Processor::ins$TESTimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint8_t immediate)
-    {
-        INSTRUCTION_TRACE("ins$TEST: 8-bit immediate to memory");
-        if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE)
-            segment = getSegmentRegisterValueAndResetOverride();
-        uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
-        uint8_t result = memoryValue & immediate;
-        setFlagsAfterLogicalOperation(result);
-    }
-
-    void Processor::ins$TESTimmediateToMemory(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress, uint16_t immediate)
-    {
-        INSTRUCTION_TRACE("ins$TEST: 16-bit immediate to memory");
-        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
-        uint16_t result = memoryValue & immediate;
-        setFlagsAfterLogicalOperation(result);
-    }
-
-    void Processor::ins$TESTregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
-    {
-        INSTRUCTION_TRACE("ins$TEST: 8-bit register to register");
-        uint16_t registerValue = getRegisterFromREG16(destREG);
-        uint16_t operand2 = getRegisterFromREG16(sourceREG);
-        uint16_t result = registerValue & operand2;
-        setFlagsAfterLogicalOperation(result);
+        if (destination->size() == OperandSize::Byte)
+        {
+            uint8_t result = destination->valueByte(this, mm) & source->valueByte(this, mm);
+            setFlagsAfterLogicalOperation(result);
+        }
+        else
+        {
+            uint16_t result = destination->valueWord(this, mm) & source->valueWord(this, mm);
+            setFlagsAfterLogicalOperation(result);
+        }
     }
 
     void Processor::ins$XCHGmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
