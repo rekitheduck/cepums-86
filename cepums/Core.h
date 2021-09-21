@@ -9,15 +9,18 @@
 #define DC_CORE_ASSERT(x, ...)
 #endif
 #define TODO() { DC_CORE_CRITICAL("TODO hit in {0}:{1}", __FILE__, __LINE__); __debugbreak(); }
-#else
-// TODO: figure out how to do debugging on gdb
-#define DC_CORE_ASSERT(x, ...) { if(!(x)) { DC_CORE_CRITICAL("Assertation failed: {0} in {1} at {2}", __VA_ARGS__, __FILE__, __LINE__); abort(); } }
-#define TODO() { DC_CORE_CRITICAL("TODO hit in {0}:{1}", __FILE__, __LINE__); abort(); }
-#endif
-
 #define ILLEGAL_INSTRUCTION() { DC_CORE_CRITICAL("ILLEGAL INSTRUCTION REACHED in {0}:{1}", __FILE__, __LINE__); __debugbreak(); }
 #define UNKNOWN_INSTRUCTION() { DC_CORE_CRITICAL("Unknown instruction parsed in {0}:{1}", __FILE__, __LINE__); __debugbreak(); }
 #define VERIFY_NOT_REACHED() DC_CORE_CRITICAL("Verify not reached hit in {0}:{1}!", __FILE__, __LINE__); __debugbreak()
+#else
+// TODO: figure out how to do debugging on gdb
+#define DC_CORE_ASSERT(x, ...) { if(!(x)) { DC_CORE_CRITICAL("Assertation failed: {0} in {1} at {2}", __VA_ARGS__, __FILE__, __LINE__); abort(); } }
+#define ILLEGAL_INSTRUCTION() { DC_CORE_CRITICAL("ILLEGAL INSTRUCTION REACHED in {0}:{1}", __FILE__, __LINE__); abort(); }
+#define UNKNOWN_INSTRUCTION() { DC_CORE_CRITICAL("Unknown instruction parsed in {0}:{1}", __FILE__, __LINE__); abort(); }
+#define VERIFY_NOT_REACHED() DC_CORE_CRITICAL("Verify not reached hit in {0}:{1}!", __FILE__, __LINE__); abort()
+#define TODO() { DC_CORE_CRITICAL("TODO hit in {0}:{1}", __FILE__, __LINE__); abort(); }
+#endif
+
 #define INSTRUCTION_TRACE(...) if(s_debugSpam) DC_CORE_WARN(__VA_ARGS__)
 //#define INSTRUCTION_TRACE(...)
 

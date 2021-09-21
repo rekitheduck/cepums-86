@@ -92,9 +92,14 @@ project "Cepums-86"
     }
 
     filter "system:linux"
+        includedirs
+        {
+            "/usr/include/SDL2"
+        }
         links
         {
-            "pthread"
+            "pthread",
+            "fmt"
         }
 
     filter "system:windows"
