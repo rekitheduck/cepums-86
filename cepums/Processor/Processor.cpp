@@ -598,67 +598,67 @@ namespace Cepums {
         }
         case 0x40: // INC: AX
         {
-            return ins$INCregister(IS_WORD, REGISTER_AX);
+            return ins$INC(memoryManager, createRef<Register16>(REGISTER_AX));
         }
         case 0x41: // INC: CX
         {
-            return ins$INCregister(IS_WORD, REGISTER_CX);
+            return ins$INC(memoryManager, createRef<Register16>(REGISTER_CX));
         }
         case 0x42: // INC: DX
         {
-            return ins$INCregister(IS_WORD, REGISTER_DX);
+            return ins$INC(memoryManager, createRef<Register16>(REGISTER_DX));
         }
         case 0x43: // INC: BX
         {
-            return ins$INCregister(IS_WORD, REGISTER_BX);
+            return ins$INC(memoryManager, createRef<Register16>(REGISTER_BX));
         }
         case 0x44: // INC: SP
         {
-            return ins$INCregister(IS_WORD, REGISTER_SP);
+            return ins$INC(memoryManager, createRef<Register16>(REGISTER_SP));
         }
         case 0x45: // INC: BP
         {
-            return ins$INCregister(IS_WORD, REGISTER_BP);
+            return ins$INC(memoryManager, createRef<Register16>(REGISTER_BP));
         }
         case 0x46: // INC: SI
         {
-            return ins$INCregister(IS_WORD, REGISTER_SI);
+            return ins$INC(memoryManager, createRef<Register16>(REGISTER_SI));
         }
         case 0x47: // INC: DI
         {
-            return ins$INCregister(IS_WORD, REGISTER_DI);
+            return ins$INC(memoryManager, createRef<Register16>(REGISTER_DI));
         }
         case 0x48: // DEC: AX
         {
-            return ins$DECregister(IS_WORD, REGISTER_AX);
+            return ins$DEC(memoryManager, createRef<Register16>(REGISTER_AX));
         }
         case 0x49: // DEC: CX
         {
-            return ins$DECregister(IS_WORD, REGISTER_CX);
+            return ins$DEC(memoryManager, createRef<Register16>(REGISTER_CX));
         }
         case 0x4A: // DEC: DX
         {
-            return ins$DECregister(IS_WORD, REGISTER_DX);
+            return ins$DEC(memoryManager, createRef<Register16>(REGISTER_DX));
         }
         case 0x4B: // DEC: BX
         {
-            return ins$DECregister(IS_WORD, REGISTER_BX);
+            return ins$DEC(memoryManager, createRef<Register16>(REGISTER_BX));
         }
         case 0x4C: // DEC: SP
         {
-            return ins$DECregister(IS_WORD, REGISTER_SP);
+            return ins$DEC(memoryManager, createRef<Register16>(REGISTER_SP));
         }
         case 0x4D: // DEC: BP
         {
-            return ins$DECregister(IS_WORD, REGISTER_BP);
+            return ins$DEC(memoryManager, createRef<Register16>(REGISTER_BP));
         }
         case 0x4E: // DEC: SI
         {
-            return ins$DECregister(IS_WORD, REGISTER_SI);
+            return ins$DEC(memoryManager, createRef<Register16>(REGISTER_SI));
         }
         case 0x4F: // DEC: DI
         {
-            return ins$DECregister(IS_WORD, REGISTER_DI);
+            return ins$DEC(memoryManager, createRef<Register16>(REGISTER_DI));
         }
         case 0x50: // PUSH: AX
         {
@@ -2138,9 +2138,9 @@ namespace Cepums {
                 switch (regBits)
                 {
                 case 0b000:
-                    return ins$INCregister(IS_BYTE, rmBits);
+                    return ins$INC(memoryManager, createRef<Register8>(rmBits));
                 case 0b001:
-                    return ins$DECregister(IS_BYTE, rmBits);
+                    return ins$DEC(memoryManager, createRef<Register8>(rmBits));
                 default:
                     ILLEGAL_INSTRUCTION();
                     return;
@@ -2152,10 +2152,9 @@ namespace Cepums {
             switch (regBits)
             {
             case 0b000:
-                return ins$INCmemoryByte(memoryManager, segment, effectiveAddress);
+                return ins$INC(memoryManager, createRef<Memory8>(segment, effectiveAddress));
             case 0b001:
-                TODO();
-                //return ins$DECmemoryByte(memoryManager, segment, effectiveAddress);
+                return ins$DEC(memoryManager, createRef<Memory8>(segment, effectiveAddress));
             default:
                 ILLEGAL_INSTRUCTION();
                 return;
@@ -2171,9 +2170,9 @@ namespace Cepums {
                 switch (regBits)
                 {
                 case 0b010:
+                    return ins$INC(memoryManager, createRef<Register16>(rmBits));
                 case 0b100:
-                    TODO();
-                    return;
+                    return ins$DEC(memoryManager, createRef<Register16>(rmBits));
                 default:
                     VERIFY_NOT_REACHED();
                     return;
@@ -2185,9 +2184,9 @@ namespace Cepums {
             switch (regBits)
             {
             case 0b000:
-                return ins$INCmemoryWord(memoryManager, segment, effectiveAddress);
+                return ins$INC(memoryManager, createRef<Memory16>(segment, effectiveAddress));
             case 0b001:
-                TODO();
+                return ins$DEC(memoryManager, createRef<Memory16>(segment, effectiveAddress));
                 return;
             case 0b010: // CALL: Intrasegment
                 return ins$CALLnearFromMemory(memoryManager, segment, effectiveAddress);
@@ -2534,62 +2533,60 @@ namespace Cepums {
         }
     }
 
-    void Processor::ins$DECregister(uint8_t isWordBit, uint8_t REG)
+    void Processor::ins$DEC(MemoryManager& mm, Ref<Operand> operand)
     {
-        if (isWordBit)
+        operand->handleSegmentOverridePrefix(this);
+
+        if (operand->size() == OperandSize::Byte)
         {
-            INSTRUCTION_TRACE("ins$DEC: DEC {0}", Register16::nameFromREG16(REG));
-            uint16_t currentValue = getRegisterFromREG16(REG);
-            uint16_t newValue = currentValue - 1;
-            updateRegisterFromREG16(REG, newValue);
+            uint8_t oldValue = operand->valueByte(this, mm);
+            operand->updateByte(this, mm, oldValue - 1);
 
             // We shouldn't touch the CARRY_FLAG
-            if (currentValue >= SHRT_MAX)
+            if (oldValue >= SCHAR_MAX)
                 SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
             else
                 CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
 
-            if (IS_BIT_SET(currentValue, 15))
+            if (IS_BIT_SET(oldValue, 7))
                 SET_FLAG_BIT(m_flags, SIGN_FLAG);
             else
                 CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
 
-            if (currentValue == 0)
+            if (oldValue == 0)
                 SET_FLAG_BIT(m_flags, ZERO_FLAG);
             else
                 CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
 
-            DO_PARITY_BYTE(currentValue);
-            if (IS_PARITY_EVEN(currentValue))
+            DO_PARITY_BYTE(oldValue);
+            if (IS_PARITY_EVEN(oldValue))
                 SET_FLAG_BIT(m_flags, PARITY_FLAG);
             else
                 CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
         }
         else
         {
-            INSTRUCTION_TRACE("ins$DEC: DEC {0}", Register8::nameFromREG8(REG));
-            uint8_t currentValue = getRegisterValueFromREG8(REG);
-            uint8_t newValue = currentValue - 1;
-            updateRegisterFromREG8(REG, newValue);
+            uint16_t oldValue = operand->valueWord(this, mm);
+            operand->updateWord(this, mm, oldValue - 1);
 
             // We shouldn't touch the CARRY_FLAG
-            if (currentValue >= SCHAR_MAX)
+            if (oldValue >= SHRT_MAX)
                 SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
             else
                 CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
 
-            if (IS_BIT_SET(currentValue, 7))
+            if (IS_BIT_SET(oldValue, 15))
                 SET_FLAG_BIT(m_flags, SIGN_FLAG);
             else
                 CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
 
-            if (currentValue == 0)
+            if (oldValue == 0)
                 SET_FLAG_BIT(m_flags, ZERO_FLAG);
             else
                 CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
 
-            DO_PARITY_BYTE(currentValue);
-            if (IS_PARITY_EVEN(currentValue))
+            DO_PARITY_BYTE(oldValue);
+            if (IS_PARITY_EVEN(oldValue))
                 SET_FLAG_BIT(m_flags, PARITY_FLAG);
             else
                 CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
@@ -2625,126 +2622,64 @@ namespace Cepums {
         DX() = remainder;
     }
 
-    void Processor::ins$INCregister(uint8_t isWordBit, uint8_t REG)
+    void Processor::ins$INC(MemoryManager& mm, Ref<Operand> operand)
     {
-        if (isWordBit)
+        operand->handleSegmentOverridePrefix(this);
+
+        if (operand->size() == OperandSize::Byte)
         {
-            INSTRUCTION_TRACE("ins$INC: INC {0}", Register16::nameFromREG16(REG));
-            uint16_t currentValue = getRegisterFromREG16(REG);
-            uint16_t newValue = currentValue + 1;
-            updateRegisterFromREG16(REG, newValue);
+            uint8_t oldValue = operand->valueByte(this, mm);
+            operand->updateByte(this, mm, oldValue + 1);
 
             // We shouldn't touch the CARRY_FLAG
-            if (currentValue >= SHRT_MAX)
+            if (oldValue >= SCHAR_MAX)
                 SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
             else
                 CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
 
-            if (IS_BIT_SET(currentValue, 15))
+            if (IS_BIT_SET(oldValue, 7))
                 SET_FLAG_BIT(m_flags, SIGN_FLAG);
             else
                 CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
 
-            if (currentValue == 0)
+            if (oldValue == 0)
                 SET_FLAG_BIT(m_flags, ZERO_FLAG);
             else
                 CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
 
-            DO_PARITY_BYTE(currentValue);
-            if (IS_PARITY_EVEN(currentValue))
+            DO_PARITY_BYTE(oldValue);
+            if (IS_PARITY_EVEN(oldValue))
                 SET_FLAG_BIT(m_flags, PARITY_FLAG);
             else
                 CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
         }
         else
         {
-            INSTRUCTION_TRACE("ins$INC: INC {0}", Register8::nameFromREG8(REG));
-            uint8_t currentValue = getRegisterValueFromREG8(REG);
-            uint8_t newValue = currentValue + 1;
-            updateRegisterFromREG8(REG, newValue);
+            uint16_t oldValue = operand->valueWord(this, mm);
+            operand->updateWord(this, mm, oldValue + 1);
 
             // We shouldn't touch the CARRY_FLAG
-            if (currentValue >= SCHAR_MAX)
+            if (oldValue >= SHRT_MAX)
                 SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
             else
                 CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
 
-            if (IS_BIT_SET(currentValue, 7))
+            if (IS_BIT_SET(oldValue, 15))
                 SET_FLAG_BIT(m_flags, SIGN_FLAG);
             else
                 CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
 
-            if (currentValue == 0)
+            if (oldValue == 0)
                 SET_FLAG_BIT(m_flags, ZERO_FLAG);
             else
                 CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
 
-            DO_PARITY_BYTE(currentValue);
-            if (IS_PARITY_EVEN(currentValue))
+            DO_PARITY_BYTE(oldValue);
+            if (IS_PARITY_EVEN(oldValue))
                 SET_FLAG_BIT(m_flags, PARITY_FLAG);
             else
                 CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
         }
-    }
-
-    void Processor::ins$INCmemoryByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        INSTRUCTION_TRACE("ins$INC: 8-bit memory {0:X}:{1:X}", segment, effectiveAddress);
-        uint8_t currentValue = memoryManager.readByte(segment, effectiveAddress);
-        uint8_t newValue = currentValue + 1;
-        memoryManager.writeByte(segment, effectiveAddress, newValue);
-
-        // We shouldn't touch the CARRY_FLAG
-        if (currentValue >= SCHAR_MAX)
-            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
-        else
-            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
-
-        if (IS_BIT_SET(currentValue, 7))
-            SET_FLAG_BIT(m_flags, SIGN_FLAG);
-        else
-            CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
-
-        if (currentValue == 0)
-            SET_FLAG_BIT(m_flags, ZERO_FLAG);
-        else
-            CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
-
-        DO_PARITY_BYTE(currentValue);
-        if (IS_PARITY_EVEN(currentValue))
-            SET_FLAG_BIT(m_flags, PARITY_FLAG);
-        else
-            CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
-    }
-
-    void Processor::ins$INCmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress)
-    {
-        INSTRUCTION_TRACE("ins$INC: 16-bit memory {0:X}:{1:X}", segment, effectiveAddress);
-        uint16_t currentValue = memoryManager.readByte(segment, effectiveAddress);
-        uint16_t newValue = currentValue + 1;
-        memoryManager.writeWord(segment, effectiveAddress, newValue);
-
-        // We shouldn't touch the CARRY_FLAG
-        if (currentValue >= SHRT_MAX)
-            SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
-        else
-            CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
-
-        if (IS_BIT_SET(currentValue, 15))
-            SET_FLAG_BIT(m_flags, SIGN_FLAG);
-        else
-            CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
-
-        if (currentValue == 0)
-            SET_FLAG_BIT(m_flags, ZERO_FLAG);
-        else
-            CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
-
-        DO_PARITY_BYTE(currentValue);
-        if (IS_PARITY_EVEN(currentValue))
-            SET_FLAG_BIT(m_flags, PARITY_FLAG);
-        else
-            CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
     }
 
     void Processor::ins$INT(MemoryManager& memoryManager, uint16_t immediate)

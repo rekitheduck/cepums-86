@@ -118,14 +118,11 @@ namespace Cepums {
 
         void ins$CMP(MemoryManager&, Ref<Operand> destination, Ref<Operand> source);
 
-        void ins$DECregister(uint8_t isWordBit, uint8_t REG);
-        void ins$DECmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
+        void ins$DEC(MemoryManager&, Ref<Operand> operand);
 
         void ins$DIVregisterWord(uint8_t REG);
 
-        void ins$INCregister(uint8_t isWordBit, uint8_t REG);
-        void ins$INCmemoryByte(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
-        void ins$INCmemoryWord(MemoryManager& memoryManager, uint16_t segment, uint16_t effectiveAddress);
+        void ins$INC(MemoryManager&, Ref<Operand> operand);
 
         void ins$INT(MemoryManager& memoryManager, uint16_t immediate);
         void ins$IRET(MemoryManager& memoryManager);
