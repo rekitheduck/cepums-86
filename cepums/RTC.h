@@ -36,6 +36,7 @@ namespace Cepums {
         uint8_t m_hardDisk0Type = 0x00; // No hard disk 0
         uint8_t m_hardDisk1Type = 0x00; // No hard disk 1
 
+        uint8_t m_systemOperationalFlags = 0x74; // A bunch of stuff
         uint8_t m_checksumLSB = 0xF3;
         uint8_t m_checksumMSB = 0x01;
 

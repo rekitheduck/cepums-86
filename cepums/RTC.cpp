@@ -110,6 +110,10 @@ namespace Cepums {
         case HardDisk1Type:
             m_hardDisk1Type = value;
             break;
+
+        case SystemOperationalFlags:
+            m_systemOperationalFlags = value;
+            break;
         case ChecksumLSB:
             DC_CORE_WARN("[RTC]: New checksum LSB: {0}", value);
             m_checksumLSB = value;
@@ -224,7 +228,7 @@ namespace Cepums {
             break;
 
         case SystemOperationalFlags:
-            byte = 0x74; // A bunch of stuff
+            byte = m_systemOperationalFlags;
             break;
 
         case ChecksumLSB:
