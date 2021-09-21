@@ -1103,12 +1103,12 @@ namespace Cepums {
             PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
 
             if (IS_IN_REGISTER_MODE(modBits))
-                return ins$XCHGregisterToRegisterByte(rmBits, regBits);
+                return ins$XCHG(memoryManager, createRef<Register8>(regBits), createRef<Register8>(rmBits));
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_BYTE, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$XCHGmemoryToRegisterByte(memoryManager, regBits, segment, effectiveAddress);
+            return ins$XCHG(memoryManager, createRef<Register8>(regBits), createRef<Memory8>(segment, effectiveAddress));
         }
         case 0x87: // XCHG: 16-bit exchange from register/memory to register
         {
@@ -1116,12 +1116,12 @@ namespace Cepums {
             PARSE_MOD_REG_RM_BITS(byte, modBits, regBits, rmBits);
 
             if (IS_IN_REGISTER_MODE(modBits))
-                return ins$XCHGregisterToRegisterWord(rmBits, regBits);
+                return ins$XCHG(memoryManager, createRef<Register16>(regBits), createRef<Register16>(rmBits));
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
             CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
 
-            return ins$XCHGmemoryToRegisterWord(memoryManager, regBits, segment, effectiveAddress);
+            return ins$XCHG(memoryManager, createRef<Register16>(regBits), createRef<Memory16>(segment, effectiveAddress));
         }
         case 0x88: // MOV: 8-bit from register to register/memory
         {
@@ -1242,37 +1242,31 @@ namespace Cepums {
         }
         case 0x91: // XCHG: Exchange AX and CX
         {
-            TODO();
-            return;
+            return ins$XCHG(memoryManager, createRef<Register16>(REGISTER_AX), createRef<Register16>(REGISTER_CX));
         }
         case 0x92: // XCHG: Exchange AX and DX
         {
-            TODO();
-            return;
+            return ins$XCHG(memoryManager, createRef<Register16>(REGISTER_AX), createRef<Register16>(REGISTER_DX));
         }
         case 0x93: // XCHG: Exchange AX and BX
         {
-            TODO();
-            return;
+            return ins$XCHG(memoryManager, createRef<Register16>(REGISTER_AX), createRef<Register16>(REGISTER_BX));
         }
         case 0x94: // XCHG: Exchange AX and SP
         {
-            TODO();
-            return;
+            return ins$XCHG(memoryManager, createRef<Register16>(REGISTER_AX), createRef<Register16>(REGISTER_SP));
         }
         case 0x95: // XCHG: Exchange AX and BP
         {
-            TODO();
-            return;
+            return ins$XCHG(memoryManager, createRef<Register16>(REGISTER_AX), createRef<Register16>(REGISTER_BP));
         }
         case 0x96: // XCHG: Exchange AX and SI
         {
-            return ins$XCHGregisterToRegisterWord(REGISTER_AX, REGISTER_SI);
+            return ins$XCHG(memoryManager, createRef<Register16>(REGISTER_AX), createRef<Register16>(REGISTER_SI));
         }
         case 0x97: // XCHG: Exchange AX and DI
         {
-            TODO();
-            return;
+            return ins$XCHG(memoryManager, createRef<Register16>(REGISTER_AX), createRef<Register16>(REGISTER_DI));
         }
         case 0x98: // CBW: Convert byte to word
         {
@@ -3685,40 +3679,23 @@ namespace Cepums {
         }
     }
 
-    void Processor::ins$XCHGmemoryToRegisterByte(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
+    void Processor::ins$XCHG(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
     {
-        INSTRUCTION_TRACE("ins$XCHG: Exchange 8-bit memory with {0}", Register8::nameFromREG8(destREG));
-        uint8_t memoryValue = memoryManager.readByte(segment, effectiveAddress);
-        uint8_t registerValue = getRegisterValueFromREG8(destREG);
-        memoryManager.writeByte(segment, effectiveAddress, registerValue);
-        updateRegisterFromREG8(destREG, memoryValue);
-    }
+        destination->handleSegmentOverridePrefix(this);
+        source->handleSegmentOverridePrefix(this);
 
-    void Processor::ins$XCHGmemoryToRegisterWord(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
-    {
-        INSTRUCTION_TRACE("ins$XCHG: Exchange 16-bit memory with {0}", Register16::nameFromREG16(destREG));
-        uint16_t memoryValue = memoryManager.readWord(segment, effectiveAddress);
-        uint16_t registerValue = getRegisterFromREG16(destREG);
-        memoryManager.writeWord(segment, effectiveAddress, registerValue);
-        updateRegisterFromREG16(destREG, memoryValue);
-    }
-
-    void Processor::ins$XCHGregisterToRegisterByte(uint8_t destREG, uint8_t sourceREG)
-    {
-        INSTRUCTION_TRACE("ins$XCHG: Exchange 8-bit {0} and {1}", Register8::nameFromREG8(destREG), Register8::nameFromREG8(sourceREG));
-        uint8_t registerOneValue = getRegisterValueFromREG8(destREG);
-        uint8_t registerTwoValue = getRegisterValueFromREG8(sourceREG);
-        updateRegisterFromREG8(destREG, registerTwoValue);
-        updateRegisterFromREG8(sourceREG, registerOneValue);
-    }
-
-    void Processor::ins$XCHGregisterToRegisterWord(uint8_t destREG, uint8_t sourceREG)
-    {
-        INSTRUCTION_TRACE("ins$XCHG: Exchange 16-bit {0} and {1}", Register16::nameFromREG16(destREG), Register16::nameFromREG16(sourceREG));
-        uint16_t registerOneValue = getRegisterFromREG16(destREG);
-        uint16_t registerTwoValue = getRegisterFromREG16(sourceREG);
-        updateRegisterFromREG16(destREG, registerTwoValue);
-        updateRegisterFromREG16(sourceREG, registerOneValue);
+        if (destination->size() == OperandSize::Byte)
+        {
+            uint8_t temp = destination->valueByte(this, mm);
+            destination->updateByte(this, mm, source->valueByte(this, mm));
+            source->updateByte(this, mm, temp);
+        }
+        else
+        {
+            uint16_t temp = destination->valueWord(this, mm);
+            destination->updateWord(this, mm, source->valueWord(this, mm));
+            source->updateWord(this, mm, temp);
+        }
     }
 
     void Processor::ins$XOR(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
