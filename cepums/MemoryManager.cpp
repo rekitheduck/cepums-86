@@ -38,33 +38,36 @@ namespace Cepums {
         }
 #endif
 
-        // Load BIOS
-        std::ifstream firstBIOSbinary;
-        std::ifstream secondBIOSbinary;
+        // Load BASIC and BIOS roms
+        std::ifstream firstROMbinary;
+        std::ifstream secondROMbinary;
 
-        // Read 1st binary
-        firstBIOSbinary.open("BIOS_5160_F000.BIN", std::ios::binary);
-        if (firstBIOSbinary.is_open())
+        auto firstROM = "BIOS_5160_F000.BIN";
+        auto secondROM = "bios.bin";
+
+        // Read 1st ROM (BASIC)
+        firstROMbinary.open(firstROM, std::ios::binary);
+        if (firstROMbinary.is_open())
         {
-            firstBIOSbinary.read((char*)m_BIOS_F0000.data(), 32 * KIBIBYTE);
-            firstBIOSbinary.close();
+            firstROMbinary.read((char*)m_BIOS_F0000.data(), 32 * KIBIBYTE);
+            firstROMbinary.close();
         }
         else
         {
-            DC_CORE_CRITICAL("Error reading first BIOS binary");
+            DC_CORE_ERROR("[NotCritical] Error reading first ROM binary: {0}. BASIC will not be available", firstROM);
         }
 
-        // Read 2nd binary
-        //secondBIOSbinary.open("BIOS_5160_F800.BIN", std::ios::binary);
-        secondBIOSbinary.open("bios.bin", std::ios::binary); // Load xi_8088 bios instead
-        if (secondBIOSbinary.is_open())
+        // Read 2nd ROM
+        secondROMbinary.open(secondROM, std::ios::binary);
+        if (secondROMbinary.is_open())
         {
-            secondBIOSbinary.read((char*)m_BIOS_F8000.data(), 32 * KIBIBYTE);
-            secondBIOSbinary.close();
+            secondROMbinary.read((char*)m_BIOS_F8000.data(), 32 * KIBIBYTE);
+            secondROMbinary.close();
         }
         else
         {
-            DC_CORE_CRITICAL("Error reading second BIOS binary");
+            DC_CORE_CRITICAL("[Critical] Error reading second BIOS binary: {0}", secondROM);
+            return;
         }
     }
 
