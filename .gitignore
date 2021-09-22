@@ -19,6 +19,7 @@ builddir/
 *.bin
 *.dll
 *.lib
+*.img
 
 # Linux: Makefiles :)
 Makefile
