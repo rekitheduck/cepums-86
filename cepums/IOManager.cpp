@@ -415,7 +415,15 @@ namespace Cepums {
 
         // Floppy data FIFO
         if (address == 0x3F5)
-            return m_floppy.writeDataFIFO(value);
+        {
+            m_floppy.writeDataFIFO(value);
+            if (m_floppy.performInterruptAfterFIFO())
+            {
+                m_floppyDelayingForInterrupt = true;
+                m_floppyInterruptCounter = 100;
+            }
+            return;
+        }
 
         // Floppy configuration control register
         if (address == 0x3F7)
