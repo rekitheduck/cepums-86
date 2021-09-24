@@ -1926,7 +1926,7 @@ namespace Cepums {
         }
         case 0xEE: // OUT: AL and DX
         {
-            INSTRUCTION_TRACE("ins$OUT: DX to port AL");
+            INSTRUCTION_TRACE("ins$OUT: AL to port in DX");
             io.writeByte(DX(), AL());
             return;
         }
@@ -2321,6 +2321,7 @@ namespace Cepums {
 
     void Processor::ins$ADC(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
     {
+        INSTRUCTION_TRACE("ins$ADC: {0}, {1}", destination->name(), source->name());
         destination->handleSegmentOverridePrefix(this);
         source->handleSegmentOverridePrefix(this);
 
@@ -2382,6 +2383,7 @@ namespace Cepums {
 
     void Processor::ins$ADD(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
     {
+        INSTRUCTION_TRACE("ins$ADD: {0}, {1}", destination->name(), source->name());
         destination->handleSegmentOverridePrefix(this);
         source->handleSegmentOverridePrefix(this);
 
@@ -2441,6 +2443,7 @@ namespace Cepums {
 
     void Processor::ins$AND(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
     {
+        INSTRUCTION_TRACE("ins$AND: {0}, {1}", destination->name(), source->name());
         destination->handleSegmentOverridePrefix(this);
         source->handleSegmentOverridePrefix(this);
 
@@ -2488,6 +2491,7 @@ namespace Cepums {
 
     void Processor::ins$CMP(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
     {
+        INSTRUCTION_TRACE("ins$CMP: {0}, {1}", destination->name(), source->name());
         destination->handleSegmentOverridePrefix(this);
         source->handleSegmentOverridePrefix(this);
 
@@ -2537,12 +2541,14 @@ namespace Cepums {
 
     void Processor::ins$DEC(MemoryManager& mm, Ref<Operand> operand)
     {
+        INSTRUCTION_TRACE("ins$DEC: {0}", operand->name());
         operand->handleSegmentOverridePrefix(this);
 
         if (operand->size() == OperandSize::Byte)
         {
             uint8_t oldValue = operand->valueByte(this, mm);
-            operand->updateByte(this, mm, oldValue - 1);
+            uint8_t result = oldValue - 1;
+            operand->updateByte(this, mm, result);
 
             // We shouldn't touch the CARRY_FLAG
             if (oldValue >= SCHAR_MAX)
@@ -2550,26 +2556,13 @@ namespace Cepums {
             else
                 CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
 
-            if (IS_BIT_SET(oldValue, 7))
-                SET_FLAG_BIT(m_flags, SIGN_FLAG);
-            else
-                CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
-
-            if (oldValue == 0)
-                SET_FLAG_BIT(m_flags, ZERO_FLAG);
-            else
-                CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
-
-            DO_PARITY_BYTE(oldValue);
-            if (IS_PARITY_EVEN(oldValue))
-                SET_FLAG_BIT(m_flags, PARITY_FLAG);
-            else
-                CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
+            setFlagsAfterArithmeticOperation(result);
         }
         else
         {
             uint16_t oldValue = operand->valueWord(this, mm);
-            operand->updateWord(this, mm, oldValue - 1);
+            uint16_t result = oldValue - 1;
+            operand->updateWord(this, mm, result);
 
             // We shouldn't touch the CARRY_FLAG
             if (oldValue >= SHRT_MAX)
@@ -2577,21 +2570,7 @@ namespace Cepums {
             else
                 CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
 
-            if (IS_BIT_SET(oldValue, 15))
-                SET_FLAG_BIT(m_flags, SIGN_FLAG);
-            else
-                CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
-
-            if (oldValue == 0)
-                SET_FLAG_BIT(m_flags, ZERO_FLAG);
-            else
-                CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
-
-            DO_PARITY_BYTE(oldValue);
-            if (IS_PARITY_EVEN(oldValue))
-                SET_FLAG_BIT(m_flags, PARITY_FLAG);
-            else
-                CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
+            setFlagsAfterArithmeticOperation(result);
         }
     }
 
@@ -2626,12 +2605,14 @@ namespace Cepums {
 
     void Processor::ins$INC(MemoryManager& mm, Ref<Operand> operand)
     {
+        INSTRUCTION_TRACE("ins$INC: {0}", operand->name());
         operand->handleSegmentOverridePrefix(this);
 
         if (operand->size() == OperandSize::Byte)
         {
             uint8_t oldValue = operand->valueByte(this, mm);
-            operand->updateByte(this, mm, oldValue + 1);
+            uint8_t result = oldValue + 1;
+            operand->updateByte(this, mm, result);
 
             // We shouldn't touch the CARRY_FLAG
             if (oldValue >= SCHAR_MAX)
@@ -2639,26 +2620,13 @@ namespace Cepums {
             else
                 CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
 
-            if (IS_BIT_SET(oldValue, 7))
-                SET_FLAG_BIT(m_flags, SIGN_FLAG);
-            else
-                CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
-
-            if (oldValue == 0)
-                SET_FLAG_BIT(m_flags, ZERO_FLAG);
-            else
-                CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
-
-            DO_PARITY_BYTE(oldValue);
-            if (IS_PARITY_EVEN(oldValue))
-                SET_FLAG_BIT(m_flags, PARITY_FLAG);
-            else
-                CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
+            setFlagsAfterArithmeticOperation(result);
         }
         else
         {
             uint16_t oldValue = operand->valueWord(this, mm);
-            operand->updateWord(this, mm, oldValue + 1);
+            uint16_t result = oldValue + 1;
+            operand->updateWord(this, mm, result);
 
             // We shouldn't touch the CARRY_FLAG
             if (oldValue >= SHRT_MAX)
@@ -2666,21 +2634,7 @@ namespace Cepums {
             else
                 CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
 
-            if (IS_BIT_SET(oldValue, 15))
-                SET_FLAG_BIT(m_flags, SIGN_FLAG);
-            else
-                CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
-
-            if (oldValue == 0)
-                SET_FLAG_BIT(m_flags, ZERO_FLAG);
-            else
-                CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
-
-            DO_PARITY_BYTE(oldValue);
-            if (IS_PARITY_EVEN(oldValue))
-                SET_FLAG_BIT(m_flags, PARITY_FLAG);
-            else
-                CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
+            setFlagsAfterArithmeticOperation(result);
         }
     }
 
@@ -2881,7 +2835,7 @@ namespace Cepums {
 
     void Processor::ins$MOV(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
     {
-        //DC_CORE_TRACE("ins$MOV: {0}, {1}", destination->name(), source->name());
+        INSTRUCTION_TRACE("ins$MOV: {0}, {1}", destination->name(), source->name());
         // There is no memory<->memory MOV
         if (destination->type() == OperandType::Memory && source->type() == OperandType::Memory)
             ILLEGAL_INSTRUCTION();
@@ -3003,6 +2957,7 @@ namespace Cepums {
 
     void Processor::ins$OR(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
     {
+        INSTRUCTION_TRACE("ins$OR: {0}, {1}", destination->name(), source->name());
         destination->handleSegmentOverridePrefix(this);
         source->handleSegmentOverridePrefix(this);
 
@@ -3617,6 +3572,7 @@ namespace Cepums {
 
     void Processor::ins$SUB(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
     {
+        INSTRUCTION_TRACE("ins$SUB: {0}, {1}", destination->name(), source->name());
         destination->handleSegmentOverridePrefix(this);
         source->handleSegmentOverridePrefix(this);
 
@@ -3664,6 +3620,7 @@ namespace Cepums {
 
     void Processor::ins$TEST(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
     {
+        INSTRUCTION_TRACE("ins$TEST: {0}, {1}", destination->name(), source->name());
         destination->handleSegmentOverridePrefix(this);
         source->handleSegmentOverridePrefix(this);
 
@@ -3681,6 +3638,7 @@ namespace Cepums {
 
     void Processor::ins$XCHG(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
     {
+        INSTRUCTION_TRACE("ins$XCHG: {0}, {1}", destination->name(), source->name());
         destination->handleSegmentOverridePrefix(this);
         source->handleSegmentOverridePrefix(this);
 
@@ -3700,6 +3658,7 @@ namespace Cepums {
 
     void Processor::ins$XOR(MemoryManager& mm, Ref<Operand> destination, Ref<Operand> source)
     {
+        INSTRUCTION_TRACE("ins$XOR: {0}, {1}", destination->name(), source->name());
         destination->handleSegmentOverridePrefix(this);
         source->handleSegmentOverridePrefix(this);
 
