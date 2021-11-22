@@ -171,6 +171,7 @@ namespace Cepums {
         void ins$RORregisterOnceByte(uint8_t REG);
         void ins$RORregisterOnceWord(uint8_t REG);
 
+        void ins$SAHF();
         void ins$SALregisterByCLByte(uint8_t rmBits);
         void ins$SALregisterByCLWord(uint8_t rmBits);
         void ins$SALregisterOnceByte(uint8_t rmBits);

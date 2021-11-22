@@ -1296,8 +1296,7 @@ namespace Cepums {
         }
         case 0x9E: // SAHF: Store AH into flags
         {
-            TODO();
-            return;
+            return ins$SAHF();
         }
         case 0x9F: // LAHF: Load AH from flags
         {
@@ -3320,6 +3319,39 @@ namespace Cepums {
             CLEAR_FLAG_BIT(registerValue, 15);
         }
         updateRegisterFromREG16(REG, registerValue);
+    }
+
+    void Processor::ins$SAHF()
+    {
+        // Sign flag
+        if (IS_BIT_SET(AH(), SIGN_FLAG))
+            SET_FLAG_BIT(m_flags, SIGN_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, SIGN_FLAG);
+
+        // Zero flag
+        if (IS_BIT_SET(AH(), ZERO_FLAG))
+            SET_FLAG_BIT(m_flags, ZERO_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, ZERO_FLAG);
+
+        // Auxiliary cary flag
+        if (IS_BIT_SET(AH(), AUXCARRY_FLAG))
+            SET_FLAG_BIT(m_flags, AUXCARRY_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, AUXCARRY_FLAG);
+
+        // Parity flag
+        if (IS_BIT_SET(AH(), PARITY_FLAG))
+            SET_FLAG_BIT(m_flags, PARITY_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, PARITY_FLAG);
+
+        // Carry flag
+        if (IS_BIT_SET(AH(), CARRY_FLAG))
+            SET_FLAG_BIT(m_flags, CARRY_FLAG);
+        else
+            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
     }
 
     void Processor::ins$SALregisterByCLByte(uint8_t rmBits)
