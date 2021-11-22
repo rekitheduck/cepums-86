@@ -1300,8 +1300,7 @@ namespace Cepums {
         }
         case 0x9F: // LAHF: Load AH from flags
         {
-            TODO();
-            return;
+            return ins$LAHF();
         }
         case 0xA0: // MOV: 8-bit from memory to AL
         {
@@ -2704,6 +2703,42 @@ namespace Cepums {
     {
         INSTRUCTION_TRACE("ins$JMP: Jumping to short");
         m_instructionPointer += increment;
+    }
+
+    void Processor::ins$LAHF()
+    {
+        uint8_t tempAH = AH();
+        // Sign flag
+        if (IS_BIT_SET(m_flags, SIGN_FLAG))
+            SET_FLAG_BIT(tempAH, SIGN_FLAG);
+        else
+            CLEAR_FLAG_BIT(tempAH, SIGN_FLAG);
+
+        // Zero flag
+        if (IS_BIT_SET(m_flags, ZERO_FLAG))
+            SET_FLAG_BIT(tempAH, ZERO_FLAG);
+        else
+            CLEAR_FLAG_BIT(tempAH, ZERO_FLAG);
+
+        // Auxiliary cary flag
+        if (IS_BIT_SET(m_flags, AUXCARRY_FLAG))
+            SET_FLAG_BIT(tempAH, AUXCARRY_FLAG);
+        else
+            CLEAR_FLAG_BIT(tempAH, AUXCARRY_FLAG);
+
+        // Parity flag
+        if (IS_BIT_SET(m_flags, PARITY_FLAG))
+            SET_FLAG_BIT(tempAH, PARITY_FLAG);
+        else
+            CLEAR_FLAG_BIT(tempAH, PARITY_FLAG);
+
+        // Carry flag
+        if (IS_BIT_SET(m_flags, CARRY_FLAG))
+            SET_FLAG_BIT(tempAH, CARRY_FLAG);
+        else
+            CLEAR_FLAG_BIT(tempAH, CARRY_FLAG);
+
+        updateRegisterFromREG8(REGISTER_AH, tempAH);
     }
 
     void Processor::ins$LEA(uint8_t destREG, uint16_t effectiveAddress)
