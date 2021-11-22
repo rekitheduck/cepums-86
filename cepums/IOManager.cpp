@@ -338,6 +338,23 @@ namespace Cepums {
         if (address == 0xC0)
             return;
 
+        // Expansion unit (XT)
+        if (address == 0x213)
+        {
+            switch (value)
+            {
+            case 0:
+                DC_CORE_TRACE("[XT] Disabling expansion unit (fake)");
+                return;
+            case 1:
+                DC_CORE_TRACE("[XT] Enabling expansion unit (fake)");
+                return;
+            default:
+                DC_CORE_TRACE("[XT] Unknown value ({0}) for enable/disable expansion unit, ignored", value);
+                return;
+            }
+        }
+
         // Serial port stuff? (not in PORTS.LST)
         if (address == 0x2E9)
             return;
@@ -386,8 +403,8 @@ namespace Cepums {
             return;
 
         // CGA
-        //if (address == 0x03D4 || address == 0x03D5)
-        //    return;
+        if (address == 0x03D4 || address == 0x03D5 || address == 0x3D9)
+            return;
 
         // CGA mode control register
         if (address == 0x03D8)
@@ -395,6 +412,13 @@ namespace Cepums {
             // Disable video output on CGA
             if (value == 0)
                 return;
+
+            // We're being asked to enable CGA. Uh oh
+            if (value == 1)
+                return;
+
+            // Ignore the rest too
+            return;
         }
 
         // Serial port stuff? (not in PORTS.LST)
