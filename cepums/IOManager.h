@@ -3,10 +3,10 @@
 #include <utility>
 #include <vector>
 
-#include "FloppyDiskController.h"
-#include "KeyboardController.h"
-#include "PIT.h"
-#include "RTC.h"
+#include "Hardware/FloppyDiskController.h"
+#include "Hardware/KeyboardController.h"
+#include "Hardware/PIT.h"
+#include "Hardware/RTC.h"
 
 namespace Cepums {
 
