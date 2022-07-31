@@ -50,6 +50,18 @@ namespace Cepums {
             return halfbyte - 10 + 65;
     }
 
+    // Convert integers to hex strings
+    // From: https://stackoverflow.com/a/5100745
+    template< typename T >
+    std::string intToHex(T i)
+    {
+        std::stringstream stream;
+        stream << "0x"
+            << std::setfill('0') << std::setw(sizeof(T) * 2)
+            << std::hex << i;
+        return stream.str();
+    }
+
     // Unique pointers aka Scoped pointers
     template<typename T>
     using Scope = std::unique_ptr<T>;

@@ -20,6 +20,7 @@ namespace Cepums {
     private:
         uint16_t m_segmentRegister;
         uint16_t m_effectiveAddress;
+        std::string m_name;
     };
 
     class Memory16 : public Operand
@@ -38,5 +39,6 @@ namespace Cepums {
     private:
         uint16_t m_segmentRegister;
         uint16_t m_effectiveAddress;
+        std::string m_name;
     };
 }

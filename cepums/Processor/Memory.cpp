@@ -27,7 +27,13 @@ namespace Cepums {
 
     const char* Memory8::name()
     {
-        return "MEMORY TODO";
+        if (m_name.empty())
+        {
+            std::stringstream ss;
+            ss << "MEM8:[" << intToHex(MemoryManager::addresstoPhysical(m_segmentRegister, m_effectiveAddress)) << "]";
+            m_name = ss.str();
+        }
+        return m_name.c_str();
     }
 
     uint16_t Memory16::valueWord(Processor*, MemoryManager& mm)
@@ -44,9 +50,15 @@ namespace Cepums {
             m_segmentRegister = processor->getSegmentRegisterValueAndResetOverride();
     }
 
-    const char * Memory16::name()
+    const char* Memory16::name()
     {
-        return "MEMORY TODO";
+        if (m_name.empty())
+        {
+            std::stringstream ss;
+            ss << "MEM16:[" << intToHex(MemoryManager::addresstoPhysical(m_segmentRegister, m_effectiveAddress)) << "]";
+            m_name = ss.str();
+        }
+        return m_name.c_str();
     }
 
     void Memory16::updateWord(Processor*, MemoryManager& mm, uint16_t newValue)
