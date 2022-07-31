@@ -168,7 +168,7 @@ namespace Cepums {
 
         void ins$RETfarAddImmediateToSP(MemoryManager& memoryManager, uint16_t immediate);
         void ins$RETnear(MemoryManager& memoryManager);
-        void ins$ROLregisterOnceByte(uint8_t REG);
+        void ins$ROL(MemoryManager&, Ref<Operand> operand);
         void ins$RORregisterOnceByte(uint8_t REG);
         void ins$RORregisterOnceWord(uint8_t REG);
 

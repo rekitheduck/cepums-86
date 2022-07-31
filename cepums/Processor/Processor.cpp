@@ -58,10 +58,32 @@ namespace Cepums {
         m_instructionPointer++;
         if (s_debugSpam)
         {
-            DC_CORE_INFO("{0}: ===== Fetched new instruction: 0x{1:x} =====", m_currentCycleCounter++, hopefully_an_instruction);
-            DC_CORE_TRACE(" AX: 0x{0:x}   BX: 0x{1:x}   CX: 0x{2:x}   DX: 0x{3:x}", AX(), BX(), CX(), DX());
-            DC_CORE_TRACE(" DS: 0x{0:x}   CS: 0x{1:x}   SS: 0x{2:x}   ES: 0x{3:x}", DS(), CS(), SS(), ES());
-            DC_CORE_TRACE(" IP: 0x{0:x}   BP: 0x{1:X}   SI: 0x{2:x}   DI: 0x{3:X}", IP(), BP(), SI(), DI());
+            DC_CORE_INFO("{0}: ===== Fetched new instruction: {1} =====", m_currentCycleCounter++, intToHex(static_cast<uint16_t>(hopefully_an_instruction)));
+            DC_CORE_TRACE(" AX: {0}   BX: {1}   CX: {2}   DX: {3}", intToHex(AX()), intToHex(BX()), intToHex(CX()), intToHex(DX()));
+            DC_CORE_TRACE(" DS: {0}   CS: {1}   SS: {2}   ES: {3}", intToHex(DS()), intToHex(CS()), intToHex(SS()), intToHex(ES()));
+            DC_CORE_TRACE(" IP: {0}   BP: {1}   SI: {2}   DI: {3}", intToHex(IP()), intToHex(BP()), intToHex(SI()), intToHex(DI()));
+        }
+
+        // TEMP: notify if we've passed int13 AH=2 first read
+        if (m_instructionPointer == 0xf929)
+        {
+            DC_CORE_CRITICAL("WE HAVE PASSED THE FLOPPY DISK THING");
+            TODO();
+        }
+
+        // TEMP: notify about our IPL progress
+        if (m_instructionPointer == 0xf908)
+        {
+            DC_CORE_CRITICAL("IPL-temp: resetting floppy disk system");
+        }
+        if (m_instructionPointer == 0xf910)
+        {
+            DC_CORE_CRITICAL("IPL-temp: getting drive parameters");
+        }
+
+        if (m_instructionPointer == 0xf926)
+        {
+            DC_CORE_CRITICAL("IPL-temp: attempting track 0, sector 1 read");
         }
 
         switch (hopefully_an_instruction)
@@ -1563,6 +1585,10 @@ namespace Cepums {
                 DC_CORE_TRACE("int13: AH={0:x} ", AH());
                 //TODO();
                 //s_debugSpam = true;
+                if (AH() == 2)
+                {
+                    TODO();
+                }
             }
             return ins$INT(memoryManager, immediate);
         }
@@ -1584,7 +1610,7 @@ namespace Cepums {
                 switch (regBits)
                 {
                 case 0b000:
-                    return ins$ROLregisterOnceByte(rmBits);
+                    return ins$ROL(memoryManager, createRef<Register8>(rmBits));
                 case 0b001:
                     return ins$RORregisterOnceByte(rmBits);
                 case 0b010:
@@ -1611,8 +1637,7 @@ namespace Cepums {
             switch (regBits)
             {
             case 0b000:
-                TODO();
-                //return ins$ROLmemoryOnceByte(memoryManager, segment, effectiveAddress);
+                return ins$ROL(memoryManager, createRef<Memory8>(segment, effectiveAddress));
             case 0b001:
                 TODO();
                 //return ins$RORmemoryOnceByte(memoryManager, segment, effectiveAddress);
@@ -1645,8 +1670,7 @@ namespace Cepums {
                 switch (regBits)
                 {
                 case 0b000:
-                    TODO();
-                    //return ins$ROLregisterOnceWord(rmBits);
+                    return ins$ROL(memoryManager, createRef<Register16>(rmBits));
                 case 0b001:
                     return ins$RORregisterOnceWord(rmBits);
                 case 0b010:
@@ -1673,8 +1697,7 @@ namespace Cepums {
             switch (regBits)
             {
             case 0b000:
-                TODO();
-                //return ins$ROLmemoryOnceWord(memoryManager, segment, effectiveAddress);
+                return ins$ROL(memoryManager, createRef<Memory16>(segment, effectiveAddress));
             case 0b001:
                 TODO();
                 //return ins$RORmemoryOnceWord(memoryManager, segment, effectiveAddress);
@@ -3293,25 +3316,57 @@ namespace Cepums {
         SP() += 2;
     }
 
-    void Processor::ins$ROLregisterOnceByte(uint8_t REG)
+    void Processor::ins$ROL(MemoryManager& mm, Ref<Operand> operand)
     {
-        INSTRUCTION_TRACE("ins$ROL: {0},1", Register8::nameFromREG8(REG));
-        uint8_t registerValue = getRegisterValueFromREG8(REG);
+        INSTRUCTION_TRACE("ins$ROL: {1}", operand->name());
+        // Only affects carry and overflow flags
 
-        uint8_t lastBit = IS_BIT_SET(registerValue, 7);
-        registerValue <<= 1;
-        // Set LSB
-        if (lastBit)
+        if (operand->size() == OperandSize::Byte)
         {
-            SET_FLAG_BIT(m_flags, CARRY_FLAG);
-            SET_FLAG_BIT(registerValue, 0);
+            auto value = operand->valueByte(this, mm);
+            uint8_t lastBit = IS_BIT_SET(value, 7);
+
+            value = value << 1;
+            if (lastBit)
+            {
+                SET_BIT(value, 0);
+                SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            }
+            else
+            {
+                CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+            }
+            operand->updateByte(this, mm, value);
+
+            uint8_t lastBitNow = IS_BIT_SET(value, 7);
+            if (lastBit == lastBitNow)
+                CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+            else
+                SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
         }
         else
         {
-            CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
-            CLEAR_FLAG_BIT(registerValue, 0);
+            auto value = operand->valueWord(this, mm);
+            uint16_t lastBit = IS_BIT_SET(value, 15);
+
+            value = value << 1;
+            if (lastBit)
+            {
+                SET_BIT(value, 0);
+                SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            }
+            else
+            {
+                CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+            }
+            operand->updateByte(this, mm, value);
+
+            uint16_t lastBitNow = IS_BIT_SET(value, 15);
+            if (lastBit == lastBitNow)
+                CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+            else
+                SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
         }
-        updateRegisterFromREG16(REG, registerValue);
     }
 
     void Processor::ins$RORregisterOnceByte(uint8_t REG)
