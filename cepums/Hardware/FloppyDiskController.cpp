@@ -140,8 +140,11 @@ namespace Cepums {
 
     void FloppyDiskController::writeDataFIFO(uint8_t data)
     {
+        // We're in a command, so we're probably waiting for more command bytes
+        switch (m_FDCmode)
+        {
         // Are we expecting a new command?
-        if (m_FDCmode == FDCMode::Nothing)
+        case FDCMode::Nothing:
         {
             switch (data)
             {
@@ -178,20 +181,17 @@ namespace Cepums {
                 m_lastCommandByteWritten = 0; // We need one more byte
                 return;
 
+            case 0xE6: //???
+                TODO();
+                break;
+
             default:
                 TODO();
                 return;
             }
-        }
-
-        // We're in a command, so we're probably waiting for more command bytes
-        switch (m_FDCmode)
-        {
-        case FDCMode::Nothing:
-            DC_CORE_ERROR("[FDC]: Writing additional command bytes but not in any mode!");
             VERIFY_NOT_REACHED();
             break;
-
+        }
         case FDCMode::Specify:
             DC_CORE_TRACE("[FDC]: Sense{0}: Ignoring value 0x{1:X}", m_lastCommandByteWritten + 1, data);
             if (m_lastCommandByteWritten == 1)
@@ -208,7 +208,7 @@ namespace Cepums {
                 TODO();
             m_FDCmode = FDCMode::Nothing;
             // We also need to set status register 0 here
-            m_statusRegister0 = 0xD0;
+            m_statusRegister0 = 0xC0;
             // We need to perform an interrupt here
             m_performInterruptAfterFIFO = true;
             m_busy = true;
@@ -230,7 +230,7 @@ namespace Cepums {
             // Result 1: Status register 1
             m_outputBuffer.push_back(m_statusRegister1);
             // Result 0: Status register 0
-            m_outputBuffer.push_back(m_statusRegister0);
+            m_outputBuffer.push_back(0x0D); // technically, this gets accessed as ST1. Override this as a temp thing to get it working
             m_performInterruptAfterFIFO = true;
             break;
 

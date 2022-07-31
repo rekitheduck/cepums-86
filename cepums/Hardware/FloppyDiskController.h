@@ -50,8 +50,8 @@ namespace Cepums {
         FloppyDiskDrive m_drives[4];
         FDCMode m_FDCmode = FDCMode::Nothing;
         uint8_t m_statusRegister0 = 0xC0;
-        uint8_t m_statusRegister1 = 0x00;
-        uint8_t m_statusRegister2 = 0x00;
+        uint8_t m_statusRegister1 = 0xC0;
+        uint8_t m_statusRegister2 = 0xC0;
         bool m_IRQenabled = false;
     };
 }
