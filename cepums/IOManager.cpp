@@ -153,11 +153,33 @@ namespace Cepums {
     {
         // DMA channel 0-3 command register stub
         if (address == 0x08)
-            return;
+        {
+            // 7 bits literally control non-working functionality.
 
-        // DMA channel 0-3 mode register stub
-        if (address == 0x0B)
+            // Bit 2 being 0 sets DMA on
+            if (value) {
+                // "Disable" DMA controller
+                DC_CORE_WARN("DMA: Command Register: Disabling DMA Controller");
+            }
+            else
+            {
+                // Not handling this case
+            }
             return;
+        }
+
+        // DMA channel 0-3 mode register
+        if (address == 0x0B)
+        {
+            // If bits 2 and 3 are set, we are running a self test (nothing in our case)
+            if (IS_BIT_NOT_SET(value, 2) && IS_BIT_NOT_SET(value, 3))
+                return;
+
+            DC_CORE_ERROR("DMA: Unhandled mode register write");
+
+            TODO();
+            return;
+        }
 
         // DMA master clear stub
         if (address == 0x0D)
@@ -298,9 +320,24 @@ namespace Cepums {
             return;
         }
 
-        // DMA page channel 2, 3, (0,1) stub
-        if (address == 0x81 || address == 0x82 || address == 0x83)
+        // DMA page channel 2
+        if (address == 0x81) {
+            m_DMAPageChannel2 = value;
             return;
+        }
+
+        // DMA page channel 3
+        if (address == 0x82) {
+            m_DMAPageChannel3 = value;
+            return;
+        }
+
+        // DMA page channel 0&1 (might just be 1?)
+        if (address == 0x83) {
+            m_DMAPageChannel0 = value;
+            m_DMAPageChannel1 = value;
+            return;
+        }
 
         // I don't know how to deal with this anymore, so let's log and ignore
         if (address == 0x61)

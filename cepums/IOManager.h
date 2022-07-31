@@ -43,5 +43,11 @@ namespace Cepums {
 
         bool m_floppyDelayingForInterrupt = false;
         unsigned int m_floppyInterruptCounter;
+
+        // DMA stuff
+        uint8_t m_DMAPageChannel0{ 0 };
+        uint8_t m_DMAPageChannel1{ 0 };
+        uint8_t m_DMAPageChannel2{ 0 };
+        uint8_t m_DMAPageChannel3{ 0 };
     };
 }
