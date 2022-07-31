@@ -151,6 +151,21 @@ namespace Cepums {
 
     void IOManager::writeByte(uint16_t address, uint8_t value)
     {
+
+        // DMA Start Address Register channel 2/6 stub
+        if (address == 0x04)
+        {
+            DC_CORE_TRACE("DMA: Start Address Register channel 2/6 : 0x{0:x}", value);
+            return;
+        }
+
+        // DMA Count Register channel 2/6 stub
+        if (address == 0x05)
+        {
+            DC_CORE_TRACE("DMA: Count Register channel 2/6: 0x{0:x}", value);
+            return;
+        }
+
         // DMA channel 0-3 command register stub
         if (address == 0x08)
         {
@@ -168,6 +183,13 @@ namespace Cepums {
             return;
         }
 
+        // DMA Single channel mask register
+        if (address == 0x0A)
+        {
+            DC_CORE_TRACE("DMA: Single channel mask register: 0x{0:x}", value);
+            return;
+        }
+
         // DMA channel 0-3 mode register
         if (address == 0x0B)
         {
@@ -175,11 +197,34 @@ namespace Cepums {
             if (IS_BIT_NOT_SET(value, 2) && IS_BIT_NOT_SET(value, 3))
                 return;
 
+            if (IS_BIT_SET(value, 2) && IS_BIT_NOT_SET(value, 3))
+            {
+                DC_CORE_TRACE("DMA: \"Writing\" to memory");
+                return;
+            }
+
+            if (IS_BIT_NOT_SET(value, 2) && IS_BIT_SET(value, 3))
+            {
+                DC_CORE_TRACE("DMA: \"Reading\" from memory");
+                return;
+            }
+
+            if (IS_BIT_SET(value, 2) && IS_BIT_SET(value, 3))
+            {
+
+                DC_CORE_CRITICAL("DMA: Invalid transfer type 0b11");
+                VERIFY_NOT_REACHED();
+            }
+
             DC_CORE_ERROR("DMA: Unhandled mode register write");
 
             TODO();
             return;
         }
+
+        // DMA flip-flop reset register stub
+        if (address == 0x0C)
+            return;
 
         // DMA master clear stub
         if (address == 0x0D)
