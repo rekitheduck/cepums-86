@@ -38,6 +38,6 @@ If you're on a platform without `make`, you can use `nasm -DMACHINE_DUCK -O9 -f 
 Then you have to build the emulator itself. The build system can be generated on Windows by running the included batch script `Generate-Win.bat`. The batch script should be modified with the Visual Studio version that you have
 On Linux, you'll need to install premake5 and run `premake5 gmake2` to get a Makefile.
 Then you can build it either with Visual Studio or by running `make` (depending on your platform).
-Then you'll need to copy over the `bios.bin` file and get yourself an (IBM VGA font)[https://github.com/viler-int10h/vga-text-mode-fonts/raw/master/FONTS/PC-IBM/VGA8.F16] and rename it to `default-font.bin`.
+Then you'll need to copy over the `bios.bin` file and get yourself an [IBM VGA font](https://github.com/viler-int10h/vga-text-mode-fonts/raw/master/FONTS/PC-IBM/VGA8.F16) and rename it to `default-font.bin`.
 
 Additionally on Windows, you'll need to download SDL2 and put SDL2.dll in the same directory.
