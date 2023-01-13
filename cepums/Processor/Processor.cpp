@@ -1587,7 +1587,7 @@ namespace Cepums {
                 //s_debugSpam = true;
                 if (AH() == 2)
                 {
-                    TODO();
+                    DC_CORE_TRACE("trying to get data");
                 }
             }
             return ins$INT(memoryManager, immediate);
@@ -1901,14 +1901,16 @@ namespace Cepums {
         }
         case 0xE6: // OUT: 8-bit immediate and AL
         {
-            INSTRUCTION_TRACE("ins$OUT: immediate data to port AL");
+            INSTRUCTION_TRACE("ins$OUT: Data from AL into port immediate");
             LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, data);
             io.writeByte(data, AL());
             return;
         }
-        case 0xE7: // OUT: 8-bit immediate and AX ??
+        case 0xE7: // OUT: 8-bit immediate and AX
         {
-            TODO();
+            INSTRUCTION_TRACE("ins$OUT: Data from Ax into port immediate");
+            LOAD_NEXT_INSTRUCTION_BYTE(memoryManager, data);
+            io.writeWord(data, AX());
             return;
         }
         case 0xE8: // CALL: Call NEAR-PROC

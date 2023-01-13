@@ -165,6 +165,8 @@ int main(int argc, char** argv)
                 processor.execute(memoryManager, ioManager);
             }
 
+            ioManager.runFakeFDC(memoryManager);
+
             // Run the PIT at 1.193182 MHz
             if (PITTimerAccumulator > 0.83809511038551)
             {

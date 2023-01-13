@@ -3,10 +3,12 @@
 #include <utility>
 #include <vector>
 
+#include "Hardware/FakeFDC.h"
 #include "Hardware/FloppyDiskController.h"
 #include "Hardware/KeyboardController.h"
 #include "Hardware/PIT.h"
 #include "Hardware/RTC.h"
+#include "MemoryManager.h"
 
 namespace Cepums {
 
@@ -22,6 +24,8 @@ namespace Cepums {
         void writeWord(uint16_t address, uint16_t value);
 
         void runPIT();
+        void runFakeFDC(MemoryManager& memoryManager) { m_fakeFDC.execute(memoryManager); }
+
         bool hasPendingInterrupts();
         uint16_t getPendingInterrupt();
 
@@ -30,6 +34,7 @@ namespace Cepums {
     private:
         uint8_t m_port0x80;
         FloppyDiskController m_floppy;
+        FakeFDC m_fakeFDC;
         KeyboardController m_8042KBC;
         PIT m_8254PIT;
         RTC m_RTC;

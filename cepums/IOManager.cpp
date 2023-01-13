@@ -420,6 +420,34 @@ namespace Cepums {
         if (address == 0xC0)
             return;
 
+        // DUCKMACHINE: Sector count
+        if (address == 0xE0)
+        {
+            m_fakeFDC.setSectorCount(value);
+            return;
+        }
+
+        // DUCKMACHINE: Command
+        if (address == 0xE1)
+        {
+            m_fakeFDC.setCommand(value);
+            return;
+        }
+
+        // DUCKMACHINE: Start cylinder
+        if (address == 0xE6)
+        {
+            m_fakeFDC.setStartCylinder(value);
+            return;
+        }
+
+        // DUCKMACHINE: Start sector
+        if (address == 0xE7)
+        {
+            m_fakeFDC.setStartSector(value);
+            return;
+        }
+
         // Expansion unit (XT)
         if (address == 0x213)
         {
@@ -551,6 +579,19 @@ namespace Cepums {
 
     void IOManager::writeWord(uint16_t address, uint16_t value)
     {
+        // DUCKMACHINE: Upper memory value
+        if (address == 0xE2) {
+            m_fakeFDC.setUpperAddress(value);
+            return;
+        }
+
+        // DUCKMACHINE: Lower memory value
+        if (address == 0xE4) {
+            m_fakeFDC.setLowerAddress(value);
+            return;
+        }
+
+        DC_CORE_ERROR("IO: Attempt to write at 0x{0:X} with data 0x{1:X}", address, value);
         TODO();
     }
 
