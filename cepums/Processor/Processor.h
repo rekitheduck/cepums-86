@@ -252,6 +252,7 @@ namespace Cepums {
     private:
         int m_cyclesToWait = 0;
         int m_currentCycleCounter = 0;
+        uint16_t m_internalInterrupt = 0;
 
         uint8_t m_segmentPrefix = EMPTY_SEGMENT_OVERRIDE;
         uint8_t m_segmentPrefixCounter = 0;
