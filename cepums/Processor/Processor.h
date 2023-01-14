@@ -120,6 +120,7 @@ namespace Cepums {
 
         void ins$DEC(MemoryManager&, Ref<Operand> operand);
 
+        void ins$DIVregisterByte(uint8_t REG);
         void ins$DIVregisterWord(uint8_t REG);
 
         void ins$INC(MemoryManager&, Ref<Operand> operand);
