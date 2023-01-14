@@ -20,7 +20,7 @@ namespace Cepums {
 			break;
 		}
 
-		DC_CORE_TRACE("[FakeFDC] Reading {0} sectors from {1}:{2} to {3}::{4}", m_sectorCount, m_startCylinder, m_startSector, m_upperAddress, m_lowerAddress);
+		DC_CORE_TRACE("[FakeFDC] Reading {0} sectors from {1:X}:{2:X} to {3:X}::{4:X}", m_sectorCount, m_startCylinder, m_startSector, m_upperAddress, m_lowerAddress);
 
 		if (m_disk1.empty()) {
 			DC_CORE_TRACE("[FakeFDC] Loading disk 1 ...");

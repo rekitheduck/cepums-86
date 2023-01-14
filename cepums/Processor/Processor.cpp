@@ -1588,6 +1588,7 @@ namespace Cepums {
                 if (AH() == 2)
                 {
                     DC_CORE_TRACE("trying to get data");
+                    //s_debugSpam = true;
                 }
             }
             return ins$INT(memoryManager, immediate);
@@ -1975,7 +1976,7 @@ namespace Cepums {
             switch (byte)
             {
             case 0xA4: // REP MOVS: 8-bit memory to memory
-                TODO();
+                return ins$REP_MOVSbyte(memoryManager);
             case 0xA5: // REP MOVS: 16-bit memory to memory
                 return ins$REP_MOVSword(memoryManager);
             case 0xA6: // CMPS: 8-bit compare string from SRC-STR8 to DEST-STR8
@@ -2705,6 +2706,10 @@ namespace Cepums {
         if (newCodeSegment == 0xF000)
             INSTRUCTION_TRACE(".. which is at BIOS 0x{0:X} in HEX EDITOR or 0x{1:X} in the actual ROM", MemoryManager::addresstoPhysical(newCodeSegment, newInstructionPointer) - 0xF8000, MemoryManager::addresstoPhysical(newCodeSegment, newInstructionPointer) - 0xF0000);
 
+        if (newCodeSegment == 0 && newInstructionPointer == 0x7C00) {
+            DC_CORE_TRACE("BOOTING FROM SOMETHING YEE HAW");
+        }
+
         m_codeSegment = newCodeSegment;
         m_instructionPointer = newInstructionPointer;
     }
@@ -3262,9 +3267,30 @@ namespace Cepums {
         }
     }
 
+    void Processor::ins$REP_MOVSbyte(MemoryManager& memoryManager)
+    {
+        INSTRUCTION_TRACE("ins$REP_MOVS: Repeat move string by byte");
+        while (CX() != 0)
+        {
+            uint8_t source = memoryManager.readByte(m_dataSegment, m_sourceIndex);
+            memoryManager.writeByte(m_extraSegment, m_destinationIndex, source);
+            if (IS_BIT_SET(m_flags, DIRECTION_FLAG))
+            {
+                m_sourceIndex -= 1;
+                m_destinationIndex -= 1;
+            }
+            else
+            {
+                m_sourceIndex += 1;
+                m_destinationIndex += 1;
+            }
+            CX()--;
+        }
+    }
+
     void Processor::ins$REP_MOVSword(MemoryManager& memoryManager)
     {
-        INSTRUCTION_TRACE("ins$REP_MOVS: Repeat move string");
+        INSTRUCTION_TRACE("ins$REP_MOVS: Repeat move string by word");
         while (CX() != 0)
         {
             uint16_t source = memoryManager.readWord(m_dataSegment, m_sourceIndex);

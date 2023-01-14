@@ -163,6 +163,7 @@ namespace Cepums {
 
         void ins$RCRregisterByCLWord(uint8_t REG);
 
+        void ins$REP_MOVSbyte(MemoryManager& memoryManager);
         void ins$REP_MOVSword(MemoryManager& memoryManager);
         void ins$REP_STOSword(MemoryManager& memoryManager);
 
