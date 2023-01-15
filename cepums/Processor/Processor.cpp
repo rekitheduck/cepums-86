@@ -1988,6 +1988,7 @@ namespace Cepums {
             case 0xA5: // REP MOVS: 16-bit memory to memory
                 return ins$REP_MOVSword(memoryManager);
             case 0xA6: // CMPS: 8-bit compare string from SRC-STR8 to DEST-STR8
+                return ins$REP_CMPSbyte(memoryManager);
             case 0xA7: // CMPS: 16-bit compare string from SRC-STR16 to DEST-STR16
             case 0xAA: // REP STOS: 8-bit string
                 TODO();
@@ -3305,6 +3306,56 @@ namespace Cepums {
                 CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
             updateRegisterFromREG16(REG, registerValue);
             counter--;
+        }
+    }
+
+    void Processor::ins$REP_CMPSbyte(MemoryManager& memoryManager)
+    {
+        INSTRUCTION_TRACE("ins$REPE_CMPS: Repeat compare string by byte");
+
+        // Duck: I think I might need to initialize the zero flag here
+        //SET_FLAG_BIT(m_flags, ZERO_FLAG);
+        while (CX() != 0 && IS_BIT_SET(m_flags, ZERO_FLAG))
+        {
+            uint8_t operand1 = memoryManager.readByte(m_dataSegment, m_sourceIndex);
+            uint8_t operand2 = memoryManager.readByte(m_extraSegment, m_destinationIndex);
+
+            // Note: this may be UB :(
+            uint8_t result = operand1 - operand2;
+
+            // Carry (unsigned overflow)
+            if (operand1 > operand2)
+            {
+                SET_FLAG_BIT(m_flags, CARRY_FLAG);
+            }
+            else
+            {
+                CLEAR_FLAG_BIT(m_flags, CARRY_FLAG);
+            }
+
+            // Overflow
+            if (operand1 > SCHAR_MAX - operand2)
+            {
+                SET_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+            }
+            else
+            {
+                CLEAR_FLAG_BIT(m_flags, OVERFLOW_FLAG);
+            }
+
+            setFlagsAfterArithmeticOperation(result);
+
+            if (IS_BIT_SET(m_flags, DIRECTION_FLAG))
+            {
+                m_sourceIndex -= 1;
+                m_destinationIndex -= 1;
+            }
+            else
+            {
+                m_sourceIndex += 1;
+                m_destinationIndex += 1;
+            }
+            CX()--;
         }
     }
 
