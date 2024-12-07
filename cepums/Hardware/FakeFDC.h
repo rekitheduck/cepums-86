@@ -17,6 +17,7 @@ namespace Cepums {
 
         void setStartCylinder(uint8_t cylinder) { m_startCylinder = cylinder; }
         void setStartSector(uint8_t sector) { m_startSector = sector - 1; }
+        void setHead(uint8_t head) { m_head = head; }
     private:
         uint8_t m_command = 0;
         uint8_t m_sectorCount = 0;
@@ -26,6 +27,7 @@ namespace Cepums {
 
         uint8_t m_startCylinder = 0;
         uint8_t m_startSector = 0;
+        uint8_t m_head = 0;
 
         std::vector<uint8_t> m_disk1;
     };

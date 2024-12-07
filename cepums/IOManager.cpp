@@ -448,6 +448,14 @@ namespace Cepums {
             return;
         }
 
+        // DUCKMACHINE: Head
+        if (address == 0xE8)
+        {
+            m_fakeFDC.setHead(value);
+            return;
+        }
+
+
         // Expansion unit (XT)
         if (address == 0x213)
         {
