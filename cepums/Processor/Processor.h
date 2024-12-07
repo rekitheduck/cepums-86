@@ -134,8 +134,9 @@ namespace Cepums {
         void ins$JMPshortWord(int16_t increment);
 
         void ins$LAHF();
+        void ins$LDS(MemoryManager& mm, Ref<Register16> destination, Ref<SegmentRegister> segment, uint16_t effectiveAddress);
         void ins$LEA(uint8_t destREG, uint16_t effectiveAddress);
-        void ins$LEStoRegister(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress);
+        void ins$LES(MemoryManager& mm, Ref<Register16> destination, Ref<SegmentRegister> segment, uint16_t effectiveAddress);
 
         void ins$LODSbyte(MemoryManager& memoryManager);
         void ins$LODSword(MemoryManager& memoryManager);

@@ -62,6 +62,12 @@ namespace Cepums {
             return ins$INT(memoryManager, interrupt);
         }
 
+        // Debug bootup
+        if (m_instructionPointer == 0x7C00) {
+            DC_CORE_TRACE("BOOTING FROM SOMETHING YEE HAW");
+            s_debugSpam = true;
+        }
+
         uint8_t hopefully_an_instruction = memoryManager.readByte(m_codeSegment, m_instructionPointer);
         m_instructionPointer++;
         if (s_debugSpam)
@@ -1505,13 +1511,19 @@ namespace Cepums {
 
             if (IS_IN_REGISTER_MODE(modBits))
             {
+                // Pretty sure this is illegal
                 DC_CORE_WARN("LES: I don't know what to do in this case");
                 TODO();
             }
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, EXTRA_SEGMENT, segment);
-            return ins$LEStoRegister(memoryManager, rmBits, segment, effectiveAddress);
+            auto& seg_to_use = EXTRA_SEGMENT;
+            if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE) {
+                seg_to_use = getSegmentRegisterValue(m_segmentPrefix);
+                RESET_SEGMENT_PREFIX();
+        }
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, seg_to_use, segment);
+            return ins$LES(memoryManager, createRef<Register16>(regBits), createRef<SegmentRegister>(segment), effectiveAddress);
         }
         case 0xC5: // LDS: Load pointer using DS
         {
@@ -1525,8 +1537,14 @@ namespace Cepums {
             }
 
             LOAD_DISPLACEMENTS_FROM_INSTRUCTION_STREAM(memoryManager, modBits, rmBits, displacementLowByte, displacementHighByte);
-            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, DATA_SEGMENT, segment);
-            return ins$LEStoRegister(memoryManager, rmBits, segment, effectiveAddress); // Not a problem - just reusing implementation
+            auto& seg_to_use = DATA_SEGMENT;
+            if (m_segmentPrefix != EMPTY_SEGMENT_OVERRIDE) {
+                seg_to_use = getSegmentRegisterValue(m_segmentPrefix);
+                RESET_SEGMENT_PREFIX();
+            }
+            CALCULATE_EFFECTIVE_ADDRESS(effectiveAddress, rmBits, modBits, IS_WORD, displacementLowByte, displacementHighByte, seg_to_use, segment);
+
+            return ins$LDS(memoryManager, createRef<Register16>(regBits), createRef<SegmentRegister>(segment), effectiveAddress);
         }
         case 0xC6: // MOV/unused/unused/unused/unused/unused/unused/unused: 8-bit from immediate to memory
         {
@@ -2813,40 +2831,30 @@ namespace Cepums {
         updateRegisterFromREG8(REGISTER_AH, tempAH);
     }
 
+    void Processor::ins$LDS(MemoryManager& mm, Ref<Register16> destination, Ref<SegmentRegister> segment, uint16_t effectiveAddress)
+    {
+        uint16_t newRegisterValue = mm.readWord(segment->valueWord(this, mm), effectiveAddress);
+        uint16_t newSegmentValue = mm.readWord(segment->valueWord(this, mm), effectiveAddress + 2);
+        INSTRUCTION_TRACE("ins$LDS: DS:{0}, {1:X}h:{2:X}h", destination->name(), newSegmentValue, newRegisterValue);
+
+        DS() = newSegmentValue;
+        destination->updateWord(this, mm, newRegisterValue);
+    }
+
     void Processor::ins$LEA(uint8_t destREG, uint16_t effectiveAddress)
     {
         INSTRUCTION_TRACE("ins$LEA: Storing '0x{0:X}' into {1}", effectiveAddress, Register16::nameFromREG16(destREG));
         updateRegisterFromREG16(destREG, effectiveAddress);
     }
 
-    void Processor::ins$LEStoRegister(MemoryManager& memoryManager, uint8_t destREG, uint16_t segment, uint16_t effectiveAddress)
+    void Processor::ins$LES(MemoryManager& mm, Ref<Register16> destination, Ref<SegmentRegister> segment, uint16_t effectiveAddress)
     {
-        uint16_t newRegisterValue = memoryManager.readWord(segment, effectiveAddress);
-        uint16_t newSegmentValue = memoryManager.readWord(segment, effectiveAddress + 2);
+        uint16_t newRegisterValue = mm.readWord(segment->valueWord(this, mm), effectiveAddress);
+        uint16_t newSegmentValue = mm.readWord(segment->valueWord(this, mm), effectiveAddress + 2);
+        INSTRUCTION_TRACE("ins$LES: DS:{0}, {1:X}h:{2:X}h", destination->name(), newSegmentValue, newRegisterValue);
 
-        switch (m_segmentPrefix)
-        {
-        case REGISTER_DS:
-            DS() = newSegmentValue;
-            RESET_SEGMENT_PREFIX();
-            break;
-
-        case REGISTER_CS:
-            CS() = newSegmentValue;
-            RESET_SEGMENT_PREFIX();
-            break;
-
-        case REGISTER_SS:
-            SS() = newSegmentValue;
-            RESET_SEGMENT_PREFIX();
-            break;
-        case REGISTER_ES:
-        default:
             ES() = newSegmentValue;
-            RESET_SEGMENT_PREFIX();
-            break;
-        }
-        updateRegisterFromREG16(destREG, newRegisterValue);
+        destination->updateWord(this, mm, newRegisterValue);
     }
 
     void Processor::ins$LODSbyte(MemoryManager& memoryManager)
