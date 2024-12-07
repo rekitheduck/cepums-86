@@ -74,7 +74,7 @@ namespace Cepums {
         {
             DC_CORE_INFO("{0}: ===== Fetched new instruction: {1} =====", m_currentCycleCounter++, intToHex(static_cast<uint16_t>(hopefully_an_instruction)));
             DC_CORE_TRACE(" AX: {0}   BX: {1}   CX: {2}   DX: {3}", intToHex(AX()), intToHex(BX()), intToHex(CX()), intToHex(DX()));
-            DC_CORE_TRACE(" DS: {0}   CS: {1}   SS: {2}   ES: {3}", intToHex(DS()), intToHex(CS()), intToHex(SS()), intToHex(ES()));
+            DC_CORE_TRACE(" DS: {0}   CS: {1}   SS: {2}   ES: {3}   SP: {4}", intToHex(DS()), intToHex(CS()), intToHex(SS()), intToHex(ES()), intToHex(SP()));
             DC_CORE_TRACE(" IP: {0}   BP: {1}   SI: {2}   DI: {3}", intToHex(IP()), intToHex(BP()), intToHex(SI()), intToHex(DI()));
         }
 
